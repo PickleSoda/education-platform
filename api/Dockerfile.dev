@@ -1,0 +1,20 @@
+FROM node:20-slim
+
+WORKDIR /app
+
+# Install pnpm globally
+RUN npm install -g pnpm
+
+COPY package.json pnpm-lock.yaml ./
+COPY prisma ./prisma/
+
+RUN pnpm install
+RUN pnpm prisma generate
+
+COPY . .
+
+RUN pnpm add -g ts-node nodemon
+
+EXPOSE 8000
+
+CMD ["pnpm", "dev"] 

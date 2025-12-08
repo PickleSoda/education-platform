@@ -1,0 +1,17 @@
+# SSL Certificate Placeholder
+
+Place your SSL certificates here for HTTPS configuration:
+
+- `cert.pem` - Your SSL certificate
+- `key.pem` - Your private key
+
+For development, you can generate self-signed certificates:
+
+```bash
+openssl req -x509 -nodes -days 365 -newkey rsa:2048 \
+  -keyout docker/nginx/ssl/key.pem \
+  -out docker/nginx/ssl/cert.pem \
+  -subj "/C=US/ST=State/L=City/O=Organization/CN=localhost"
+```
+
+For production, use Let's Encrypt or your certificate provider.
