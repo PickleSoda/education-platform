@@ -24,10 +24,10 @@ export function formatResponse<T>(
     data,
     errors,
   };
-  
+
   if (meta) {
     response.meta = meta;
   }
-  
+
   return response;
 }

@@ -327,39 +327,100 @@ export const createEntityRoute = createRoute({
 
 ## Module Plan
 
-### 1. **Course Module** (`src/modules/course/`)
+### 1. **Course Module** (`src/modules/course/`) ✅ IMPLEMENTED
 
 **Domain**: Course templates, tags, lecturers, syllabus items
 
-**Repository Queries**:
+**Files**:
+- `course.types.ts` - TypeScript interfaces and types
+- `course.repository.ts` - Database queries (Prisma)
+- `course.service.ts` - Business logic
+- `course.controller.ts` - HTTP request/response handling
+- `course.route.ts` - Express route definitions
+- `course.validation.ts` - Input validation schemas (Zod)
+- `course.openapi.ts` - OpenAPI/Swagger documentation
 
-- `createCourse(data)` - Create course with tags and lecturers
-- `getCourseById(id)` - Get course with relations
-- `getCourseWithTemplates(id)` - Get course with all templates
-- `listCourses(filters, pagination)` - Search/filter courses
+**Repository Queries** (`course.repository.ts`):
+
+- `createCourse(data)` - Create course with optional tags and lecturers
+- `findCourseById(id)` - Get course by ID (basic)
+- `getCourseWithRelations(id)` - Get course with tags, lecturers, and counts
+- `getCourseWithTemplates(id)` - Get course with syllabus, assignments, resources
+- `listCourses(filters, pagination)` - Search/filter courses with pagination
 - `updateCourse(id, data)` - Update course details
-- `archiveCourse(id)` - Soft delete course
-- `addCourseTag(courseId, tagName)` - Add tag to course
+- `archiveCourse(id)` - Soft delete (set isArchived=true)
+- `unarchiveCourse(id)` - Restore archived course
+- `deleteCourse(id)` - Hard delete course
+- `addCourseTag(courseId, tagName)` - Add tag by name (creates if not exists)
+- `addCourseTagById(courseId, tagId)` - Add tag by ID
+- `removeCourseTag(courseId, tagId)` - Remove tag from course
 - `addCourseLecturer(courseId, userId, isPrimary)` - Add lecturer
+- `removeCourseLecturer(courseId, userId)` - Remove lecturer
+- `updateLecturerPrimary(courseId, userId, isPrimary)` - Update primary status
+- `getCourseLecturers(courseId)` - Get all lecturers for a course
+- `isCourseLecturer(courseId, userId)` - Check if user is lecturer
+- `getCoursesByCreator(userId)` - Get courses created by user
+- `getCoursesByLecturer(userId)` - Get courses where user is lecturer
+- `getAllTags()` - Get all tags
+- `getTagByName(name)` - Get tag by name
+- `createTag(name, color)` - Create new tag
+- `getPopularTags(limit)` - Get popular tags by course count
+
+**Service Methods** (`course.service.ts`):
+
+- `createCourse(data, userId)` - Create course with validation
+- `getCourseById(id, includeTemplates)` - Get course with optional templates
+- `listCourses(query)` - List with filters and pagination
+- `updateCourse(id, data)` - Update with duplicate code check
+- `archiveCourse(id)` - Archive course
+- `unarchiveCourse(id)` - Unarchive course
+- `deleteCourse(id)` - Delete (blocks if has instances)
+- `copyCourse(id, newCode, userId)` - Duplicate course template
+- `addLecturer(courseId, userId, isPrimary)` - Add lecturer with primary handling
 - `removeLecturer(courseId, userId)` - Remove lecturer
+- `updateLecturerPrimary(courseId, userId, isPrimary)` - Update primary status
+- `getCourseLecturers(courseId)` - Get lecturers
+- `addTag(courseId, tagName)` - Add tag by name
+- `addTagById(courseId, tagId)` - Add tag by ID
+- `removeTag(courseId, tagId)` - Remove tag
+- `getAllTags(limit, popularOnly)` - Get tags with optional popularity filter
+- `createTag(name, color)` - Create new tag
+- `searchCourses(query, limit)` - Full-text search
+- `getCoursesByCreator(userId)` - Get courses by creator
+- `getCoursesByLecturer(userId)` - Get courses by lecturer
+- `getCourseStats(courseId)` - Get course statistics
 
-**Service Methods**:
+**Endpoints** (`course.route.ts`):
 
-- `createCourseWithStructure()` - Create course + default syllabus
-- `copyCourse()` - Duplicate course template
-- `searchCourses()` - Full-text search
-- `getCourseAnalytics()` - Usage statistics
+*Public Routes:*
+- `GET /courses/search` - Search courses
+- `GET /courses/tags` - Get all tags
+- `GET /courses` - List courses (paginated)
+- `GET /courses/:id` - Get course by ID
 
-**Endpoints**:
+*Protected Routes (Authenticated):*
+- `GET /courses/my/created` - Get my created courses
+- `GET /courses/my/teaching` - Get courses I teach
 
+*Teacher/Admin Routes:*
 - `POST /courses` - Create course
-- `GET /courses` - List/search courses
-- `GET /courses/:id` - Get course details
 - `PATCH /courses/:id` - Update course
-- `DELETE /courses/:id` - Archive course
-- `POST /courses/:id/tags` - Add tag
-- `POST /courses/:id/lecturers` - Add lecturer
-- `DELETE /courses/:id/lecturers/:userId` - Remove lecturer
+- `POST /courses/:id/archive` - Archive course
+- `POST /courses/:id/unarchive` - Unarchive course
+- `POST /courses/:id/copy` - Copy course
+- `GET /courses/:id/stats` - Get course statistics
+- `POST /courses/tags` - Create tag
+- `POST /courses/:id/tags` - Add tag to course
+- `DELETE /courses/:id/tags/:tagId` - Remove tag from course
+
+*Lecturer Management:*
+- `GET /courses/:id/lecturers` - Get lecturers
+- `POST /courses/:id/lecturers` - Add lecturer (teacher/admin)
+- `PATCH /courses/:id/lecturers/:userId` - Update lecturer (teacher/admin)
+- `DELETE /courses/:id/lecturers/:userId` - Remove lecturer (teacher/admin)
+
+*Admin Only:*
+- `DELETE /courses/:id` - Delete course
 
 ---
 
@@ -598,6 +659,7 @@ export const createEntityRoute = createRoute({
 For each module:
 
 - [ ] Create directory structure
+- [ ] Create `*.types.ts` for TypeScript interfaces
 - [ ] Move queries from `queries.ts` to `*.repository.ts`
 - [ ] Create service layer with business logic
 - [ ] Create controller with HTTP handlers
@@ -607,6 +669,19 @@ For each module:
 - [ ] Write unit tests for repository
 - [ ] Write integration tests for endpoints
 - [ ] Update imports in existing code
+
+### Module Progress
+
+| Module | Status | Notes |
+|--------|--------|-------|
+| Course | ✅ Complete | All 7 files implemented |
+| Assignment | ⏳ Pending | - |
+| Instance | ⏳ Pending | - |
+| Enrollment | ⏳ Pending | - |
+| Submission | ⏳ Pending | - |
+| Forum | ⏳ Pending | - |
+| Announcement | ⏳ Pending | - |
+| Dashboard | ⏳ Pending | - |
 
 ---
 
@@ -650,4 +725,4 @@ For each module:
 
 ---
 
-**Next Steps**: Start with `course` module as it's the foundation for other modules.
+**Next Steps**: The `course` module is now complete. Continue with the `assignment` module, which depends on courses for its templates.

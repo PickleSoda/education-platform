@@ -107,16 +107,6 @@ export const findUnreadNotificationsByUserId = async (
     skip: (page - 1) * limit,
     take: limit,
     where: { userId, isRead: false },
-    select: {
-      id: true,
-      title: true,
-      message: true,
-      isRead: true,
-      createdAt: true,
-      userId: true,
-      entityType: true,
-      entityId: true,
-    },
     orderBy: {
       createdAt: 'desc',
     },
