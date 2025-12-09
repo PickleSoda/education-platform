@@ -11,6 +11,7 @@
     "dev:cron": "nodemon -r tsconfig-paths/register -r ts-node src/shared/cron/cron-runner.ts",
     "test": "vitest run",
     "test:watch": "vitest",
+    "test:setup": "dotenv -e .env.test -- ts-node test/utils/setup-test-db.ts",
     "coverage": "vitest run --coverage",
     "coverage:coveralls": "vitest run --coverage --reporter=lcov | coveralls",
     "lint": "eslint .",
@@ -134,5 +135,8 @@
     "commitizen": {
       "path": "./node_modules/cz-conventional-changelog"
     }
+  },
+  "prisma": {
+    "seed": "ts-node --compiler-options {\"module\":\"CommonJS\"} prisma/seed.ts"
   }
 }
