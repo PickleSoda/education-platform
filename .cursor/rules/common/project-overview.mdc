@@ -47,7 +47,7 @@ alwaysApply: true
 ## Project Structure
 ```
 ├─ public/
-│  └─ mockServiceWorker.js      # MSW startup script (auto-generated service worker script)
+│  
 ├─ src/                         # Core source code
 │  ├─ _mock/                    # Mock API data and handlers
 │  ├─ api/                      # API request services

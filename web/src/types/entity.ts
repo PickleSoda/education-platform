@@ -6,6 +6,78 @@ export interface UserToken {
 	refreshToken?: string;
 }
 
+export interface Tag {
+	id: number;
+	name: string;
+	color: string | null;
+}
+
+export interface CourseTag {
+	tag: Tag;
+}
+
+export interface CourseLecturer {
+	userId: string;
+	isPrimary: boolean;
+	user: {
+		id: string;
+		email: string;
+		firstName: string;
+		lastName: string;
+	};
+}
+
+export interface Course {
+	id: string;
+	code: string;
+	title: string;
+	description: string | null;
+	credits: number | null;
+	typicalDurationWeeks: number | null;
+	isArchived: boolean;
+	createdBy: string;
+	createdAt: string;
+	updatedAt: string;
+	tags?: CourseTag[];
+	lecturers?: CourseLecturer[];
+	_count?: {
+		instances: number;
+	};
+}
+
+export interface CourseStats {
+	courseId: string;
+	code: string;
+	title: string;
+	totalInstances: number;
+	totalSyllabusItems: number;
+	totalAssignments: number;
+	totalResources: number;
+	tags: string[];
+	lecturers: number;
+	primaryLecturer: {
+		id: string;
+		email: string;
+		firstName: string;
+		lastName: string;
+	} | null;
+}
+
+export interface TeacherProfile {
+	userId: string;
+	department: string | null;
+	title: string | null;
+	bio: string | null;
+	officeLocation: string | null;
+}
+
+export interface StudentProfile {
+	userId: string;
+	studentId: string | null;
+	enrollmentYear: number | null;
+	program: string | null;
+}
+
 export interface UserInfo {
 	id: string;
 	email: string;
@@ -13,6 +85,8 @@ export interface UserInfo {
 	lastName: string;
 	avatarUrl?: string | null;
 	isActive?: boolean;
+	createdAt: string;
+	updatedAt: string;
 	roles?: Array<{
 		role: {
 			id: number;
@@ -20,8 +94,11 @@ export interface UserInfo {
 			description: string | null;
 		};
 		grantedAt: string;
+		grantedById: string | null;
 	}>;
-	permissions?: string[]; // Array of permission codes like "user-management:read"
+	teacherProfile?: TeacherProfile | null;
+	studentProfile?: StudentProfile | null;
+	permissions?: string[];
 	menu?: MenuTree[];
 	// Legacy fields for compatibility
 	username?: string;

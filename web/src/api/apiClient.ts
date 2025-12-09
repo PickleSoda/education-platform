@@ -23,12 +23,12 @@ axiosInstance.interceptors.request.use(
 );
 
 axiosInstance.interceptors.response.use(
-	(res: AxiosResponse<ApiResponse<any>>) => {
+	(res: AxiosResponse<any>) => {
 		if (!res.data) throw new Error(t("sys.api.apiRequestFailed"));
 		// Backend returns { success, data, message, statusCode }
-		const { success, data, message } = res.data;
+		const { success, message } = res.data;
 		if (success !== false) {
-			return data;
+			return res.data;
 		}
 		throw new Error(message || t("sys.api.apiRequestFailed"));
 	},
@@ -52,6 +52,9 @@ class APIClient {
 	}
 	put<T = unknown>(config: AxiosRequestConfig): Promise<T> {
 		return this.request<T>({ ...config, method: "PUT" });
+	}
+	patch<T = unknown>(config: AxiosRequestConfig): Promise<T> {
+		return this.request<T>({ ...config, method: "PATCH" });
 	}
 	delete<T = unknown>(config: AxiosRequestConfig): Promise<T> {
 		return this.request<T>({ ...config, method: "DELETE" });
