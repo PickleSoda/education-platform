@@ -4,7 +4,7 @@ export interface PaginationOptions {
   page?: number;
   limit?: number;
   sortBy?: string;
-  sortType?: 'asc' | 'desc';
+  sortOrder?: 'asc' | 'desc';
 }
 
 export interface PaginatedResult<T> {
@@ -53,7 +53,7 @@ export const createBaseRepository = <T, CreateInput, UpdateInput>(
       const page = options?.page ?? 1;
       const limit = options?.limit ?? 10;
       const sortBy = options?.sortBy;
-      const sortType = options?.sortType ?? 'desc';
+      const sortOrder = options?.sortOrder ?? 'desc';
 
       const totalCount = await (prisma as any)[modelName].count({ where });
       const totalPages = Math.ceil(totalCount / limit);
@@ -63,7 +63,7 @@ export const createBaseRepository = <T, CreateInput, UpdateInput>(
         select,
         skip: (page - 1) * limit,
         take: limit,
-        orderBy: sortBy ? { [sortBy]: sortType } : undefined,
+        orderBy: sortBy ? { [sortBy]: sortOrder } : undefined,
       });
 
       return {

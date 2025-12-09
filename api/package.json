@@ -16,6 +16,7 @@
     "coverage:coveralls": "vitest run --coverage --reporter=lcov | coveralls",
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
+    "type-check": "tsc --noEmit",
     "prettier": "prettier --check **/*.ts",
     "prettier:fix": "prettier --write \"src/**/*.{ts,tsx,js,jsx,json}\"",
     "db:push": "prisma db push",

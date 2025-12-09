@@ -1,11 +1,9 @@
 import { Token, TokenType } from '@prisma/client';
 import { add, getUnixTime } from 'date-fns';
-import httpStatus from 'http-status';
 import jwt from 'jsonwebtoken';
 
 import config from '@/config/config';
 import * as userService from '@/modules/user/user.service';
-import ApiError from '@/shared/utils/api-error';
 import { AuthTokensResponse } from '@/types/response';
 import { authRepository } from '@/modules/auth/auth.repository';
 
@@ -106,7 +104,13 @@ export const generateAuthTokens = async (user: { id: string }): Promise<AuthToke
 export const generateResetPasswordToken = async (email: string): Promise<string> => {
   const user = await userService.getUserByEmail(email);
   if (!user) {
-    throw new ApiError(httpStatus.NOT_FOUND, 'No users found with this email');
+    // For security, don't reveal that user doesn't exist
+    // Return a fake token that looks valid but won't work
+    return generateToken(
+      '00000000-0000-0000-0000-000000000000',
+      add(new Date(), { minutes: 10 }),
+      TokenType.RESET_PASSWORD
+    );
   }
   const expires = add(new Date(), { minutes: config.jwt.resetPasswordExpirationMinutes });
   const resetPasswordToken = generateToken(user.id as string, expires, TokenType.RESET_PASSWORD);

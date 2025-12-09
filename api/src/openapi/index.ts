@@ -2,7 +2,6 @@ import { OpenAPIRegistry, OpenApiGeneratorV3 } from '@asteasolutions/zod-to-open
 
 import { registerAuthPaths } from '@/modules/auth/auth.openapi';
 import { registerUserPaths } from '@/modules/user/user.openapi';
-import { registerPostPaths } from '@/modules/post/post.openapi';
 import { registerNotificationPaths } from '@/modules/notification/notification.openapi';
 import { registerFilePaths } from '@/modules/file/file.openapi';
 
@@ -19,7 +18,6 @@ registry.registerComponent('securitySchemes', 'bearerAuth', {
 // Register all paths
 registerAuthPaths(registry);
 registerUserPaths(registry);
-registerPostPaths(registry);
 registerNotificationPaths(registry);
 registerFilePaths(registry);
 
