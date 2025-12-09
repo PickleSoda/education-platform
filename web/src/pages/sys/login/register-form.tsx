@@ -18,7 +18,8 @@ function RegisterForm() {
 
 	const form = useForm({
 		defaultValues: {
-			username: "",
+			firstName: "",
+			lastName: "",
 			email: "",
 			password: "",
 			confirmPassword: "",
@@ -42,12 +43,26 @@ function RegisterForm() {
 
 				<FormField
 					control={form.control}
-					name="username"
+					name="firstName"
 					rules={{ required: t("sys.login.accountPlaceholder") }}
 					render={({ field }) => (
 						<FormItem>
 							<FormControl>
-								<Input placeholder={t("sys.login.userName")} {...field} />
+								<Input placeholder={t("sys.login.firstName")} {...field} />
+							</FormControl>
+							<FormMessage />
+						</FormItem>
+					)}
+				/>
+
+				<FormField
+					control={form.control}
+					name="lastName"
+					rules={{ required: t("sys.login.accountPlaceholder") }}
+					render={({ field }) => (
+						<FormItem>
+							<FormControl>
+								<Input placeholder={t("sys.login.lastName")} {...field} />
 							</FormControl>
 							<FormMessage />
 						</FormItem>

@@ -21,8 +21,8 @@ export default function MultiLanguagePage() {
 				</a>
 			</Button>
 			<Button variant="link" asChild>
-				<a href="https://ant.design/docs/react/i18n-cn" style={{ color: themeVars.colors.palette.primary.default }}>
-					https://ant.design/docs/react/i18n-cn
+				<a href="https://ant.design/docs/react/i18n" style={{ color: themeVars.colors.palette.primary.default }}>
+					https://ant.design/docs/react/i18n
 				</a>
 			</Button>
 			<Card>
@@ -36,8 +36,8 @@ export default function MultiLanguagePage() {
 							<label htmlFor="en_US">English</label>
 						</div>
 						<div className="flex items-center space-x-2">
-							<RadioGroupItem value={LocalEnum.zh_CN} id="zh_CN" />
-							<label htmlFor="zh_CN">Chinese</label>
+							<RadioGroupItem value={LocalEnum.ka_GE} id="ka_GE" />
+							<label htmlFor="ka_GE">Georgian</label>
 						</div>
 					</RadioGroup>
 

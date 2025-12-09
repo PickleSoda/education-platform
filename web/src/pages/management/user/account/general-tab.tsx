@@ -22,10 +22,10 @@ type FieldType = {
 };
 
 export default function GeneralTab() {
-	const { avatar, username, email } = useUserInfo();
+	const { avatar, firstName, lastName, email } = useUserInfo();
 	const form = useForm<FieldType>({
 		defaultValues: {
-			name: username,
+			name: `${firstName} ${lastName}`,
 			email,
 			phone: faker.phone.number(),
 			address: faker.location.county(),

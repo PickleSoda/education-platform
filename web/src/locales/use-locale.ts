@@ -1,6 +1,5 @@
-import "dayjs/locale/zh-cn";
+import "dayjs/locale/ka";
 import en_US from "antd/locale/en_US";
-import zh_CN from "antd/locale/zh_CN";
 import dayjs from "dayjs";
 import { useTranslation } from "react-i18next";
 
@@ -16,11 +15,11 @@ type Language = {
 };
 
 export const LANGUAGE_MAP: Record<Locale, Language> = {
-	[LocalEnum.zh_CN]: {
-		locale: LocalEnum.zh_CN,
-		label: "Chinese",
-		icon: "flag-cn",
-		antdLocal: zh_CN,
+	[LocalEnum.ka_GE]: {
+		locale: LocalEnum.ka_GE,
+		label: "ქართული",
+		icon: "flag-ge",
+		antdLocal: en_US, // Antd doesn't have Georgian locale, using English as fallback
 	},
 	[LocalEnum.en_US]: {
 		locale: LocalEnum.en_US,

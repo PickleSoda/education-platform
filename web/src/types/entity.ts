@@ -65,7 +65,8 @@ export interface CommonOptions {
 }
 export interface User extends CommonOptions {
 	id: string; // uuid
-	username: string;
+	firstName: string;
+	lastName: string;
 	password: string;
 	email: string;
 	phone?: string;

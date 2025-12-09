@@ -87,10 +87,10 @@ export function getFrontendDashboardRoutes(): RouteObject[] {
 			path: "link",
 			children: [
 				{ index: true, element: <Navigate to="iframe" replace /> },
-				{ path: "iframe", element: Component("/pages/sys/others/link/iframe", { src: "https://ant.design/index-cn" }) },
+				{ path: "iframe", element: Component("/pages/sys/others/link/iframe", { src: "https://ant.design/index" }) },
 				{
 					path: "external-link",
-					element: Component("/pages/sys/others/link/external-link", { src: "https://ant.design/index-cn" }),
+					element: Component("/pages/sys/others/link/external-link", { src: "https://ant.design/index" }),
 				},
 			],
 		},

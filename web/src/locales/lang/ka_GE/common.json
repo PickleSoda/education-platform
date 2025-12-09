@@ -1,0 +1,22 @@
+{
+	"common": {
+		"okText": "დადასტურება",
+		"closeText": "დახურვა",
+		"cancelText": "გაუქმება",
+		"loadingText": "იტვირთება...",
+		"saveText": "შენახვა",
+		"delText": "წაშლა",
+		"resetText": "გადატვირთვა",
+		"searchText": "ძებნა",
+		"queryText": "მოძებნა",
+
+		"inputText": "შეიყვანეთ",
+		"chooseText": "აირჩიეთ",
+
+		"redo": "განახლება",
+		"back": "უკან",
+
+		"light": "ნათელი",
+		"dark": "მუქი"
+	}
+}
