@@ -1,10 +1,12 @@
 import { OpenAPIRegistry, OpenApiGeneratorV3 } from '@asteasolutions/zod-to-openapi';
 
+import { registerAssignmentPaths } from '@/modules/assignment/assignment.openapi';
 import { registerAuthPaths } from '@/modules/auth/auth.openapi';
-import { registerUserPaths } from '@/modules/user/user.openapi';
-import { registerNotificationPaths } from '@/modules/notification/notification.openapi';
-import { registerFilePaths } from '@/modules/file/file.openapi';
 import { registerCoursePaths } from '@/modules/course/course.openapi';
+import { registerFilePaths } from '@/modules/file/file.openapi';
+import { registerInstancePaths } from '@/modules/instance/instance.openapi';
+import { registerNotificationPaths } from '@/modules/notification/notification.openapi';
+import { registerUserPaths } from '@/modules/user/user.openapi';
 
 import { name, version } from '../../package.json';
 
@@ -19,9 +21,11 @@ registry.registerComponent('securitySchemes', 'bearerAuth', {
 // Register all paths
 registerAuthPaths(registry);
 registerUserPaths(registry);
+registerCoursePaths(registry);
+registerAssignmentPaths(registry);
+registerInstancePaths(registry);
 registerNotificationPaths(registry);
 registerFilePaths(registry);
-registerCoursePaths(registry);
 
 const generator = new OpenApiGeneratorV3(registry.definitions);
 
