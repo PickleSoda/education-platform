@@ -90,6 +90,9 @@
 			"ui": "UI",
 			"custom_ui_components": "მორგებული UI კომპონენტები",
 			"workbench": "სამუშაო სივრცე",
+			"courses": "კურსების კატალოგი",
+			"myCourses": "ჩემი კურსები",
+			"manageCourses": "კურსების მართვა",
 			"analysis": "ანალიტიკა",
 			"management": "მართვა",
 			"user": {

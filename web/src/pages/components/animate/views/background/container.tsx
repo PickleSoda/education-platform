@@ -9,7 +9,7 @@ type Props = {
 	variant: string;
 };
 export default function ContainerView({ variant }: Props) {
-	const varients = useMemo(() => getVariant(variant), [variant]);
+	const variants = useMemo(() => getVariant(variant), [variant]) as any;
 	const isKenburns = variant.includes("kenburns");
 
 	return (
@@ -20,9 +20,9 @@ export default function ContainerView({ variant }: Props) {
 		>
 			<MotionContainer className="flex h-full w-full flex-col items-center gap-6">
 				{isKenburns ? (
-					<m.img src={Cover3} className="h-full w-full object-cover" variants={varients} />
+					<m.img src={Cover3} className="h-full w-full object-cover" variants={variants} />
 				) : (
-					<m.div {...varients} className="h-full w-full" />
+					<m.div {...variants} className="h-full w-full" />
 				)}
 			</MotionContainer>
 		</div>

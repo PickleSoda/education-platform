@@ -6,8 +6,8 @@ import { useToggle } from "react-use";
 import type { NavGroupProps } from "../types";
 import { NavList } from "./nav-list";
 
-export function NavGroup({ name, items }: NavGroupProps) {
-	const [open, toggleOpen] = useToggle(false);
+export function NavGroup({ name, items, defaultOpen = true }: NavGroupProps) {
+	const [open, toggleOpen] = useToggle(defaultOpen);
 
 	return (
 		<Collapsible open={open}>

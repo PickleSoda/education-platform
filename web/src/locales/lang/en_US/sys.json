@@ -133,7 +133,10 @@
 				"index": "User",
 				"profile": "Profile"
 			},
-			"workbench": "Workbench"
+			"workbench": "Workbench",
+			"courses": "Course Catalog",
+			"myCourses": "My Courses",
+			"manageCourses": "Manage Courses"
 		},
 		"settings": {
 			"accordion": "Accordion Menu",

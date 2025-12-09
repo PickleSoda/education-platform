@@ -25,23 +25,20 @@ interface SortableContainerProps {
 const SortableContainer: React.FC<SortableContainerProps> = ({ items, onSortEnd, children, renderOverlay }) => {
 	const [activeId, setActiveId] = React.useState<string | number | null>(null);
 
-	// 配置拖拽传感器
 	const sensors = useSensors(
 		useSensor(PointerSensor, {
 			activationConstraint: {
-				distance: 8, // 8px 的移动距离后才触发拖拽
+				distance: 8, // 8px
 			},
 		}),
 		useSensor(TouchSensor),
 		useSensor(KeyboardSensor)
 	);
 
-	// 开始拖拽时的处理
 	const handleDragStart = (event: DragStartEvent) => {
 		setActiveId(event.active.id);
 	};
 
-	// 结束拖拽时的处理
 	const handleDragEnd = (event: DragEndEvent) => {
 		const { active, over } = event;
 		setActiveId(null);
