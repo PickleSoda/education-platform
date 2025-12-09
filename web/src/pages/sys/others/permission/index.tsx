@@ -1,14 +1,36 @@
-import { DB_USER } from "@/_mock/assets_backup";
 import { AuthGuard } from "@/components/auth/auth-guard";
 import { useAuthCheck } from "@/components/auth/use-auth";
 import { CodeBlock } from "@/components/code/code-bock";
 import { useSignIn, useUserInfo } from "@/store/userStore";
+import { User } from "@/types/entity";
 import { Button } from "@/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/ui/card";
 import { Tabs, TabsList, TabsTrigger } from "@/ui/tabs";
 import { Text } from "@/ui/typography";
 import { Link } from "react-router";
-
+export const DB_USER: User[] = [
+	{
+		id: "user_admin_id",
+		firstName: "admin",
+		lastName: "user",
+		password: "Admin123!",
+		email: "admin@argus.edu",
+	},
+	{
+		id: "user_test_id",
+		firstName: "student",
+		lastName: "user",
+		password: "Student123!",
+		email: "student@argus.edu",
+	},
+	{
+		id: "user_guest_id",
+		firstName: "teacher",
+		lastName: "user",
+		password: "Teacher123!",
+		email: "teacher@argus.edu",
+	},
+];
 const Component_Auth_1 = `
 <AuthGuard
   check="permission:delete"
@@ -95,7 +117,7 @@ export default function PermissionPage() {
 	return (
 		<div className="flex flex-col gap-4">
 			<div className="w-full flex  items-center justify-center">
-				<Text variant="subTitle1">当前用户：</Text>
+				<Text variant="subTitle1">Variants：</Text>
 				<Tabs defaultValue={firstName} onValueChange={handleSwitch}>
 					<TabsList>
 						{DB_USER.map((user) => (

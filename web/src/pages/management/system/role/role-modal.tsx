@@ -1,19 +1,14 @@
-import { Tree } from "antd";
 import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 
-import { PERMISSION_LIST } from "@/_mock/assets";
+import { PERMISSION_GROUPS, getRolePermissions } from "@/config/permissions";
 import { Button } from "@/ui/button";
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "@/ui/dialog";
 import { Form, FormControl, FormField, FormItem, FormLabel } from "@/ui/form";
 import { Input } from "@/ui/input";
-import { Label } from "@/ui/label";
-import { RadioGroup, RadioGroupItem } from "@/ui/radio-group";
 import { Textarea } from "@/ui/textarea";
-import { flattenTrees } from "@/utils/tree";
 
-import type { Permission_Old, Role_Old } from "#/entity";
-import { BasicStatus } from "#/enum";
+import type { Role_Old } from "#/entity";
 
 export type RoleModalProps = {
 	formValue: Role_Old;
@@ -22,30 +17,23 @@ export type RoleModalProps = {
 	onOk: VoidFunction;
 	onCancel: VoidFunction;
 };
-const PERMISSIONS: Permission_Old[] = PERMISSION_LIST as Permission_Old[];
+
 export function RoleModal({ title, show, formValue, onOk, onCancel }: RoleModalProps) {
 	const form = useForm<Role_Old>({
 		defaultValues: formValue,
 	});
 
-	const [checkedKeys, setCheckedKeys] = useState<string[]>([]);
+	const [selectedPermissions, setSelectedPermissions] = useState<string[]>([]);
 
 	useEffect(() => {
-		const flattenedPermissions = flattenTrees(formValue.permission);
-		setCheckedKeys(flattenedPermissions.map((item) => item.id));
+		// Get default permissions for the role
+		const rolePermissions = getRolePermissions(formValue.name);
+		setSelectedPermissions(rolePermissions);
 	}, [formValue]);
 
 	useEffect(() => {
 		form.reset(formValue);
 	}, [formValue, form]);
-
-	const onCheck = (checked: any) => {
-		setCheckedKeys(checked);
-		form.setValue(
-			"permission",
-			PERMISSIONS.filter((item) => checked.includes(item.id))
-		);
-	};
 
 	return (
 		<Dialog open={show} onOpenChange={(open) => !open && onCancel()}>
@@ -63,64 +51,7 @@ export function RoleModal({ title, show, formValue, onOk, onCancel }: RoleModalP
 									<FormLabel className="text-right">Name</FormLabel>
 									<div className="col-span-3">
 										<FormControl>
-											<Input {...field} />
-										</FormControl>
-									</div>
-								</FormItem>
-							)}
-						/>
-
-						<FormField
-							control={form.control}
-							name="code"
-							render={({ field }) => (
-								<FormItem className="grid grid-cols-4 items-center gap-4">
-									<FormLabel className="text-right">Label</FormLabel>
-									<div className="col-span-3">
-										<FormControl>
-											<Input {...field} />
-										</FormControl>
-									</div>
-								</FormItem>
-							)}
-						/>
-
-						<FormField
-							control={form.control}
-							name="order"
-							render={({ field }) => (
-								<FormItem className="grid grid-cols-4 items-center gap-4">
-									<FormLabel className="text-right">Order</FormLabel>
-									<div className="col-span-3">
-										<FormControl>
-											<Input type="number" {...field} />
-										</FormControl>
-									</div>
-								</FormItem>
-							)}
-						/>
-
-						<FormField
-							control={form.control}
-							name="status"
-							render={({ field }) => (
-								<FormItem className="grid grid-cols-4 items-center gap-4">
-									<FormLabel className="text-right">Status</FormLabel>
-									<div className="col-span-3">
-										<FormControl>
-											<RadioGroup
-												onValueChange={(value) => field.onChange(Number(value))}
-												defaultValue={String(field.value)}
-											>
-												<div className="flex items-center space-x-2">
-													<RadioGroupItem value={String(BasicStatus.ENABLE)} id="r1" />
-													<Label htmlFor="r1">Enable</Label>
-												</div>
-												<div className="flex items-center space-x-2">
-													<RadioGroupItem value={String(BasicStatus.DISABLE)} id="r2" />
-													<Label htmlFor="r2">Disable</Label>
-												</div>
-											</RadioGroup>
+											<Input {...field} disabled />
 										</FormControl>
 									</div>
 								</FormItem>
@@ -132,7 +63,7 @@ export function RoleModal({ title, show, formValue, onOk, onCancel }: RoleModalP
 							name="desc"
 							render={({ field }) => (
 								<FormItem className="grid grid-cols-4 items-center gap-4">
-									<FormLabel className="text-right">Desc</FormLabel>
+									<FormLabel className="text-right">Description</FormLabel>
 									<div className="col-span-3">
 										<FormControl>
 											<Textarea {...field} />
@@ -142,30 +73,38 @@ export function RoleModal({ title, show, formValue, onOk, onCancel }: RoleModalP
 							)}
 						/>
 
-						<FormField
-							control={form.control}
-							name="permission"
-							render={() => (
-								<FormItem className="grid grid-cols-4 items-center gap-4">
-									<FormLabel className="text-right">Permission</FormLabel>
-									<div className="col-span-3">
-										<FormControl>
-											<Tree
-												checkable
-												checkedKeys={checkedKeys}
-												treeData={PERMISSIONS}
-												fieldNames={{
-													key: "id",
-													children: "children",
-													title: "name",
-												}}
-												onCheck={onCheck}
-											/>
-										</FormControl>
+						<div className="grid grid-cols-4 items-start gap-4">
+							<FormLabel className="text-right pt-2">Permissions</FormLabel>
+							<div className="col-span-3 space-y-3">
+								{PERMISSION_GROUPS.map((group) => (
+									<div key={group.label} className="space-y-2">
+										<h4 className="font-medium text-sm">{group.label}</h4>
+										<div className="grid grid-cols-2 gap-2">
+											{group.permissions.map((permission) => (
+												<div key={permission} className="flex items-center space-x-2">
+													<input
+														type="checkbox"
+														id={permission}
+														checked={selectedPermissions.includes(permission)}
+														onChange={(e) => {
+															if (e.target.checked) {
+																setSelectedPermissions([...selectedPermissions, permission]);
+															} else {
+																setSelectedPermissions(selectedPermissions.filter((p) => p !== permission));
+															}
+														}}
+														className="h-4 w-4 rounded border-gray-300"
+													/>
+													<label htmlFor={permission} className="text-sm text-gray-700 cursor-pointer">
+														{permission}
+													</label>
+												</div>
+											))}
+										</div>
 									</div>
-								</FormItem>
-							)}
-						/>
+								))}
+							</div>
+						</div>
 					</div>
 				</Form>
 				<DialogFooter>
