@@ -36,8 +36,6 @@ export const deleteNotification = async (userId: string, notificationId: string)
 };
 
 // Create notification
-export const createNotification = async (
-  notification: Pick<Notification, 'userId' | 'title' | 'message' | 'entityType' | 'entityId'>
-) => {
+export const createNotification = async (notification: Notification) => {
   return notificationRepository.create(notification);
 };

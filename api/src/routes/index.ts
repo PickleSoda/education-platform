@@ -1,6 +1,7 @@
 import express from 'express';
 
 import authRoute from '../modules/auth/auth.route';
+import courseRoute from '../modules/course/course.route';
 import fileRoute from '../modules/file/file.route';
 import healthRoute from '../modules/health/health.route';
 import notificationRoute from '../modules/notification/notification.route';
@@ -27,6 +28,10 @@ const routes: RouteConfig[] = [
   {
     path: '/users',
     route: userRoute,
+  },
+  {
+    path: '/courses',
+    route: courseRoute,
   },
   {
     path: '/docs',

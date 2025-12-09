@@ -1,5 +1,6 @@
 import { PrismaClient } from '@prisma/client';
 import bcrypt from 'bcryptjs';
+import { seedTags, seedCourses } from '../src/modules/course/course.seed';
 
 const prisma = new PrismaClient();
 
@@ -8,6 +9,10 @@ async function main() {
 
   // Clean existing data (optional, be careful in production)
   console.log('Cleaning existing data...');
+  await prisma.courseLecturer.deleteMany();
+  await prisma.courseTag.deleteMany();
+  await prisma.course.deleteMany();
+  await prisma.tag.deleteMany();
   await prisma.userRole.deleteMany();
   await prisma.role.deleteMany();
   await prisma.user.deleteMany();
@@ -170,6 +175,65 @@ async function main() {
       name: `${student2.firstName} ${student2.lastName}`,
     },
   ]);
+
+  // 5. Create Tags
+  console.log('Creating tags...');
+  const createdTags = await Promise.all(
+    seedTags.map((tag) =>
+      prisma.tag.create({
+        data: {
+          name: tag.name,
+          color: tag.color,
+        },
+      })
+    )
+  );
+
+  const tagMap = new Map(createdTags.map((tag) => [tag.name, tag]));
+  console.log(
+    '✓ Tags created:',
+    createdTags.map((t) => t.name)
+  );
+
+  // 6. Create Courses
+  console.log('Creating courses...');
+  const createdCourses = [];
+
+  for (const courseData of seedCourses) {
+    const course = await prisma.course.create({
+      data: {
+        code: courseData.code,
+        title: courseData.title,
+        description: courseData.description,
+        credits: courseData.credits,
+        typicalDurationWeeks: courseData.typicalDurationWeeks,
+        createdBy: teacherUser.id,
+        tags: {
+          create: courseData.tags.map((tagName) => ({
+            tag: {
+              connect: { id: tagMap.get(tagName)!.id },
+            },
+          })),
+        },
+        lecturers: {
+          create: {
+            userId: teacherUser.id,
+            isPrimary: true,
+          },
+        },
+      },
+      include: {
+        tags: { include: { tag: true } },
+        lecturers: true,
+      },
+    });
+    createdCourses.push(course);
+  }
+
+  console.log(
+    '✓ Courses created:',
+    createdCourses.map((c) => ({ code: c.code, title: c.title, tags: c.tags.map((t) => t.tag.name) }))
+  );
 
   console.log('\n✅ Database seeding completed successfully!');
   console.log('\n📝 Test Credentials:');

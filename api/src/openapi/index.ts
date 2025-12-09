@@ -4,6 +4,7 @@ import { registerAuthPaths } from '@/modules/auth/auth.openapi';
 import { registerUserPaths } from '@/modules/user/user.openapi';
 import { registerNotificationPaths } from '@/modules/notification/notification.openapi';
 import { registerFilePaths } from '@/modules/file/file.openapi';
+import { registerCoursePaths } from '@/modules/course/course.openapi';
 
 import { name, version } from '../../package.json';
 
@@ -20,6 +21,7 @@ registerAuthPaths(registry);
 registerUserPaths(registry);
 registerNotificationPaths(registry);
 registerFilePaths(registry);
+registerCoursePaths(registry);
 
 const generator = new OpenApiGeneratorV3(registry.definitions);
 
