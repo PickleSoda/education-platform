@@ -32,7 +32,7 @@ export default function Kanban() {
 			activationConstraint: {
 				distance: 8,
 			},
-		}),
+		})
 	);
 
 	const handleDragStart = (event: DragStartEvent) => {
@@ -65,7 +65,7 @@ export default function Kanban() {
 				// 处理任务的拖拽
 				const activeColumn = Object.values(state.columns).find((col) => col.taskIds.includes(active.id as string));
 				const overColumn = Object.values(state.columns).find(
-					(col) => col.taskIds.includes(over.id as string) || col.id === over.id,
+					(col) => col.taskIds.includes(over.id as string) || col.id === over.id
 				);
 
 				if (!activeColumn || !overColumn) return;
@@ -75,7 +75,7 @@ export default function Kanban() {
 					const newTaskIds = arrayMove(
 						activeColumn.taskIds,
 						activeColumn.taskIds.indexOf(active.id as string),
-						activeColumn.taskIds.indexOf(over.id as string),
+						activeColumn.taskIds.indexOf(over.id as string)
 					);
 
 					setState({
@@ -97,7 +97,7 @@ export default function Kanban() {
 					destinationTaskIds.splice(
 						overTaskIndex >= 0 ? overTaskIndex : destinationTaskIds.length,
 						0,
-						active.id as string,
+						active.id as string
 					);
 
 					setState({

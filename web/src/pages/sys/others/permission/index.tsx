@@ -89,7 +89,7 @@ export default function PermissionPage() {
 		if (_username === username) return;
 		const user = DB_USER.find((user) => user.username === _username);
 		if (user) {
-			signIn({ username: user.username, password: user.password });
+			signIn({ email: user.username, password: user.password });
 		}
 	};
 	return (
@@ -111,7 +111,7 @@ export default function PermissionPage() {
 					<div className="flex items-center gap-2">
 						<Text variant="body1">当前用户角色：</Text>
 						{permissions && permissions.length > 0 ? (
-							<Text variant="body1">[{roles?.map((role) => role.name).join(", ")}]</Text>
+							<Text variant="body1">[{roles?.map((role) => role.role.name).join(", ")}]</Text>
 						) : (
 							<Text variant="body1">[]</Text>
 						)}
@@ -119,7 +119,7 @@ export default function PermissionPage() {
 					<div className="flex items-center gap-2">
 						<Text variant="body1">当前用户权限：</Text>
 						{permissions && permissions.length > 0 ? (
-							<Text variant="body1">[{permissions?.map((permission) => permission.code).join(", ")}]</Text>
+							<Text variant="body1">[{permissions?.join(", ")}]</Text>
 						) : (
 							<Text variant="body1">[]</Text>
 						)}

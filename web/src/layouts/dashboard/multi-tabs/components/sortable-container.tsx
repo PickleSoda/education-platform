@@ -33,7 +33,7 @@ const SortableContainer: React.FC<SortableContainerProps> = ({ items, onSortEnd,
 			},
 		}),
 		useSensor(TouchSensor),
-		useSensor(KeyboardSensor),
+		useSensor(KeyboardSensor)
 	);
 
 	// 开始拖拽时的处理

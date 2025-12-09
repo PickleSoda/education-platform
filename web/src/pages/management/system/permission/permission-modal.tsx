@@ -60,7 +60,7 @@ export default function PermissionModal({ title, show, formValue, onOk, onCancel
 		setCompOptions(
 			PAGE_SELECT_OPTIONS.filter((path) => {
 				return path.value.includes(name.toLowerCase());
-			}),
+			})
 		);
 	}, []);
 
@@ -188,7 +188,9 @@ export default function PermissionModal({ title, show, formValue, onOk, onCancel
 										<FormControl>
 											<AutoComplete
 												options={compOptions}
-												filterOption={(input, option) => ((option?.label || "") as string).toLowerCase().includes(input.toLowerCase())}
+												filterOption={(input, option) =>
+													((option?.label || "") as string).toLowerCase().includes(input.toLowerCase())
+												}
 												value={field.value || ""}
 												onChange={(value) => field.onChange(value || null)}
 											/>

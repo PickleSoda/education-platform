@@ -3,7 +3,11 @@ import { useRouter } from "@/routes/hooks";
 import { type Dispatch, type SetStateAction, useCallback } from "react";
 import type { KeepAliveTab } from "../types";
 
-export function useTabOperations(tabs: KeepAliveTab[], setTabs: Dispatch<SetStateAction<KeepAliveTab[]>>, activeTabRoutePath: string) {
+export function useTabOperations(
+	tabs: KeepAliveTab[],
+	setTabs: Dispatch<SetStateAction<KeepAliveTab[]>>,
+	activeTabRoutePath: string
+) {
 	const { push } = useRouter();
 
 	const closeTab = useCallback(
@@ -23,7 +27,7 @@ export function useTabOperations(tabs: KeepAliveTab[], setTabs: Dispatch<SetStat
 			tempTabs.splice(deleteTabIndex, 1);
 			setTabs(tempTabs);
 		},
-		[activeTabRoutePath, push, tabs, setTabs],
+		[activeTabRoutePath, push, tabs, setTabs]
 	);
 
 	const closeOthersTab = useCallback(
@@ -33,7 +37,7 @@ export function useTabOperations(tabs: KeepAliveTab[], setTabs: Dispatch<SetStat
 				push(path);
 			}
 		},
-		[activeTabRoutePath, push, setTabs],
+		[activeTabRoutePath, push, setTabs]
 	);
 
 	const closeAll = useCallback(() => {
@@ -48,7 +52,7 @@ export function useTabOperations(tabs: KeepAliveTab[], setTabs: Dispatch<SetStat
 			setTabs(newTabs);
 			push(path);
 		},
-		[push, tabs, setTabs],
+		[push, tabs, setTabs]
 	);
 
 	const closeRight = useCallback(
@@ -58,7 +62,7 @@ export function useTabOperations(tabs: KeepAliveTab[], setTabs: Dispatch<SetStat
 			setTabs(newTabs);
 			push(path);
 		},
-		[push, tabs, setTabs],
+		[push, tabs, setTabs]
 	);
 
 	const refreshTab = useCallback(
@@ -75,7 +79,7 @@ export function useTabOperations(tabs: KeepAliveTab[], setTabs: Dispatch<SetStat
 				return newTabs;
 			});
 		},
-		[activeTabRoutePath, setTabs],
+		[activeTabRoutePath, setTabs]
 	);
 
 	return {

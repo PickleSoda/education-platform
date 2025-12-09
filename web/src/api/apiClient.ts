@@ -3,8 +3,7 @@ import { t } from "@/locales/i18n";
 import userStore from "@/store/userStore";
 import axios, { type AxiosRequestConfig, type AxiosError, type AxiosResponse } from "axios";
 import { toast } from "sonner";
-import type { Result } from "#/api";
-import { ResultStatus } from "#/enum";
+import type { ApiResponse } from "#/api";
 
 const axiosInstance = axios.create({
 	baseURL: GLOBAL_CONFIG.apiBaseUrl,
@@ -14,22 +13,26 @@ const axiosInstance = axios.create({
 
 axiosInstance.interceptors.request.use(
 	(config) => {
-		config.headers.Authorization = "Bearer Token";
+		const token = userStore.getState().userToken.accessToken;
+		if (token) {
+			config.headers.Authorization = `Bearer ${token}`;
+		}
 		return config;
 	},
-	(error) => Promise.reject(error),
+	(error) => Promise.reject(error)
 );
 
 axiosInstance.interceptors.response.use(
-	(res: AxiosResponse<Result<any>>) => {
+	(res: AxiosResponse<ApiResponse<any>>) => {
 		if (!res.data) throw new Error(t("sys.api.apiRequestFailed"));
-		const { status, data, message } = res.data;
-		if (status === ResultStatus.SUCCESS) {
+		// Backend returns { success, data, message, statusCode }
+		const { success, data, message } = res.data;
+		if (success !== false) {
 			return data;
 		}
 		throw new Error(message || t("sys.api.apiRequestFailed"));
 	},
-	(error: AxiosError<Result>) => {
+	(error: AxiosError<ApiResponse>) => {
 		const { response, message } = error || {};
 		const errMsg = response?.data?.message || message || t("sys.api.errorMessage");
 		toast.error(errMsg, { position: "top-center" });
@@ -37,7 +40,7 @@ axiosInstance.interceptors.response.use(
 			userStore.getState().actions.clearUserInfoAndToken();
 		}
 		return Promise.reject(error);
-	},
+	}
 );
 
 class APIClient {

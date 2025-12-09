@@ -45,7 +45,7 @@ export function useScrollProgress(target: UseScrollProgress = "document"): UseSc
 
 	const memoizedValue = useMemo(
 		() => ({ elementRef, scrollXProgress, scrollYProgress }),
-		[scrollXProgress, scrollYProgress],
+		[scrollXProgress, scrollYProgress]
 	);
 
 	return memoizedValue;

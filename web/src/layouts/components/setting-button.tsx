@@ -155,7 +155,7 @@ export default function SettingButton() {
 										<div
 											className={cn(
 												"flex-1 w-full rounded opacity-20 mx-auto transition-all duration-300 ease-in-out",
-												!themeStretch && "w-10",
+												!themeStretch && "w-10"
 											)}
 											style={{
 												background: layoutBackground(ThemeLayout.Vertical),
@@ -191,7 +191,7 @@ export default function SettingButton() {
 										<div
 											className={cn(
 												"flex-1 w-full rounded opacity-20 mx-auto transition-all duration-300 ease-in-out",
-												!themeStretch && "w-10",
+												!themeStretch && "w-10"
 											)}
 											style={{
 												background: layoutBackground(ThemeLayout.Mini),
@@ -233,7 +233,7 @@ export default function SettingButton() {
 										<div
 											className={cn(
 												"h-full w-full rounded opacity-20 mx-auto transition-all duration-300 ease-in-out",
-												!themeStretch && "w-10",
+												!themeStretch && "w-10"
 											)}
 											style={{
 												background: layoutBackground(ThemeLayout.Horizontal),
@@ -266,7 +266,7 @@ export default function SettingButton() {
 										key={preset}
 										className={cn(
 											"relative flex h-13 w-5 cursor-pointer items-center justify-center rounded transition-all duration-300 ease-in-out p-1",
-											themeColorPresets === preset && "w-13",
+											themeColorPresets === preset && "w-13"
 										)}
 										style={{ backgroundColor: color.default }}
 										onClick={() => updateSettings({ themeColorPresets: preset as ThemeColorPresets })}
@@ -274,7 +274,7 @@ export default function SettingButton() {
 										<div
 											className={cn(
 												"w-full h-full flex items-center justify-center hover:bg-white/30 transition-all duration-300 ease-in-out rounded",
-												themeColorPresets === preset && "bg-white/30",
+												themeColorPresets === preset && "bg-white/30"
 											)}
 										>
 											{themeColorPresets === preset && <Icon icon="bi:check-all" size={24} color="white" />}
@@ -297,7 +297,7 @@ export default function SettingButton() {
 											"flex h-20 w-full cursor-pointer items-center justify-center text-text-disabled",
 											fontFamily === family && "text-primary font-medium",
 											family === FontFamilyPreset.inter && "font-inter",
-											family === FontFamilyPreset.openSans && "font-openSans",
+											family === FontFamilyPreset.openSans && "font-openSans"
 										)}
 										onClick={() => updateSettings({ fontFamily: family })}
 									>
