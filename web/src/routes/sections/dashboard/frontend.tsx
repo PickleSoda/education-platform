@@ -7,6 +7,13 @@ export function getFrontendDashboardRoutes(): RouteObject[] {
 		{ path: "workbench", element: Component("/pages/dashboard/workbench") },
 		{ path: "analysis", element: Component("/pages/dashboard/analysis") },
 		{
+			path: "courses",
+			children: [
+				{ index: true, element: Component("/pages/course-catalog") },
+				{ path: ":id", element: Component("/pages/management/course/detail") },
+			],
+		},
+		{
 			path: "components",
 			children: [
 				{ index: true, element: <Navigate to="animate" replace /> },
@@ -54,6 +61,8 @@ export function getFrontendDashboardRoutes(): RouteObject[] {
 					path: "course",
 					children: [
 						{ index: true, element: Component("/pages/management/course") },
+						{ path: "create", element: Component("/pages/management/course/course-form") },
+						{ path: "edit/:id", element: Component("/pages/management/course/course-form") },
 						{ path: ":id", element: Component("/pages/management/course/detail") },
 					],
 				},
