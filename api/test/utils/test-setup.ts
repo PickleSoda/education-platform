@@ -1,4 +1,4 @@
-import { PrismaClient, Role, TokenType } from '@prisma/client';
+import { PrismaClient, TokenType } from '@prisma/client';
 import { faker } from '@faker-js/faker';
 import { beforeAll, afterAll, beforeEach, afterEach } from 'vitest';
 import jwt from 'jsonwebtoken';
@@ -12,6 +12,9 @@ beforeAll(async () => {
   if (process.env.NODE_ENV !== 'test') {
     throw new Error('Tests must run with NODE_ENV=test');
   }
+
+  // Ensure roles exist in database
+  await ensureRolesExist();
 
   // Clean database before all tests
   await cleanDatabase();
@@ -32,60 +35,104 @@ afterEach(async () => {
   await cleanDatabase();
 });
 
+// Ensure roles exist in database (student, teacher, admin)
+async function ensureRolesExist() {
+  const rolesToCreate = [
+    { name: 'student', description: 'Student role' },
+    { name: 'teacher', description: 'Teacher role' },
+    { name: 'admin', description: 'Administrator role' },
+  ];
+
+  for (const roleData of rolesToCreate) {
+    await prisma.role.upsert({
+      where: { name: roleData.name },
+      update: {},
+      create: roleData,
+    });
+  }
+}
+
 async function cleanDatabase() {
   try {
-    // Use a more robust cleanup approach with explicit error handling
-    await prisma.$transaction(async (tx) => {
-      // Delete in order to respect foreign key constraints
-      await tx.token.deleteMany({});
-      await tx.notification.deleteMany({});
-      await tx.comment.deleteMany({});
-      await tx.post.deleteMany({});
-      await tx.user.deleteMany({});
-    });
+    // Delete in order to respect foreign key constraints
+    await prisma.$transaction([
+      prisma.token.deleteMany({}),
+      prisma.submissionGrade.deleteMany({}),
+      prisma.submission.deleteMany({}),
+      prisma.publishedResource.deleteMany({}),
+      prisma.publishedGradingCriteria.deleteMany({}),
+      prisma.publishedAssignment.deleteMany({}),
+      prisma.gradingCriteria.deleteMany({}),
+      prisma.resourceTemplate.deleteMany({}),
+      prisma.assignmentTemplate.deleteMany({}),
+      prisma.syllabusItem.deleteMany({}),
+      prisma.enrollment.deleteMany({}),
+      prisma.instanceLecturer.deleteMany({}),
+      prisma.courseInstance.deleteMany({}),
+      prisma.courseLecturer.deleteMany({}),
+      prisma.courseTag.deleteMany({}),
+      prisma.tag.deleteMany({}),
+      prisma.course.deleteMany({}),
+      prisma.announcement.deleteMany({}),
+      prisma.commentReaction.deleteMany({}),
+      prisma.postReaction.deleteMany({}),
+      prisma.forumPostTag.deleteMany({}),
+      prisma.forumTag.deleteMany({}),
+      prisma.forumComment.deleteMany({}),
+      prisma.forumPost.deleteMany({}),
+      prisma.forum.deleteMany({}),
+      prisma.notification.deleteMany({}),
+      prisma.notificationSetting.deleteMany({}),
+      prisma.teacherProfile.deleteMany({}),
+      prisma.studentProfile.deleteMany({}),
+      prisma.userRole.deleteMany({}),
+      prisma.user.deleteMany({}),
+      // Note: Not deleting roles as they should persist
+    ]);
   } catch (error) {
     console.error('Database cleanup error:', error);
-    // Try individual deletes if transaction fails
-    try {
-      await prisma.token.deleteMany({});
-      await prisma.notification.deleteMany({});
-      await prisma.comment.deleteMany({});
-      await prisma.post.deleteMany({});
-      await prisma.user.deleteMany({});
-    } catch (individualError) {
-      console.error('Individual cleanup error:', individualError);
-    }
   }
 }
 
 // Faker utilities for creating test data
-export const createFakeUser = (overrides: Partial<any> = {}) => ({
-  email: faker.internet.email(),
-  name: faker.person.fullName(),
-  password: faker.internet.password({ length: 12 }),
-  role: [Role.USER],
-  isEmailVerified: faker.datatype.boolean(),
-  ...overrides,
-});
+export const createFakeUser = async (overrides: Partial<any> = {}) => {
+  // Get role from database (default to student)
+  const roleName = overrides.roleName || 'student';
+  const role = await prisma.role.findUnique({ where: { name: roleName } });
+  
+  if (!role) {
+    throw new Error(`Role ${roleName} not found in database`);
+  }
 
-export const createFakePost = (overrides: Partial<any> = {}) => ({
-  title: faker.lorem.sentence(),
-  content: faker.lorem.paragraphs(3),
-  published: faker.datatype.boolean(),
-  ...overrides,
-});
-
-export const createFakeComment = (overrides: Partial<any> = {}) => ({
-  content: faker.lorem.paragraph(),
-  ...overrides,
-});
+  return {
+    email: faker.internet.email(),
+    firstName: faker.person.firstName(),
+    lastName: faker.person.lastName(),
+    passwordHash: faker.internet.password({ length: 12 }),
+    isEmailVerified: faker.datatype.boolean(),
+    ...overrides,
+    roleId: role.id,
+  };
+};
 
 export const createFakeNotification = (overrides: Partial<any> = {}) => ({
+  type: faker.helpers.arrayElement([
+    'assignment_published',
+    'assignment_deadline',
+    'assignment_graded',
+    'enrollment_confirmed',
+    'announcement',
+    'forum_reply',
+    'forum_mention',
+    'course_started',
+    'course_completed',
+    'grade_updated',
+    'resource_published',
+  ]),
   title: faker.lorem.sentence(),
   message: faker.lorem.paragraph(),
-  entityType: faker.helpers.arrayElement(['POST', 'COMMENT', 'USER']),
-  entityId: faker.string.uuid(),
   isRead: faker.datatype.boolean(),
+  data: undefined,
   ...overrides,
 });
 
@@ -99,43 +146,45 @@ export const createFakeToken = (overrides: Partial<any> = {}) => ({
 
 // Helper functions for creating test data in database
 export const createTestUser = async (overrides: Partial<any> = {}) => {
-  const userData = createFakeUser(overrides);
-  return await prisma.user.create({
-    data: userData,
-  });
-};
+  const roleName = overrides.roleName || 'student';
+  delete overrides.roleName; // Remove from overrides so it doesn't get passed to Prisma
+  
+  const role = await prisma.role.findUnique({ where: { name: roleName } });
+  if (!role) {
+    throw new Error(`Role ${roleName} not found in database`);
+  }
 
-export const createTestPost = async (authorId: string, overrides: Partial<any> = {}) => {
-  const postData = createFakePost(overrides);
-  return await prisma.post.create({
+  const user = await prisma.user.create({
     data: {
-      ...postData,
-      authorId,
+      email: faker.internet.email(),
+      firstName: faker.person.firstName(),
+      lastName: faker.person.lastName(),
+      passwordHash: faker.internet.password({ length: 12 }),
+      ...overrides,
     },
   });
-};
 
-export const createTestComment = async (
-  authorId: string,
-  postId: string,
-  overrides: Partial<any> = {}
-) => {
-  const commentData = createFakeComment(overrides);
-  return await prisma.comment.create({
+  // Create UserRole junction
+  await prisma.userRole.create({
     data: {
-      ...commentData,
-      authorId,
-      postId,
+      userId: user.id,
+      roleId: role.id,
     },
   });
+
+  return user;
 };
 
 export const createTestNotification = async (userId: string, overrides: Partial<any> = {}) => {
   const notificationData = createFakeNotification(overrides);
   return await prisma.notification.create({
     data: {
-      ...notificationData,
       userId,
+      type: notificationData.type,
+      title: notificationData.title,
+      message: notificationData.message,
+      isRead: notificationData.isRead,
+      data: notificationData.data,
     },
   });
 };
@@ -203,7 +252,7 @@ export const createAuthenticatedUser = async (overrides: Partial<any> = {}) => {
 // Helper for creating admin user
 export const createAdminUser = async (overrides: Partial<any> = {}) => {
   return await createTestUser({
-    role: [Role.ADMIN],
+    roleName: 'admin',
     ...overrides,
   });
 };

@@ -4,7 +4,7 @@ import httpStatus from 'http-status';
 import passport from 'passport';
 
 import ApiError from '@/shared/utils/api-error';
-import { hasRight } from '@/config/roles';
+import { hasRight, hasRole, hasAnyRole, extractRoleNames, RoleName } from '@/config/roles';
 import { Permission } from '@/types/rbac';
 import { ExtendedUser } from '@/types/response';
 
@@ -53,7 +53,9 @@ const requireRight = (requiredRight: Permission) => {
       return;
     }
 
-    const userRoles = (req.user as ExtendedUser).role;
+    const user = req.user as ExtendedUser;
+    const userRoles = user.roles ? extractRoleNames(user.roles) : [];
+
     if (!hasRight(userRoles, requiredRight)) {
       res.status(httpStatus.FORBIDDEN).json({
         statusCode: httpStatus.FORBIDDEN,
@@ -66,5 +68,55 @@ const requireRight = (requiredRight: Permission) => {
   };
 };
 
+const requireRole = (requiredRole: RoleName) => {
+  return (req: Request, res: Response, next: NextFunction): void => {
+    if (!req.user) {
+      res.status(httpStatus.UNAUTHORIZED).json({
+        statusCode: httpStatus.UNAUTHORIZED,
+        message: 'Please authenticate',
+      });
+      return;
+    }
+
+    const user = req.user as ExtendedUser;
+    const userRoles = user.roles ? extractRoleNames(user.roles) : [];
+
+    if (!hasRole(userRoles, requiredRole)) {
+      res.status(httpStatus.FORBIDDEN).json({
+        statusCode: httpStatus.FORBIDDEN,
+        message: 'Forbidden: requires role ' + requiredRole,
+      });
+      return;
+    }
+
+    next();
+  };
+};
+
+const requireAnyRole = (requiredRoles: RoleName[]) => {
+  return (req: Request, res: Response, next: NextFunction): void => {
+    if (!req.user) {
+      res.status(httpStatus.UNAUTHORIZED).json({
+        statusCode: httpStatus.UNAUTHORIZED,
+        message: 'Please authenticate',
+      });
+      return;
+    }
+
+    const user = req.user as ExtendedUser;
+    const userRoles = user.roles ? extractRoleNames(user.roles) : [];
+
+    if (!hasAnyRole(userRoles, requiredRoles)) {
+      res.status(httpStatus.FORBIDDEN).json({
+        statusCode: httpStatus.FORBIDDEN,
+        message: 'Forbidden: requires one of roles ' + requiredRoles.join(', '),
+      });
+      return;
+    }
+
+    next();
+  };
+};
+
 export default auth;
-export { requireRight };
+export { requireRight, requireRole, requireAnyRole };

@@ -1,112 +1,282 @@
-import { Prisma, User } from '@prisma/client';
+import { TeacherProfile, StudentProfile } from '@prisma/client';
 import httpStatus from 'http-status';
 
 import ApiError from '@/shared/utils/api-error';
 import { encryptPassword } from '@/shared/utils/encryption';
 import { userRepository } from './user.repository';
+import type { UserWithRoles } from './user.types';
+import type {
+  CreateUserInput,
+  UpdateUserInput,
+  ListUsersQuery,
+  UpdateTeacherProfileInput,
+  UpdateStudentProfileInput,
+} from './user.validation';
+
+// ============================================================================
+// USER CRUD
+// ============================================================================
 
 export const createUser = async (
-  email: string,
-  password: string,
-  name?: string
-): Promise<Pick<User, 'id' | 'email' | 'role' | 'isEmailVerified'>> => {
-  if (await getUserByEmail(email)) {
+  data: CreateUserInput,
+  _grantedBy?: string
+): Promise<UserWithRoles> => {
+  // Check if email already exists
+  const existingUser = await userRepository.findByEmail(data.email);
+  if (existingUser) {
     throw new ApiError(httpStatus.BAD_REQUEST, 'Email already taken');
   }
 
-  return userRepository.create({
-    email,
-    name,
-    password: await encryptPassword(password),
-  });
+  // Encrypt password
+  const passwordHash = await encryptPassword(data.password);
+
+  // Create user with role
+  const user = await userRepository.createWithRole(
+    {
+      email: data.email,
+      passwordHash,
+      firstName: data.firstName,
+      lastName: data.lastName,
+      avatarUrl: data.avatarUrl,
+    },
+    data.roleName
+  );
+
+  return user;
 };
 
-export const queryUsers = async <Key extends keyof User>(
-  filter: object,
-  options: {
-    limit?: number;
-    page?: number;
-    sortBy?: string;
-    sortType?: 'asc' | 'desc';
-  },
-  keys: Key[] = [
-    'id',
-    'email',
-    'name',
-    'role',
-    'isEmailVerified',
-    'createdAt',
-    'updatedAt',
-  ] as Key[]
-) => {
-  const select = keys.reduce((obj, k) => ({ ...obj, [k]: true }), {});
+export const getUserById = async (id: string): Promise<UserWithRoles | null> => {
+  return userRepository.findWithRelations(id);
+};
 
-  const result = await userRepository.findMany(filter, options, select);
+export const getUserByEmail = async (email: string): Promise<UserWithRoles | null> => {
+  return userRepository.findByEmailWithRoles(email);
+};
+
+export const listUsers = async (
+  query: ListUsersQuery
+): Promise<{
+  users: UserWithRoles[];
+  total: number;
+  page: number;
+  limit: number;
+  totalPages: number;
+}> => {
+  const { page, limit, search, roles, isActive, sortBy, sortOrder } = query;
+
+  const result = await userRepository.findUsers(
+    {
+      search,
+      roleNames: roles,
+      isActive,
+    },
+    {
+      page,
+      limit,
+      sortBy,
+      sortOrder,
+    }
+  );
 
   return {
-    ...result,
-    results: result.results as Pick<User, Key>[],
+    users: result.results,
+    total: result.totalResults,
+    page: result.page,
+    limit: result.limit,
+    totalPages: result.totalPages,
   };
 };
 
-export const getUserById = async <Key extends keyof User>(
+export const updateUser = async (
   id: string,
-  keys: Key[] = [
-    'id',
-    'email',
-    'name',
-    'role',
-    'isEmailVerified',
-    'createdAt',
-    'updatedAt',
-  ] as Key[]
-): Promise<Pick<User, Key> | null> => {
-  const select = keys.reduce((obj, k) => ({ ...obj, [k]: true }), {});
-  return userRepository.findById(id, select) as Promise<Pick<User, Key> | null>;
+  updateData: UpdateUserInput,
+  _updatedBy?: string
+): Promise<UserWithRoles> => {
+  // Check if user exists
+  const user = await userRepository.findById(id);
+  if (!user) {
+    throw new ApiError(httpStatus.NOT_FOUND, 'User not found');
+  }
+
+  // Check if email is being updated and if it's already taken
+  if (updateData.email && updateData.email !== user.email) {
+    const existingUser = await userRepository.findByEmail(updateData.email);
+    if (existingUser) {
+      throw new ApiError(httpStatus.BAD_REQUEST, 'Email already taken');
+    }
+  }
+
+  // Encrypt password if provided
+  let passwordHash: string | undefined;
+  if (updateData.password) {
+    passwordHash = await encryptPassword(updateData.password);
+  }
+
+  // Update user
+  await userRepository.update(id, {
+    ...(updateData.email && { email: updateData.email }),
+    ...(passwordHash && { passwordHash }),
+    ...(updateData.firstName && { firstName: updateData.firstName }),
+    ...(updateData.lastName && { lastName: updateData.lastName }),
+    ...(updateData.avatarUrl !== undefined && { avatarUrl: updateData.avatarUrl }),
+    ...(updateData.isActive !== undefined && { isActive: updateData.isActive }),
+  });
+
+  // Fetch updated user with relations
+  const updatedUser = await userRepository.findWithRelations(id);
+  if (!updatedUser) {
+    throw new ApiError(httpStatus.INTERNAL_SERVER_ERROR, 'Failed to update user');
+  }
+
+  return updatedUser;
 };
 
-export const getUserByEmail = async <Key extends keyof User>(
-  email: string,
-  keys: Key[] = [
-    'id',
-    'email',
-    'name',
-    'password',
-    'role',
-    'isEmailVerified',
-    'createdAt',
-    'updatedAt',
-  ] as Key[]
-): Promise<Pick<User, Key> | null> => {
-  const select = keys.reduce((obj, k) => ({ ...obj, [k]: true }), {});
-  return userRepository.findByEmail(email, select) as Promise<Pick<User, Key> | null>;
+export const deleteUser = async (id: string): Promise<void> => {
+  const user = await userRepository.findById(id);
+  if (!user) {
+    throw new ApiError(httpStatus.NOT_FOUND, 'User not found');
+  }
+
+  await userRepository.delete(id);
 };
 
-export const updateUserById = async <Key extends keyof User>(
+export const softDeleteUser = async (id: string): Promise<UserWithRoles> => {
+  const user = await userRepository.findById(id);
+  if (!user) {
+    throw new ApiError(httpStatus.NOT_FOUND, 'User not found');
+  }
+
+  await userRepository.softDelete(id);
+
+  // Fetch updated user with relations
+  const updatedUser = await userRepository.findWithRelations(id);
+  if (!updatedUser) {
+    throw new ApiError(httpStatus.INTERNAL_SERVER_ERROR, 'Failed to delete user');
+  }
+
+  return updatedUser;
+};
+
+// ============================================================================
+// ROLE MANAGEMENT
+// ============================================================================
+
+export const addRoleToUser = async (
   userId: string,
-  updateBody: Prisma.UserUpdateInput,
-  keys: Key[] = ['id', 'email', 'name', 'role'] as Key[]
-): Promise<Pick<User, Key> | null> => {
-  const user = await getUserById(userId, ['id', 'email', 'name']);
+  roleName: string,
+  grantedBy?: string
+): Promise<UserWithRoles> => {
+  const user = await userRepository.findById(userId);
   if (!user) {
     throw new ApiError(httpStatus.NOT_FOUND, 'User not found');
   }
-  if (updateBody.email && (await getUserByEmail(updateBody.email as string))) {
-    throw new ApiError(httpStatus.BAD_REQUEST, 'Email already taken');
-  }
-  if (updateBody.password) {
-    updateBody.password = await encryptPassword(updateBody.password as string);
+
+  const hasRole = await userRepository.userHasRole(userId, roleName);
+  if (hasRole) {
+    throw new ApiError(httpStatus.BAD_REQUEST, `User already has role: ${roleName}`);
   }
 
-  const select = keys.reduce((obj, k) => ({ ...obj, [k]: true }), {});
-  return userRepository.update(userId, updateBody, select) as Promise<Pick<User, Key> | null>;
+  await userRepository.addRoleToUser(userId, roleName, grantedBy);
+
+  // Fetch and return the updated user with roles
+  const updatedUser = await userRepository.findWithRelations(userId);
+  if (!updatedUser) {
+    throw new ApiError(httpStatus.INTERNAL_SERVER_ERROR, 'Failed to fetch updated user');
+  }
+
+  return updatedUser;
 };
 
-export const deleteUserById = async (userId: string): Promise<User> => {
-  const user = await getUserById(userId);
+export const removeRoleFromUser = async (
+  userId: string,
+  roleName: string
+): Promise<UserWithRoles> => {
+  const user = await userRepository.findById(userId);
   if (!user) {
     throw new ApiError(httpStatus.NOT_FOUND, 'User not found');
   }
-  await userRepository.delete(userId);
-  return user as User;
+
+  const hasRole = await userRepository.userHasRole(userId, roleName);
+  if (!hasRole) {
+    throw new ApiError(httpStatus.BAD_REQUEST, `User does not have role: ${roleName}`);
+  }
+
+  await userRepository.removeRoleFromUser(userId, roleName);
+
+  // Fetch and return the updated user with roles
+  const updatedUser = await userRepository.findWithRelations(userId);
+  if (!updatedUser) {
+    throw new ApiError(httpStatus.INTERNAL_SERVER_ERROR, 'Failed to fetch updated user');
+  }
+
+  return updatedUser;
+};
+
+export const getUserRoles = async (userId: string) => {
+  const user = await userRepository.findById(userId);
+  if (!user) {
+    throw new ApiError(httpStatus.NOT_FOUND, 'User not found');
+  }
+
+  return userRepository.getUserRoles(userId);
+};
+
+export const userHasRole = async (userId: string, roleName: string): Promise<boolean> => {
+  return userRepository.userHasRole(userId, roleName);
+};
+
+// ============================================================================
+// PROFILE MANAGEMENT
+// ============================================================================
+
+export const updateTeacherProfile = async (
+  userId: string,
+  profileData: UpdateTeacherProfileInput
+): Promise<TeacherProfile> => {
+  const user = await userRepository.findById(userId);
+  if (!user) {
+    throw new ApiError(httpStatus.NOT_FOUND, 'User not found');
+  }
+
+  const isTeacher = await userRepository.userHasRole(userId, 'teacher');
+  if (!isTeacher) {
+    throw new ApiError(httpStatus.FORBIDDEN, 'User is not a teacher');
+  }
+
+  return userRepository.upsertTeacherProfile(userId, profileData);
+};
+
+export const updateStudentProfile = async (
+  userId: string,
+  profileData: UpdateStudentProfileInput
+): Promise<StudentProfile> => {
+  const user = await userRepository.findById(userId);
+  if (!user) {
+    throw new ApiError(httpStatus.NOT_FOUND, 'User not found');
+  }
+
+  const isStudent = await userRepository.userHasRole(userId, 'student');
+  if (!isStudent) {
+    throw new ApiError(httpStatus.FORBIDDEN, 'User is not a student');
+  }
+
+  return userRepository.upsertStudentProfile(userId, profileData);
+};
+
+export const getTeacherProfile = async (userId: string): Promise<TeacherProfile | null> => {
+  const user = await userRepository.findById(userId);
+  if (!user) {
+    throw new ApiError(httpStatus.NOT_FOUND, 'User not found');
+  }
+
+  return userRepository.getTeacherProfile(userId);
+};
+
+export const getStudentProfile = async (userId: string): Promise<StudentProfile | null> => {
+  const user = await userRepository.findById(userId);
+  if (!user) {
+    throw new ApiError(httpStatus.NOT_FOUND, 'User not found');
+  }
+
+  return userRepository.getStudentProfile(userId);
 };

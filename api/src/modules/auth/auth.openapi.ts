@@ -11,7 +11,6 @@ import {
   refreshTokensSchema,
   forgotPasswordSchema,
   resetPasswordSchema,
-  verifyEmailSchema,
 } from './auth.validation';
 
 // Extract schemas from validation
@@ -21,16 +20,45 @@ const logoutInputSchema = logoutSchema.shape.body;
 const refreshTokensInputSchema = refreshTokensSchema.shape.body;
 const forgotPasswordInputSchema = forgotPasswordSchema.shape.body;
 const resetPasswordInputSchema = resetPasswordSchema.shape.body;
-const verifyEmailInputSchema = verifyEmailSchema.shape.body;
 
 // Response schemas
+const roleSchema = z.object({
+  role: z.object({
+    id: z.number(),
+    name: z.string(),
+    description: z.string().nullable(),
+  }),
+  grantedAt: z.string(),
+  grantedById: z.string().nullable(),
+});
+
+const teacherProfileSchema = z.object({
+  userId: z.string(),
+  department: z.string().nullable(),
+  title: z.string().nullable(),
+  bio: z.string().nullable(),
+  officeLocation: z.string().nullable(),
+});
+
+const studentProfileSchema = z.object({
+  userId: z.string(),
+  studentId: z.string().nullable(),
+  enrollmentYear: z.number().nullable(),
+  program: z.string().nullable(),
+});
+
 const userSchema = z.object({
   id: z.string(),
   email: z.string().email(),
-  name: z.string().nullable(),
-  isEmailVerified: z.boolean(),
+  firstName: z.string(),
+  lastName: z.string(),
+  avatarUrl: z.string().nullable(),
+  isActive: z.boolean(),
   createdAt: z.string(),
   updatedAt: z.string(),
+  roles: z.array(roleSchema),
+  teacherProfile: teacherProfileSchema.nullable().optional(),
+  studentProfile: studentProfileSchema.nullable().optional(),
 });
 
 const tokensSchema = z.object({
@@ -44,7 +72,7 @@ const tokensSchema = z.object({
   }),
 });
 
-const registerResponseSchema = z.object({
+const authResponseSchema = z.object({
   user: userSchema,
   tokens: tokensSchema,
 });
@@ -69,7 +97,7 @@ export const registerAuthPaths = (registry: OpenAPIRegistry) => {
         description: 'User registered successfully',
         content: {
           'application/json': {
-            schema: withSuccessResponse(registerResponseSchema),
+            schema: withSuccessResponse(authResponseSchema),
           },
         },
       },
@@ -96,7 +124,7 @@ export const registerAuthPaths = (registry: OpenAPIRegistry) => {
         description: 'User logged in successfully',
         content: {
           'application/json': {
-            schema: withSuccessResponse(registerResponseSchema),
+            schema: withSuccessResponse(authResponseSchema),
           },
         },
       },
@@ -136,7 +164,6 @@ export const registerAuthPaths = (registry: OpenAPIRegistry) => {
     method: 'post',
     path: '/auth/refresh-tokens',
     tags: ['Auth'],
-    security: [{ bearerAuth: [] }],
     request: {
       body: {
         content: {
@@ -170,15 +197,20 @@ export const registerAuthPaths = (registry: OpenAPIRegistry) => {
           'application/json': {
             schema: forgotPasswordInputSchema,
             example: {
-              email: 'test@test.com',
+              email: 'user@example.com',
             },
           },
         },
       },
     },
     responses: {
-      204: {
+      200: {
         description: 'Reset password email sent successfully',
+        content: {
+          'application/json': {
+            schema: successResponseSchema,
+          },
+        },
       },
       ...commonResponses,
     },
@@ -202,45 +234,13 @@ export const registerAuthPaths = (registry: OpenAPIRegistry) => {
       },
     },
     responses: {
-      204: {
+      200: {
         description: 'Password reset successfully',
-      },
-      ...commonResponses,
-    },
-  });
-
-  // Send verification email
-  registry.registerPath({
-    method: 'post',
-    path: '/auth/send-verification-email',
-    tags: ['Auth'],
-    security: [{ bearerAuth: [] }],
-    responses: {
-      204: {
-        description: 'Verification email sent successfully',
-      },
-      ...commonResponses,
-    },
-  });
-
-  // Verify email
-  registry.registerPath({
-    method: 'post',
-    path: '/auth/verify-email',
-    tags: ['Auth'],
-    security: [{ bearerAuth: [] }],
-    request: {
-      body: {
         content: {
           'application/json': {
-            schema: verifyEmailInputSchema,
+            schema: successResponseSchema,
           },
         },
-      },
-    },
-    responses: {
-      204: {
-        description: 'Email verified successfully',
       },
       ...commonResponses,
     },

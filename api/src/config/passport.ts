@@ -15,14 +15,8 @@ const jwtVerify: VerifyCallback = async (payload, done) => {
       throw new Error('Invalid token type');
     }
 
-    const user = await userRepository.findById(payload.sub, {
-      id: true,
-      email: true,
-      name: true,
-      role: true,
-      isEmailVerified: true,
-      createdAt: true,
-    });
+    const user = await userRepository.findWithRelations(payload.sub);
+
     if (!user) {
       return done(null, false);
     }

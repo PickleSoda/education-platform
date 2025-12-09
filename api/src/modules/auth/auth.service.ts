@@ -1,37 +1,47 @@
-import { TokenType, User } from '@prisma/client';
+import { TokenType } from '@prisma/client';
 import httpStatus from 'http-status';
 
 import * as userService from '@/modules/user/user.service';
+import type { UserWithRoles } from '@/modules/user/user.types';
 import * as tokenService from '@/shared/services/token.service';
 import ApiError from '@/shared/utils/api-error';
 import { isPasswordMatch } from '@/shared/utils/encryption';
-import exclude from '@/shared/utils/exclude';
 import { AuthTokensResponse } from '@/types/response';
 import { authRepository } from './auth.repository';
+import type { RegisterInput } from './auth.validation';
+
+// ============================================================================
+// AUTHENTICATION
+// ============================================================================
+
+export const register = async (data: RegisterInput): Promise<UserWithRoles> => {
+  // Create user with the specified role (student or teacher)
+  const user = await userService.createUser(data);
+
+  return user;
+};
 
 export const loginUserWithEmailAndPassword = async (
   email: string,
   password: string
-): Promise<Pick<User, 'id' | 'email' | 'role' | 'isEmailVerified'>> => {
-  const user = await userService.getUserByEmail(email, [
-    'id',
-    'email',
-    'name',
-    'password',
-    'role',
-    'isEmailVerified',
-  ]);
+): Promise<UserWithRoles> => {
+  const user = await userService.getUserByEmail(email);
 
-  if (!user || !user.password || !(await isPasswordMatch(password, user.password))) {
+  if (!user || !(await isPasswordMatch(password, user.passwordHash))) {
     throw new ApiError(httpStatus.UNAUTHORIZED, 'Incorrect email or password');
   }
-  return exclude(user, ['password']);
+
+  if (!user.isActive) {
+    throw new ApiError(httpStatus.FORBIDDEN, 'Account is deactivated');
+  }
+
+  return user;
 };
 
 export const logout = async (refreshToken: string): Promise<void> => {
   const refreshTokenDoc = await authRepository.findValidToken(refreshToken, TokenType.REFRESH);
   if (!refreshTokenDoc) {
-    throw new ApiError(httpStatus.NOT_FOUND, 'Not found');
+    throw new ApiError(httpStatus.NOT_FOUND, 'Refresh token not found');
   }
   await authRepository.deleteToken(refreshTokenDoc.id);
 };
@@ -41,7 +51,10 @@ export const refreshAuth = async (refreshToken: string): Promise<AuthTokensRespo
     const refreshTokenDoc = await tokenService.verifyToken(refreshToken, TokenType.REFRESH);
     const user = await userService.getUserById(refreshTokenDoc.userId);
     if (!user) {
-      throw new Error();
+      throw new Error('User not found');
+    }
+    if (!user.isActive) {
+      throw new Error('Account is deactivated');
     }
     await authRepository.deleteToken(refreshTokenDoc.id);
     const tokens = await tokenService.generateAuthTokens(user);
@@ -50,6 +63,10 @@ export const refreshAuth = async (refreshToken: string): Promise<AuthTokensRespo
     throw new ApiError(httpStatus.UNAUTHORIZED, 'Please authenticate');
   }
 };
+
+// ============================================================================
+// PASSWORD MANAGEMENT
+// ============================================================================
 
 export const resetPassword = async (
   resetPasswordToken: string,
@@ -62,28 +79,11 @@ export const resetPassword = async (
     );
     const user = await userService.getUserById(resetPasswordTokenDoc.userId);
     if (!user) {
-      throw new Error();
+      throw new Error('User not found');
     }
-    await userService.updateUserById(user.id, { password: newPassword });
+    await userService.updateUser(user.id, { password: newPassword });
     await authRepository.deleteTokensByUserIdAndType(user.id, TokenType.RESET_PASSWORD);
   } catch (_error) {
     throw new ApiError(httpStatus.UNAUTHORIZED, 'Password reset failed');
-  }
-};
-
-export const verifyEmail = async (verifyEmailToken: string): Promise<void> => {
-  try {
-    const verifyEmailTokenDoc = await tokenService.verifyToken(
-      verifyEmailToken,
-      TokenType.VERIFY_EMAIL
-    );
-    const user = await userService.getUserById(verifyEmailTokenDoc.userId);
-    if (!user) {
-      throw new Error();
-    }
-    await authRepository.deleteTokensByUserIdAndType(user.id, TokenType.VERIFY_EMAIL);
-    await userService.updateUserById(user.id, { isEmailVerified: true });
-  } catch (_error) {
-    throw new ApiError(httpStatus.UNAUTHORIZED, 'Email verification failed');
   }
 };

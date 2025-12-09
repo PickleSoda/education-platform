@@ -5,7 +5,6 @@ import fileRoute from '../modules/file/file.route';
 import healthRoute from '../modules/health/health.route';
 import notificationRoute from '../modules/notification/notification.route';
 import userRoute from '../modules/user/user.route';
-import postRoute from '../modules/post/post.route';
 import docsRoute from './docs.route';
 
 const router = express.Router();
@@ -40,10 +39,6 @@ const routes: RouteConfig[] = [
   {
     path: '/files',
     route: fileRoute,
-  },
-  {
-    path: '/posts',
-    route: postRoute,
   },
 ];
 
