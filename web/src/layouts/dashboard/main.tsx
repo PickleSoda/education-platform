@@ -44,7 +44,7 @@ const Main = () => {
 					{
 						"max-w-full": themeStretch,
 						"xl:max-w-screen-xl": !themeStretch,
-					},
+					}
 				)}
 				style={{
 					willChange: "max-width",

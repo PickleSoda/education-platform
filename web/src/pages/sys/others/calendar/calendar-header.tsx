@@ -52,7 +52,7 @@ export default function CalendarHeader({ now, view, onMove, onCreate, onViewType
 				icon: <Icon icon="mdi:view-agenda-outline" size={18} />,
 			},
 		],
-		[],
+		[]
 	);
 
 	const handleMenuClick = (e: { key: string }) => {

@@ -1,7 +1,5 @@
-import { Icon } from "@/components/icon";
 import LocalePicker from "@/components/locale-picker";
 import { useSettings } from "@/store/settingStore";
-import { Button } from "@/ui/button";
 import { cn } from "@/utils";
 import type { ReactNode } from "react";
 import AccountDropdown from "../components/account-dropdown";
@@ -23,7 +21,7 @@ export default function Header({ leftSlot }: HeaderProps) {
 				"sticky top-0 left-0 right-0 z-app-bar",
 				"flex items-center justify-between px-2 grow-0 shrink-0",
 				"bg-background/60 backdrop-blur-xl",
-				"h-[var(--layout-header-height)] ",
+				"h-(--layout-header-height) "
 			)}
 		>
 			<div className="flex items-center">

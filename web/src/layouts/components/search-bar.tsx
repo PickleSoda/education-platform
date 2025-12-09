@@ -32,7 +32,7 @@ const HighlightText = ({ text, query }: { text: string; query: string }) => {
 					</span>
 				) : (
 					part
-				),
+				)
 			)}
 		</>
 	);
@@ -92,7 +92,7 @@ const SearchBar = () => {
 			replace(path);
 			setOpen(false);
 		},
-		[replace, setOpen],
+		[replace, setOpen]
 	);
 
 	return (

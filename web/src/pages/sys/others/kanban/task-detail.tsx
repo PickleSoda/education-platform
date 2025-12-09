@@ -133,21 +133,21 @@ export default function TaskDetail({ task }: Props) {
 }
 
 const Container = styled.div`
-  display: flex;
-  flex-direction: column;
-  gap: 24px;
-  padding: 0px 24px;
-  .item {
-    display: flex;
-    align-items: center;
-  }
-  .label {
-    text-align: left;
-    font-size: 0.75rem;
-    font-weight: 600;
-    width: 100px;
-    color: ${themeVars.colors.text.secondary};
-    height: 40px;
-    line-height: 40px;
-  }
+	display: flex;
+	flex-direction: column;
+	gap: 24px;
+	padding: 0px 24px;
+	.item {
+		display: flex;
+		align-items: center;
+	}
+	.label {
+		text-align: left;
+		font-size: 0.75rem;
+		font-weight: 600;
+		width: 100px;
+		color: ${themeVars.colors.text.secondary};
+		height: 40px;
+		line-height: 40px;
+	}
 `;

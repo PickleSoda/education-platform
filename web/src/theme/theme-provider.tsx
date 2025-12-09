@@ -38,7 +38,7 @@ export function ThemeProvider({ children, adapters = [] }: ThemeProviderProps) {
 				{children}
 			</Adapter>
 		),
-		children,
+		children
 	);
 
 	return wrappedWithAdapters;

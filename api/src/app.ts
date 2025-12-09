@@ -48,7 +48,7 @@ const corsOptions: cors.CorsOptions = {
     requestOrigin: string | undefined,
     callback: (err: Error | null, allow?: boolean) => void
   ) => {
-    const allowedOrigins = ['http://localhost:3000', 'http://localhost:8000'];
+    const allowedOrigins = ['http://localhost:3001', 'http://localhost:8000'];
 
     if (!requestOrigin || allowedOrigins.includes(requestOrigin)) {
       callback(null, true);

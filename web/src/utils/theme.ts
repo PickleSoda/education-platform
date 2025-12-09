@@ -71,7 +71,7 @@ export const createTailwinConfg = (propertyPath: string) => {
 			acc[variant] = `var(${toCssVar(`${propertyPath}-${variant}`)})`;
 			return acc;
 		},
-		{} as Record<string, string>,
+		{} as Record<string, string>
 	);
 	return result;
 };
@@ -89,7 +89,7 @@ export const creatColorChannel = (propertyPath: string) => {
 			acc[variantKey] = `rgb(var(${toCssVar(`${propertyPath}-${variant}Channel`)}))`;
 			return acc;
 		},
-		{} as Record<string, string>,
+		{} as Record<string, string>
 	);
 	return result;
 };

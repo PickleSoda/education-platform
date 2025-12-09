@@ -43,7 +43,7 @@ export function RoleModal({ title, show, formValue, onOk, onCancel }: RoleModalP
 		setCheckedKeys(checked);
 		form.setValue(
 			"permission",
-			PERMISSIONS.filter((item) => checked.includes(item.id)),
+			PERMISSIONS.filter((item) => checked.includes(item.id))
 		);
 	};
 
@@ -108,7 +108,10 @@ export function RoleModal({ title, show, formValue, onOk, onCancel }: RoleModalP
 									<FormLabel className="text-right">Status</FormLabel>
 									<div className="col-span-3">
 										<FormControl>
-											<RadioGroup onValueChange={(value) => field.onChange(Number(value))} defaultValue={String(field.value)}>
+											<RadioGroup
+												onValueChange={(value) => field.onChange(Number(value))}
+												defaultValue={String(field.value)}
+											>
 												<div className="flex items-center space-x-2">
 													<RadioGroupItem value={String(BasicStatus.ENABLE)} id="r1" />
 													<Label htmlFor="r1">Enable</Label>

@@ -55,8 +55,8 @@ const useSettingStore = create<SettingStore>()(
 			name: StorageEnum.Settings, // name of the item in the storage (must be unique)
 			storage: createJSONStorage(() => localStorage), // (optional) by default, 'localStorage' is used
 			partialize: (state) => ({ [StorageEnum.Settings]: state.settings }),
-		},
-	),
+		}
+	)
 );
 
 export const useSettings = () => useSettingStore((state) => state.settings);

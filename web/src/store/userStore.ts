@@ -43,14 +43,14 @@ const useUserStore = create<UserStore>()(
 				[StorageEnum.UserInfo]: state.userInfo,
 				[StorageEnum.UserToken]: state.userToken,
 			}),
-		},
-	),
+		}
+	)
 );
 
 export const useUserInfo = () => useUserStore((state) => state.userInfo);
 export const useUserToken = () => useUserStore((state) => state.userToken);
 export const useUserPermissions = () => useUserStore((state) => state.userInfo.permissions || []);
-export const useUserRoles = () => useUserStore((state) => state.userInfo.roles || []);
+export const useUserRoles = () => useUserStore((state) => state.userInfo.roles?.map((r) => r.role.name) || []);
 export const useUserActions = () => useUserStore((state) => state.actions);
 
 export const useSignIn = () => {
@@ -63,11 +63,14 @@ export const useSignIn = () => {
 	const signIn = async (data: SignInReq) => {
 		try {
 			const res = await signInMutation.mutateAsync(data);
-			const { user, accessToken, refreshToken } = res;
-			setUserToken({ accessToken, refreshToken });
+			const { user, tokens } = res;
+			setUserToken({
+				accessToken: tokens.access.token,
+				refreshToken: tokens.refresh.token,
+			});
 			setUserInfo(user);
-		} catch (err) {
-			toast.error(err.message, {
+		} catch (err: any) {
+			toast.error(err.message || "Failed to sign in", {
 				position: "top-center",
 			});
 			throw err;

@@ -18,7 +18,7 @@ export function useTabLabelRender() {
 				return defaultLabel;
 			},
 		}),
-		[t],
+		[t]
 	);
 
 	const renderTabLabel = (tab: KeepAliveTab) => {

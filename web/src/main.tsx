@@ -35,7 +35,7 @@ const router = createBrowserRouter(
 	],
 	{
 		basename: GLOBAL_CONFIG.publicPath,
-	},
+	}
 );
 
 const root = ReactDOM.createRoot(document.getElementById("root") as HTMLElement);

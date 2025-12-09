@@ -9,13 +9,24 @@ export interface UserToken {
 export interface UserInfo {
 	id: string;
 	email: string;
-	username: string;
-	password?: string;
-	avatar?: string;
-	roles?: Role[];
-	status?: BasicStatus;
-	permissions?: Permission[];
+	firstName: string;
+	lastName: string;
+	avatarUrl?: string | null;
+	isActive?: boolean;
+	roles?: Array<{
+		role: {
+			id: number;
+			name: string;
+			description: string | null;
+		};
+		grantedAt: string;
+	}>;
+	permissions?: string[]; // Array of permission codes like "user-management:read"
 	menu?: MenuTree[];
+	// Legacy fields for compatibility
+	username?: string;
+	avatar?: string;
+	status?: BasicStatus;
 }
 
 export interface Permission_Old {
@@ -82,7 +93,9 @@ export interface Menu extends CommonOptions, MenuMetaInfo {
 	type: PermissionType;
 }
 
-export type MenuMetaInfo = Partial<Pick<NavItemDataProps, "path" | "icon" | "caption" | "info" | "disabled" | "auth" | "hidden">> & {
+export type MenuMetaInfo = Partial<
+	Pick<NavItemDataProps, "path" | "icon" | "caption" | "info" | "disabled" | "auth" | "hidden">
+> & {
 	externalLink?: URL;
 	component?: string;
 };

@@ -66,77 +66,77 @@ export default function Toast() {
 }
 
 const ToasterStyleWrapper = styled.div`
-  [data-sonner-toast] {
-    font-weight: 600;
-    font-size: 14px;
+	[data-sonner-toast] {
+		font-weight: 600;
+		font-size: 14px;
 
-    [data-cancel] {
-      color: ${themeVars.colors.text.primary};
-      background-color: transparent;
-      &:hover {
-        background-color: ${rgbAlpha(themeVars.colors.text.primaryChannel, 0.08)};
-      }
-    }
+		[data-cancel] {
+			color: ${themeVars.colors.text.primary};
+			background-color: transparent;
+			&:hover {
+				background-color: ${rgbAlpha(themeVars.colors.text.primaryChannel, 0.08)};
+			}
+		}
 
-    /* Default */
-    [data-action] {
-      color: ${themeVars.colors.palette.primary.default};
-      background-color: transparent;
-      &:hover {
-        background-color: ${rgbAlpha(themeVars.colors.palette.primary.defaultChannel, 0.08)};
-      }
-    }
+		/* Default */
+		[data-action] {
+			color: ${themeVars.colors.palette.primary.default};
+			background-color: transparent;
+			&:hover {
+				background-color: ${rgbAlpha(themeVars.colors.palette.primary.defaultChannel, 0.08)};
+			}
+		}
 
-    /* Info */
-    &[data-type="info"] [data-action] {
-      color: ${themeVars.colors.palette.info.default};
-      background-color: transparent;
-      &:hover {
-        background-color: ${rgbAlpha(themeVars.colors.palette.info.defaultChannel, 0.08)};
-      }
-    }
+		/* Info */
+		&[data-type="info"] [data-action] {
+			color: ${themeVars.colors.palette.info.default};
+			background-color: transparent;
+			&:hover {
+				background-color: ${rgbAlpha(themeVars.colors.palette.info.defaultChannel, 0.08)};
+			}
+		}
 
-    /* Error */
-    &[data-type="error"] [data-action] {
-      color: ${themeVars.colors.palette.error.default};
-      background-color: transparent;
-      &:hover {
-        background-color: ${rgbAlpha(themeVars.colors.palette.error.defaultChannel, 0.08)};
-      }
-    }
+		/* Error */
+		&[data-type="error"] [data-action] {
+			color: ${themeVars.colors.palette.error.default};
+			background-color: transparent;
+			&:hover {
+				background-color: ${rgbAlpha(themeVars.colors.palette.error.defaultChannel, 0.08)};
+			}
+		}
 
-    /* Success */
-    &[data-type="success"] [data-action] {
-      color: ${themeVars.colors.palette.success.default};
-      background-color: transparent;
-      &:hover {
-        background-color: ${rgbAlpha(themeVars.colors.palette.success.defaultChannel, 0.08)};
-      }
-    }
+		/* Success */
+		&[data-type="success"] [data-action] {
+			color: ${themeVars.colors.palette.success.default};
+			background-color: transparent;
+			&:hover {
+				background-color: ${rgbAlpha(themeVars.colors.palette.success.defaultChannel, 0.08)};
+			}
+		}
 
-    /* Warning */
-    &[data-type="warning"] [data-action] {
-      color: ${themeVars.colors.palette.warning.default};
-      background-color: transparent;
-      &:hover {
-        background-color: ${rgbAlpha(themeVars.colors.palette.warning.defaultChannel, 0.08)};
-      }
-    }
+		/* Warning */
+		&[data-type="warning"] [data-action] {
+			color: ${themeVars.colors.palette.warning.default};
+			background-color: transparent;
+			&:hover {
+				background-color: ${rgbAlpha(themeVars.colors.palette.warning.defaultChannel, 0.08)};
+			}
+		}
 
-    /* Loading */
-    &[data-type="loading"] [data-icon] .sonner-loader[data-visible="true"] {
-      margin-left: 12px;
-    }
+		/* Loading */
+		&[data-type="loading"] [data-icon] .sonner-loader[data-visible="true"] {
+			margin-left: 12px;
+		}
 
-    /* Close Button */
-    [data-close-button] {
-      top: 0;
-      right: 0;
-      left: auto;
-      border-width: 1px;
-      border-style: dashed;
-      background-color: ${themeVars.colors.background.paper};
-      border: 1px solid ${rgbAlpha(themeVars.colors.palette.gray[200], 0.2)};
-    }
-  }
+		/* Close Button */
+		[data-close-button] {
+			top: 0;
+			right: 0;
+			left: auto;
+			border-width: 1px;
+			border-style: dashed;
+			background-color: ${themeVars.colors.background.paper};
+			border: 1px solid ${rgbAlpha(themeVars.colors.palette.gray[200], 0.2)};
+		}
+	}
 `;

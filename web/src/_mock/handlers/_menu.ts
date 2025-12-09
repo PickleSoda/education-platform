@@ -13,7 +13,7 @@ const menuList = http.get("/api/menu", async () => {
 		},
 		{
 			status: 200, // http status
-		},
+		}
 	);
 });
 
