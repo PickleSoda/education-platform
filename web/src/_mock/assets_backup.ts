@@ -401,7 +401,7 @@ export const DB_MENU: Menu[] = [
 		type: MENU,
 		path: "/link/external_link",
 		component: "/pages/sys/others/link/external-link",
-		externalLink: new URL("https://ant.design/index-cn"),
+		externalLink: new URL("https://ant.design/index"),
 	},
 	{
 		id: "link_iframe",
@@ -410,7 +410,7 @@ export const DB_MENU: Menu[] = [
 		code: "link:iframe",
 		type: MENU,
 		path: "/link/iframe",
-		externalLink: new URL("https://ant.design/index-cn"),
+		externalLink: new URL("https://ant.design/index"),
 		component: "/pages/sys/others/link/iframe",
 	},
 	{
@@ -428,24 +428,27 @@ export const DB_MENU: Menu[] = [
 export const DB_USER: User[] = [
 	{
 		id: "user_admin_id",
-		username: "admin",
-		password: "demo1234",
+		firstName: "admin",
+		lastName: "user",
+		password: "Admin123!",
 		avatar: faker.image.avatarGitHub(),
-		email: "admin@edu.com",
+		email: "admin@argus.edu",
 	},
 	{
 		id: "user_test_id",
-		username: "test",
-		password: "demo1234",
+		firstName: "student",
+		lastName: "user",
+		password: "Student123!",
 		avatar: faker.image.avatarGitHub(),
-		email: "test@edu.com",
+		email: "student@argus.edu",
 	},
 	{
 		id: "user_guest_id",
-		username: "guest",
-		password: "demo1234",
+		firstName: "teacher",
+		lastName: "user",
+		password: "Teacher123!",
 		avatar: faker.image.avatarGitHub(),
-		email: "guest@edu.com",
+		email: "teacher@argus.edu",
 	},
 ];
 

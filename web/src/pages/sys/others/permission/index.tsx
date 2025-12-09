@@ -81,26 +81,26 @@ checkAll(["permission:read", "permission:create"]) ? (
 `;
 
 export default function PermissionPage() {
-	const { permissions, roles, username } = useUserInfo();
+	const { permissions, roles, firstName } = useUserInfo();
 	const signIn = useSignIn();
 	const { check, checkAny, checkAll } = useAuthCheck();
 
-	const handleSwitch = (_username: string) => {
-		if (_username === username) return;
-		const user = DB_USER.find((user) => user.username === _username);
+	const handleSwitch = (_firstName: string) => {
+		if (_firstName === firstName) return;
+		const user = DB_USER.find((user) => user.firstName === _firstName);
 		if (user) {
-			signIn({ email: user.username, password: user.password });
+			signIn({ email: user.email, password: user.password });
 		}
 	};
 	return (
 		<div className="flex flex-col gap-4">
 			<div className="w-full flex  items-center justify-center">
 				<Text variant="subTitle1">当前用户：</Text>
-				<Tabs defaultValue={username} onValueChange={handleSwitch}>
+				<Tabs defaultValue={firstName} onValueChange={handleSwitch}>
 					<TabsList>
 						{DB_USER.map((user) => (
-							<TabsTrigger key={user.username} value={user.username}>
-								{user.username}
+							<TabsTrigger key={user.firstName} value={user.firstName}>
+								{user.firstName}
 							</TabsTrigger>
 						))}
 					</TabsList>

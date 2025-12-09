@@ -59,6 +59,12 @@ export const frontendNavData: NavProps["data"] = [
 							},
 						],
 					},
+					{
+						title: "sys.nav.course",
+						caption: "Course Catalog",
+						path: "/management/course",
+						icon: <Icon icon="mdi:book-education" size="24" />,
+					},
 				],
 			},
 			// menulevel
