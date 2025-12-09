@@ -262,7 +262,7 @@ describe('Assignment Module', () => {
             courseId,
             title: 'Midterm Exam',
             description: 'Midterm examination',
-            assignmentType: 'exam',
+            assignmentType: 'midterm',
             gradingMode: 'points',
             maxPoints: 200,
             weightPercentage: 30,
@@ -935,7 +935,7 @@ describe('Assignment Module', () => {
           {
             courseId,
             title: 'Midterm',
-            assignmentType: 'exam',
+            assignmentType: 'midterm',
             gradingMode: 'points',
             maxPoints: 200,
             weightPercentage: 30,
@@ -943,7 +943,7 @@ describe('Assignment Module', () => {
           {
             courseId,
             title: 'Final',
-            assignmentType: 'exam',
+            assignmentType: 'final',
             gradingMode: 'points',
             maxPoints: 300,
             weightPercentage: 40,
