@@ -25,6 +25,13 @@ if (config.env !== 'test') {
  */
 export const sendEmail = async (to: string, subject: string, text: string) => {
   const msg = { from: config.email.from, to, subject, text };
+  
+  // In test environment, just log instead of actually sending
+  if (config.env === 'test') {
+    logger.info(`[TEST] Email would be sent to ${to}: ${subject}`);
+    return;
+  }
+  
   await transport.sendMail(msg);
 };
 

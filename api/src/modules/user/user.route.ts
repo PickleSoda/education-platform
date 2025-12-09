@@ -17,7 +17,7 @@ router
 
 router
   .route('/:id')
-  .get(auth(), requireRight('manageUsers'), controllers.getUser)
+  .get(auth(), controllers.getUser)
   .patch(auth(), requireRight('manageUsers'), controllers.updateUser)
   .delete(auth(), requireRight('manageUsers'), controllers.deleteUser);
 

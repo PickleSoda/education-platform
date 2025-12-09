@@ -18,7 +18,7 @@ const catchAsync = (handler: ControllerFunction) => {
       const status = result.statusCode || httpStatus.OK;
       const message = result.message || 'Operation successful';
 
-      const response = formatResponse(status, message, result.data);
+      const response = formatResponse(status, message, result.data, undefined, result.meta);
       res.status(status).send(response);
     } catch (error) {
       const status = (error as ApiError).statusCode || httpStatus.INTERNAL_SERVER_ERROR;
