@@ -79,6 +79,16 @@ export const navData: NavProps["data"] = [
 				icon: <Icon icon="local:ic-workbench" size="24" />,
 			},
 			{
+				title: "sys.nav.courses",
+				path: "/courses",
+				icon: <Icon icon="mdi:book-education" size="24" />,
+			},
+			{
+				title: "sys.nav.myCourses",
+				path: "/enrollments",
+				icon: <Icon icon="solar:clipboard-bold-duotone" size="24" />,
+			},
+			{
 				title: "sys.nav.analysis",
 				path: "/analysis",
 				icon: <Icon icon="local:ic-analysis" size="24" />,
@@ -95,98 +105,31 @@ export const navData: NavProps["data"] = [
 				icon: <Icon icon="local:ic-management" size="24" />,
 				children: [
 					{
-						title: "sys.nav.user.index",
-						path: "/management/user",
-						children: [
-							{
-								title: "sys.nav.user.profile",
-								path: "/management/user/profile",
-							},
-							{
-								title: "sys.nav.user.account",
-								path: "/management/user/account",
-							},
-						],
+						title: "sys.nav.manageCourses",
+						path: "/management/course",
+						icon: <Icon icon="mdi:book-education" size="24" />,
 					},
 					{
 						title: "sys.nav.system.index",
 						path: "/management/system",
+						icon: <Icon icon="mdi:cog-outline" size="24" />,
 						children: [
 							{
 								title: "sys.nav.system.permission",
 								path: "/management/system/permission",
+								icon: <Icon icon="mingcute:safe-lock-fill" size="24" />,
 							},
 							{
 								title: "sys.nav.system.role",
 								path: "/management/system/role",
+								icon: <Icon icon="mdi:account-key-outline" size="24" />,
 							},
 							{
 								title: "sys.nav.system.user",
 								path: "/management/system/user",
+								icon: <Icon icon="mdi:account-multiple-outline" size="24" />,
 							},
 						],
-					},
-					{
-						title: "sys.nav.course",
-						caption: "Course Catalog",
-						path: "/management/course",
-						icon: <Icon icon="mdi:book-education" size="24" />,
-					},
-				],
-			},
-			// menulevel
-			{
-				title: "sys.nav.menulevel.index",
-				path: "/menu_level",
-				icon: <Icon icon="local:ic-menulevel" size="24" />,
-				children: [
-					{
-						title: "sys.nav.menulevel.1a",
-						path: "/menu_level/1a",
-					},
-					{
-						title: "sys.nav.menulevel.1b.index",
-						path: "/menu_level/1b",
-						children: [
-							{
-								title: "sys.nav.menulevel.1b.2a",
-								path: "/menu_level/1b/2a",
-							},
-							{
-								title: "sys.nav.menulevel.1b.2b.index",
-								path: "/menu_level/1b/2b",
-								children: [
-									{
-										title: "sys.nav.menulevel.1b.2b.3a",
-										path: "/menu_level/1b/2b/3a",
-									},
-									{
-										title: "sys.nav.menulevel.1b.2b.3b",
-										path: "/menu_level/1b/2b/3b",
-									},
-								],
-							},
-						],
-					},
-				],
-			},
-			// errors
-			{
-				title: "sys.nav.error.index",
-				path: "/error",
-				icon: <Icon icon="bxs:error-alt" size="24" />,
-				children: [
-					{
-						title: "sys.nav.error.403",
-						path: "/error/403",
-					},
-					{
-						title: "sys.nav.error.404",
-						path: "/error/404",
-					},
-					{
-						title: "sys.nav.error.500",
-						path: "/error/500",
 					},
 				],
 			},
@@ -194,6 +137,7 @@ export const navData: NavProps["data"] = [
 	},
 	{
 		name: "sys.nav.ui",
+		defaultOpen: false,
 		items: [
 			// components
 			{
@@ -230,14 +174,7 @@ export const navData: NavProps["data"] = [
 						title: "sys.nav.toast",
 						path: "/components/toast",
 					},
-				],
-			},
-			// functions
-			{
-				title: "sys.nav.functions",
-				path: "/functions",
-				icon: <Icon icon="solar:plain-2-bold-duotone" size="24" />,
-				children: [
+
 					{
 						title: "sys.nav.clipboard",
 						path: "/functions/clipboard",
@@ -252,6 +189,7 @@ export const navData: NavProps["data"] = [
 	},
 	{
 		name: "sys.nav.others",
+		defaultOpen: false,
 		items: [
 			{
 				title: "sys.nav.permission",
@@ -312,6 +250,62 @@ export const navData: NavProps["data"] = [
 				title: "sys.nav.blank",
 				path: "/blank",
 				icon: <Icon icon="local:ic-blank" size="24" />,
+			},
+			// menulevel
+			{
+				title: "sys.nav.menulevel.index",
+				path: "/menu_level",
+				icon: <Icon icon="local:ic-menulevel" size="24" />,
+				children: [
+					{
+						title: "sys.nav.menulevel.1a",
+						path: "/menu_level/1a",
+					},
+					{
+						title: "sys.nav.menulevel.1b.index",
+						path: "/menu_level/1b",
+						children: [
+							{
+								title: "sys.nav.menulevel.1b.2a",
+								path: "/menu_level/1b/2a",
+							},
+							{
+								title: "sys.nav.menulevel.1b.2b.index",
+								path: "/menu_level/1b/2b",
+								children: [
+									{
+										title: "sys.nav.menulevel.1b.2b.3a",
+										path: "/menu_level/1b/2b/3a",
+									},
+									{
+										title: "sys.nav.menulevel.1b.2b.3b",
+										path: "/menu_level/1b/2b/3b",
+									},
+								],
+							},
+						],
+					},
+				],
+			},
+			// errors
+			{
+				title: "sys.nav.error.index",
+				path: "/error",
+				icon: <Icon icon="bxs:error-alt" size="24" />,
+				children: [
+					{
+						title: "sys.nav.error.403",
+						path: "/error/403",
+					},
+					{
+						title: "sys.nav.error.404",
+						path: "/error/404",
+					},
+					{
+						title: "sys.nav.error.500",
+						path: "/error/500",
+					},
+				],
 			},
 		],
 	},

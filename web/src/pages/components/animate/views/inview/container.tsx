@@ -13,7 +13,7 @@ type Props = {
 	variant: string;
 };
 export default function ContainerView({ isText, variant, isMulti }: Props) {
-	const varients = useMemo(() => getVariant(variant), [variant]);
+	const varients = useMemo(() => getVariant(variant), [variant]) as any;
 	const imgs = useMemo(() => (isMulti ? repeat(Cover3, 5) : [Cover3]), [isMulti]);
 
 	return (

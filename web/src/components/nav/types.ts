@@ -39,6 +39,7 @@ export type NavListProps = Pick<NavItemProps, "depth"> & {
 export type NavGroupProps = Omit<NavListProps, "data" | "depth"> & {
 	name?: string;
 	items: NavItemDataProps[];
+	defaultOpen?: boolean;
 };
 
 /**
@@ -46,8 +47,5 @@ export type NavGroupProps = Omit<NavListProps, "data" | "depth"> & {
  */
 export type NavProps = React.ComponentProps<"nav"> &
 	Omit<NavListProps, "data" | "depth"> & {
-		data: {
-			name?: string;
-			items: NavItemDataProps[];
-		}[];
+		data: NavGroupProps[];
 	};
