@@ -10,7 +10,8 @@
 		"lint": "eslint .",
 		"lint:fix": "eslint . --fix",
 		"prettier": "prettier --check \"src/**/*.{ts,tsx,js,jsx,json}\"",
-		"prettier:fix": "prettier --write \"src/**/*.{ts,tsx,js,jsx,json}\""
+		"prettier:fix": "prettier --write \"src/**/*.{ts,tsx,js,jsx,json}\"",
+		"check-types": "tsc --noEmit"
 	},
 	"dependencies": {
 		"@ant-design/cssinjs": "^1.22.0",

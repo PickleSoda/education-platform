@@ -50,6 +50,13 @@ export function getFrontendDashboardRoutes(): RouteObject[] {
 						{ path: "user/:id", element: Component("/pages/management/system/user/detail") },
 					],
 				},
+				{
+					path: "course",
+					children: [
+						{ index: true, element: Component("/pages/management/course") },
+						{ path: ":id", element: Component("/pages/management/course/detail") },
+					],
+				},
 			],
 		},
 		{

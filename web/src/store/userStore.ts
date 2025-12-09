@@ -63,7 +63,8 @@ export const useSignIn = () => {
 	const signIn = async (data: SignInReq) => {
 		try {
 			const res = await signInMutation.mutateAsync(data);
-			const { user, tokens } = res;
+			const { user, tokens } = res?.data || {};
+			if (!user || !tokens) throw new Error("Invalid response");
 			setUserToken({
 				accessToken: tokens.access.token,
 				refreshToken: tokens.refresh.token,
