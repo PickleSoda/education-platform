@@ -1,9 +1,11 @@
 import express from 'express';
 
 import authRoute from '../modules/auth/auth.route';
+import assignmentRoute from '../modules/assignment/assignment.route';
 import courseRoute from '../modules/course/course.route';
 import fileRoute from '../modules/file/file.route';
 import healthRoute from '../modules/health/health.route';
+import instanceRoute from '../modules/instance/instance.route';
 import notificationRoute from '../modules/notification/notification.route';
 import userRoute from '../modules/user/user.route';
 import docsRoute from './docs.route';
@@ -44,6 +46,14 @@ const routes: RouteConfig[] = [
   {
     path: '/files',
     route: fileRoute,
+  },
+  {
+    path: '/',
+    route: assignmentRoute,
+  },
+  {
+    path: '/',
+    route: instanceRoute,
   },
 ];
 
