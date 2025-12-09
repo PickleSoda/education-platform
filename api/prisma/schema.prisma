@@ -1,6 +1,3 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
 generator client {
   provider = "prisma-client-js"
 }
@@ -10,85 +7,71 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+// ============================================================================
+// USER MANAGEMENT
+// ============================================================================
+
 model User {
-  id              String         @id @default(uuid())
-  email           String         @unique
-  name            String?
-  password        String?
-  role            Role[]         @default([USER])
-  isEmailVerified Boolean        @default(false)
-  createdAt       DateTime       @default(now())
-  updatedAt       DateTime       @updatedAt
-  tokens          Token[]
-  notifications   Notification[]
-  posts           Post[]
-  comments        Comment[]
+  id           String   @id @default(uuid())
+  email        String   @unique
+  passwordHash String   @map("password_hash")
+  firstName    String   @map("first_name")
+  lastName     String   @map("last_name")
+  avatarUrl    String?  @map("avatar_url")
+  isActive     Boolean  @default(true) @map("is_active")
+  createdAt    DateTime @default(now()) @map("created_at")
+  updatedAt    DateTime @updatedAt @map("updated_at")
+
+  // Relations
+  roles            UserRole[]
+  tokens           Token[]
+  teacherProfile   TeacherProfile?
+  studentProfile   StudentProfile?
+  grantedRoles     UserRole[]            @relation("RoleGranter")
+  createdCourses   Course[]
+  courseLecturers  CourseLecturer[]
+  instanceLecturers InstanceLecturer[]
+  enrollments      Enrollment[]
+  submissions      Submission[]
+  gradesGiven      Submission[]          @relation("Grader")
+  criteriaGradesGiven SubmissionGrade[]
+  publishedAssignments PublishedAssignment[] @relation("Publisher")
+  createdInstances CourseInstance[]
+
+  // Notifications
+  notifications        Notification[]
+  notificationSettings NotificationSetting[]
+
+  // Forums
+  forumPosts       ForumPost[]
+  forumComments    ForumComment[]
+  postReactions    PostReaction[]
+  commentReactions CommentReaction[]
+
+  @@map("users")
 }
 
-model Token {
-  id          String    @id @default(uuid())
-  token       String
-  type        TokenType
-  expires     DateTime
-  blacklisted Boolean
-  createdAt   DateTime  @default(now())
-  user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
-  userId      String
+model Role {
+  id          Int        @id @default(autoincrement())
+  name        String     @unique // 'student', 'teacher', 'admin'
+  description String?
+  users       UserRole[]
 
-  @@index([userId])
-  @@index([token])
-  @@index([type])
+  @@map("roles")
 }
 
-model Notification {
-  id         String   @id @default(uuid())
-  title      String
-  message    String
-  entityType String?
-  entityId   String?
-  isRead     Boolean  @default(false)
-  createdAt  DateTime @default(now())
-  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  userId     String
+model UserRole {
+  userId    String   @map("user_id")
+  roleId    Int      @map("role_id")
+  grantedAt DateTime @default(now()) @map("granted_at")
+  grantedBy String?  @map("granted_by")
 
-  @@index([userId])
-  @@index([isRead])
-  @@index([createdAt])
-}
+  user    User  @relation(fields: [userId], references: [id], onDelete: Cascade)
+  role    Role  @relation(fields: [roleId], references: [id], onDelete: Cascade)
+  granter User? @relation("RoleGranter", fields: [grantedBy], references: [id])
 
-model Post {
-  id        String    @id @default(uuid())
-  title     String
-  content   String
-  published Boolean   @default(false)
-  createdAt DateTime  @default(now())
-  updatedAt DateTime  @updatedAt
-  author    User      @relation(fields: [authorId], references: [id], onDelete: Cascade)
-  authorId  String
-  comments  Comment[]
-
-  @@index([authorId])
-  @@index([published])
-}
-
-model Comment {
-  id        String   @id @default(uuid())
-  content   String
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-  author    User     @relation(fields: [authorId], references: [id], onDelete: Cascade)
-  authorId  String
-  post      Post     @relation(fields: [postId], references: [id], onDelete: Cascade)
-  postId    String
-
-  @@index([authorId])
-  @@index([postId])
-}
-
-enum Role {
-  USER
-  ADMIN
-  MODERATOR
+  @@id([userId, roleId])
+  @@map("user_roles")
 }
 
 enum TokenType {
@@ -96,4 +79,635 @@ enum TokenType {
   REFRESH
   RESET_PASSWORD
   VERIFY_EMAIL
+}
+
+model Token {
+  id          String    @id @default(uuid())
+  token       String    @unique
+  type        TokenType
+  expires     DateTime
+  blacklisted Boolean   @default(false)
+  userId      String    @map("user_id")
+  createdAt   DateTime  @default(now()) @map("created_at")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("tokens")
+}
+
+model TeacherProfile {
+  userId         String  @id @map("user_id")
+  department     String?
+  title          String?
+  bio            String?
+  officeLocation String? @map("office_location")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("teacher_profiles")
+}
+
+model StudentProfile {
+  userId         String  @id @map("user_id")
+  studentId      String? @unique @map("student_id")
+  enrollmentYear Int?    @map("enrollment_year")
+  program        String?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("student_profiles")
+}
+
+// ============================================================================
+// COURSE TEMPLATES
+// ============================================================================
+
+model Course {
+  id                   String   @id @default(uuid())
+  code                 String   @unique
+  title                String
+  description          String?
+  credits              Decimal? @db.Decimal(3, 1)
+  typicalDurationWeeks Int?     @map("typical_duration_weeks")
+  isArchived           Boolean  @default(false) @map("is_archived")
+  createdBy            String?  @map("created_by")
+  createdAt            DateTime @default(now()) @map("created_at")
+  updatedAt            DateTime @updatedAt @map("updated_at")
+
+  creator             User?                @relation(fields: [createdBy], references: [id])
+  tags                CourseTag[]
+  lecturers           CourseLecturer[]
+  syllabusItems       SyllabusItem[]
+  assignmentTemplates AssignmentTemplate[]
+  resourceTemplates   ResourceTemplate[]
+  instances           CourseInstance[]
+
+  @@map("courses")
+}
+
+model Tag {
+  id      Int         @id @default(autoincrement())
+  name    String      @unique
+  color   String?
+  courses CourseTag[]
+
+  @@map("tags")
+}
+
+model CourseTag {
+  courseId String @map("course_id")
+  tagId    Int    @map("tag_id")
+
+  course Course @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  tag    Tag    @relation(fields: [tagId], references: [id], onDelete: Cascade)
+
+  @@id([courseId, tagId])
+  @@map("course_tags")
+}
+
+model CourseLecturer {
+  courseId  String  @map("course_id")
+  userId    String  @map("user_id")
+  isPrimary Boolean @default(false) @map("is_primary")
+
+  course Course @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@id([courseId, userId])
+  @@map("course_lecturers")
+}
+
+model SyllabusItem {
+  id                 String   @id @default(uuid())
+  courseId           String   @map("course_id")
+  weekNumber         Int?     @map("week_number")
+  title              String
+  description        String?
+  learningObjectives String[] @map("learning_objectives")
+  sortOrder          Int      @map("sort_order")
+  createdAt          DateTime @default(now()) @map("created_at")
+
+  course              Course               @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  assignmentTemplates AssignmentTemplate[]
+  resourceTemplates   ResourceTemplate[]
+
+  @@map("syllabus_items")
+}
+
+// ============================================================================
+// ASSIGNMENT TEMPLATES
+// ============================================================================
+
+enum AssignmentType {
+  homework
+  quiz
+  midterm
+  final
+  project
+  participation
+
+  @@map("assignment_type")
+}
+
+enum GradingMode {
+  points
+  pass_fail
+
+  @@map("grading_mode")
+}
+
+model AssignmentTemplate {
+  id                  String         @id @default(uuid())
+  courseId            String         @map("course_id")
+  title               String
+  description         String?
+  assignmentType      AssignmentType @map("assignment_type")
+  gradingMode         GradingMode    @default(points) @map("grading_mode")
+  maxPoints           Decimal?       @map("max_points") @db.Decimal(5, 2)
+  weightPercentage    Decimal?       @map("weight_percentage") @db.Decimal(5, 2)
+  defaultDurationDays Int?           @map("default_duration_days")
+  instructions        String?
+  attachments         Json?
+  sortOrder           Int?           @map("sort_order")
+  syllabusItemId      String?        @map("syllabus_item_id")
+  createdAt           DateTime       @default(now()) @map("created_at")
+  updatedAt           DateTime       @updatedAt @map("updated_at")
+
+  course              Course                @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  syllabusItem        SyllabusItem?         @relation(fields: [syllabusItemId], references: [id], onDelete: SetNull)
+  gradingCriteria     GradingCriteria[]
+  publishedAssignments PublishedAssignment[]
+
+  @@map("assignment_templates")
+}
+
+model GradingCriteria {
+  id                   String  @id @default(uuid())
+  assignmentTemplateId String  @map("assignment_template_id")
+  name                 String
+  description          String?
+  maxPoints            Decimal @map("max_points") @db.Decimal(5, 2)
+  sortOrder            Int     @map("sort_order")
+
+  assignmentTemplate      AssignmentTemplate        @relation(fields: [assignmentTemplateId], references: [id], onDelete: Cascade)
+  publishedGradingCriteria PublishedGradingCriteria[]
+
+  @@map("grading_criteria")
+}
+
+model ResourceTemplate {
+  id             String   @id @default(uuid())
+  courseId       String   @map("course_id")
+  title          String
+  description    String?
+  resourceType   String?  @map("resource_type")
+  url            String?
+  filePath       String?  @map("file_path")
+  syllabusItemId String?  @map("syllabus_item_id")
+  sortOrder      Int?     @map("sort_order")
+  createdAt      DateTime @default(now()) @map("created_at")
+
+  course             Course              @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  syllabusItem       SyllabusItem?       @relation(fields: [syllabusItemId], references: [id], onDelete: SetNull)
+  publishedResources PublishedResource[]
+
+  @@map("resource_templates")
+}
+
+// ============================================================================
+// COURSE INSTANCES (Active/Running Courses)
+// ============================================================================
+
+enum InstanceStatus {
+  draft
+  scheduled
+  active
+  completed
+  archived
+
+  @@map("instance_status")
+}
+
+model CourseInstance {
+  id              String         @id @default(uuid())
+  courseId        String         @map("course_id")
+  semester        String?
+  startDate       DateTime       @map("start_date") @db.Date
+  endDate         DateTime       @map("end_date") @db.Date
+  status          InstanceStatus @default(draft)
+  enrollmentLimit Int?           @map("enrollment_limit")
+  enrollmentOpen  Boolean        @default(false) @map("enrollment_open")
+  createdBy       String?        @map("created_by")
+  createdAt       DateTime       @default(now()) @map("created_at")
+  updatedAt       DateTime       @updatedAt @map("updated_at")
+
+  course               Course                @relation(fields: [courseId], references: [id])
+  creator              User?                 @relation(fields: [createdBy], references: [id])
+  lecturers            InstanceLecturer[]
+  enrollments          Enrollment[]
+  publishedAssignments PublishedAssignment[]
+  publishedResources   PublishedResource[]
+  forums               Forum[]
+  announcements        Announcement[]
+
+  @@index([status])
+  @@index([startDate, endDate])
+  @@map("course_instances")
+}
+
+model InstanceLecturer {
+  instanceId String @map("instance_id")
+  userId     String @map("user_id")
+  role       String @default("lecturer") // 'lecturer', 'ta', 'grader'
+
+  instance CourseInstance @relation(fields: [instanceId], references: [id], onDelete: Cascade)
+  user     User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@id([instanceId, userId])
+  @@map("instance_lecturers")
+}
+
+// ============================================================================
+// ENROLLMENTS
+// ============================================================================
+
+enum EnrollmentStatus {
+  enrolled
+  dropped
+  completed
+  failed
+
+  @@map("enrollment_status")
+}
+
+model Enrollment {
+  id          String           @id @default(uuid())
+  instanceId  String           @map("instance_id")
+  studentId   String           @map("student_id")
+  status      EnrollmentStatus @default(enrolled)
+  enrolledAt  DateTime         @default(now()) @map("enrolled_at")
+  completedAt DateTime?        @map("completed_at")
+  finalGrade  Decimal?         @map("final_grade") @db.Decimal(5, 2)
+  finalLetter String?          @map("final_letter")
+
+  instance CourseInstance @relation(fields: [instanceId], references: [id], onDelete: Cascade)
+  student  User           @relation(fields: [studentId], references: [id], onDelete: Cascade)
+
+  @@unique([instanceId, studentId])
+  @@index([studentId])
+  @@index([instanceId])
+  @@map("enrollments")
+}
+
+// ============================================================================
+// PUBLISHED ASSIGNMENTS
+// ============================================================================
+
+enum PublishStatus {
+  draft
+  scheduled
+  published
+  closed
+
+  @@map("publish_status")
+}
+
+model PublishedAssignment {
+  id                  String         @id @default(uuid())
+  instanceId          String         @map("instance_id")
+  templateId          String?        @map("template_id")
+  title               String
+  description         String?
+  assignmentType      AssignmentType @map("assignment_type")
+  gradingMode         GradingMode    @map("grading_mode")
+  maxPoints           Decimal?       @map("max_points") @db.Decimal(5, 2)
+  weightPercentage    Decimal?       @map("weight_percentage") @db.Decimal(5, 2)
+  instructions        String?
+  attachments         Json?
+  publishAt           DateTime?      @map("publish_at")
+  deadline            DateTime?
+  lateDeadline        DateTime?      @map("late_deadline")
+  latePenaltyPercent  Decimal?       @map("late_penalty_percent") @db.Decimal(5, 2)
+  autoPublish         Boolean        @default(false) @map("auto_publish")
+  status              PublishStatus  @default(draft)
+  publishedBy         String?        @map("published_by")
+  createdAt           DateTime       @default(now()) @map("created_at")
+  updatedAt           DateTime       @updatedAt @map("updated_at")
+
+  instance        CourseInstance             @relation(fields: [instanceId], references: [id], onDelete: Cascade)
+  template        AssignmentTemplate?        @relation(fields: [templateId], references: [id], onDelete: SetNull)
+  publisher       User?                      @relation("Publisher", fields: [publishedBy], references: [id])
+  gradingCriteria PublishedGradingCriteria[]
+  submissions     Submission[]
+
+  @@index([instanceId])
+  @@index([status])
+  @@map("published_assignments")
+}
+
+model PublishedGradingCriteria {
+  id                    String  @id @default(uuid())
+  publishedAssignmentId String  @map("published_assignment_id")
+  templateCriteriaId    String? @map("template_criteria_id")
+  name                  String
+  description           String?
+  maxPoints             Decimal @map("max_points") @db.Decimal(5, 2)
+  sortOrder             Int     @map("sort_order")
+
+  publishedAssignment PublishedAssignment @relation(fields: [publishedAssignmentId], references: [id], onDelete: Cascade)
+  templateCriteria    GradingCriteria?    @relation(fields: [templateCriteriaId], references: [id], onDelete: SetNull)
+  submissionGrades    SubmissionGrade[]
+
+  @@map("published_grading_criteria")
+}
+
+model PublishedResource {
+  id           String    @id @default(uuid())
+  instanceId   String    @map("instance_id")
+  templateId   String?   @map("template_id")
+  title        String
+  description  String?
+  resourceType String?   @map("resource_type")
+  url          String?
+  filePath     String?   @map("file_path")
+  isPublished  Boolean   @default(false) @map("is_published")
+  publishedAt  DateTime? @map("published_at")
+  sortOrder    Int?      @map("sort_order")
+  createdAt    DateTime  @default(now()) @map("created_at")
+
+  instance CourseInstance    @relation(fields: [instanceId], references: [id], onDelete: Cascade)
+  template ResourceTemplate? @relation(fields: [templateId], references: [id], onDelete: SetNull)
+
+  @@map("published_resources")
+}
+
+// ============================================================================
+// SUBMISSIONS & GRADING
+// ============================================================================
+
+enum SubmissionStatus {
+  draft
+  submitted
+  late
+  graded
+  returned
+
+  @@map("submission_status")
+}
+
+model Submission {
+  id                    String           @id @default(uuid())
+  publishedAssignmentId String           @map("published_assignment_id")
+  studentId             String           @map("student_id")
+  status                SubmissionStatus @default(draft)
+  content               String?
+  attachments           Json?
+  submittedAt           DateTime?        @map("submitted_at")
+  isLate                Boolean          @default(false) @map("is_late")
+  totalPoints           Decimal?         @map("total_points") @db.Decimal(5, 2)
+  isPassed              Boolean?         @map("is_passed")
+  latePenaltyApplied    Decimal?         @map("late_penalty_applied") @db.Decimal(5, 2)
+  finalPoints           Decimal?         @map("final_points") @db.Decimal(5, 2)
+  gradedBy              String?          @map("graded_by")
+  gradedAt              DateTime?        @map("graded_at")
+  feedback              String?
+  createdAt             DateTime         @default(now()) @map("created_at")
+  updatedAt             DateTime         @updatedAt @map("updated_at")
+
+  publishedAssignment PublishedAssignment @relation(fields: [publishedAssignmentId], references: [id], onDelete: Cascade)
+  student             User                @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  grader              User?               @relation("Grader", fields: [gradedBy], references: [id])
+  grades              SubmissionGrade[]
+
+  @@unique([publishedAssignmentId, studentId])
+  @@index([publishedAssignmentId])
+  @@index([studentId])
+  @@map("submissions")
+}
+
+model SubmissionGrade {
+  id                  String   @id @default(uuid())
+  submissionId        String   @map("submission_id")
+  publishedCriteriaId String   @map("published_criteria_id")
+  pointsAwarded       Decimal  @map("points_awarded") @db.Decimal(5, 2)
+  feedback            String?
+  gradedBy            String?  @map("graded_by")
+  gradedAt            DateTime @default(now()) @map("graded_at")
+
+  submission        Submission               @relation(fields: [submissionId], references: [id], onDelete: Cascade)
+  publishedCriteria PublishedGradingCriteria @relation(fields: [publishedCriteriaId], references: [id], onDelete: Cascade)
+  grader            User?                    @relation(fields: [gradedBy], references: [id])
+
+  @@unique([submissionId, publishedCriteriaId])
+  @@map("submission_grades")
+}
+
+// ============================================================================
+// NOTIFICATIONS
+// ============================================================================
+
+enum NotificationType {
+  assignment_published
+  assignment_deadline
+  assignment_graded
+  enrollment_confirmed
+  announcement
+  forum_reply
+  forum_mention
+  course_started
+  course_completed
+  grade_updated
+  resource_published
+
+  @@map("notification_type")
+}
+
+enum NotificationChannel {
+  in_app
+  email
+  push
+
+  @@map("notification_channel")
+}
+
+model Notification {
+  id         String           @id @default(uuid())
+  userId     String           @map("user_id")
+  type       NotificationType
+  title      String
+  message    String
+  data       Json? // Flexible payload for links, IDs, etc.
+  isRead     Boolean          @default(false) @map("is_read")
+  readAt     DateTime?        @map("read_at")
+  createdAt  DateTime         @default(now()) @map("created_at")
+
+  // Optional references for quick filtering
+  instanceId   String? @map("instance_id")
+  assignmentId String? @map("assignment_id")
+  forumPostId  String? @map("forum_post_id")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, isRead])
+  @@index([userId, createdAt])
+  @@index([type])
+  @@map("notifications")
+}
+
+model NotificationSetting {
+  id        String              @id @default(uuid())
+  userId    String              @map("user_id")
+  type      NotificationType
+  channel   NotificationChannel
+  isEnabled Boolean             @default(true) @map("is_enabled")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, type, channel])
+  @@map("notification_settings")
+}
+
+// Announcements (course-wide notifications from instructors)
+model Announcement {
+  id          String    @id @default(uuid())
+  instanceId  String    @map("instance_id")
+  title       String
+  content     String
+  isPinned    Boolean   @default(false) @map("is_pinned")
+  publishedAt DateTime? @map("published_at")
+  createdBy   String    @map("created_by")
+  createdAt   DateTime  @default(now()) @map("created_at")
+  updatedAt   DateTime  @updatedAt @map("updated_at")
+
+  instance CourseInstance @relation(fields: [instanceId], references: [id], onDelete: Cascade)
+
+  @@index([instanceId, isPinned])
+  @@map("announcements")
+}
+
+// ============================================================================
+// DISCUSSION FORUMS
+// ============================================================================
+
+enum ForumType {
+  general
+  assignment
+  qa
+  announcements
+
+  @@map("forum_type")
+}
+
+model Forum {
+  id          String    @id @default(uuid())
+  instanceId  String    @map("instance_id")
+  title       String
+  description String?
+  forumType   ForumType @default(general) @map("forum_type")
+  sortOrder   Int?      @map("sort_order")
+  isLocked    Boolean   @default(false) @map("is_locked")
+  createdAt   DateTime  @default(now()) @map("created_at")
+
+  instance CourseInstance @relation(fields: [instanceId], references: [id], onDelete: Cascade)
+  posts    ForumPost[]
+
+  @@index([instanceId])
+  @@map("forums")
+}
+
+model ForumPost {
+  id          String    @id @default(uuid())
+  forumId     String    @map("forum_id")
+  authorId    String    @map("author_id")
+  title       String
+  content     String
+  isPinned    Boolean   @default(false) @map("is_pinned")
+  isLocked    Boolean   @default(false) @map("is_locked")
+  isAnonymous Boolean   @default(false) @map("is_anonymous")
+  viewCount   Int       @default(0) @map("view_count")
+  createdAt   DateTime  @default(now()) @map("created_at")
+  updatedAt   DateTime  @updatedAt @map("updated_at")
+  editedAt    DateTime? @map("edited_at")
+
+  forum     Forum           @relation(fields: [forumId], references: [id], onDelete: Cascade)
+  author    User            @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  comments  ForumComment[]
+  reactions PostReaction[]
+  tags      ForumPostTag[]
+
+  @@index([forumId, isPinned])
+  @@index([authorId])
+  @@index([createdAt])
+  @@map("forum_posts")
+}
+
+model ForumComment {
+  id          String    @id @default(uuid())
+  postId      String    @map("post_id")
+  authorId    String    @map("author_id")
+  parentId    String?   @map("parent_id") // For nested replies
+  content     String
+  isAnswer    Boolean   @default(false) @map("is_answer") // Marked as accepted answer
+  isAnonymous Boolean   @default(false) @map("is_anonymous")
+  createdAt   DateTime  @default(now()) @map("created_at")
+  updatedAt   DateTime  @updatedAt @map("updated_at")
+  editedAt    DateTime? @map("edited_at")
+
+  post      ForumPost        @relation(fields: [postId], references: [id], onDelete: Cascade)
+  author    User             @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  parent    ForumComment?    @relation("CommentReplies", fields: [parentId], references: [id], onDelete: Cascade)
+  replies   ForumComment[]   @relation("CommentReplies")
+  reactions CommentReaction[]
+
+  @@index([postId])
+  @@index([parentId])
+  @@map("forum_comments")
+}
+
+// Reaction system for engagement
+model PostReaction {
+  postId    String   @map("post_id")
+  userId    String   @map("user_id")
+  type      String // 'like', 'helpful', 'insightful'
+  createdAt DateTime @default(now()) @map("created_at")
+
+  post ForumPost @relation(fields: [postId], references: [id], onDelete: Cascade)
+  user User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@id([postId, userId, type])
+  @@map("post_reactions")
+}
+
+model CommentReaction {
+  commentId String   @map("comment_id")
+  userId    String   @map("user_id")
+  type      String
+  createdAt DateTime @default(now()) @map("created_at")
+
+  comment ForumComment @relation(fields: [commentId], references: [id], onDelete: Cascade)
+  user    User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@id([commentId, userId, type])
+  @@map("comment_reactions")
+}
+
+// Tags for forum posts
+model ForumTag {
+  id    Int            @id @default(autoincrement())
+  name  String         @unique
+  color String?
+  posts ForumPostTag[]
+
+  @@map("forum_tags")
+}
+
+model ForumPostTag {
+  postId String @map("post_id")
+  tagId  Int    @map("tag_id")
+
+  post ForumPost @relation(fields: [postId], references: [id], onDelete: Cascade)
+  tag  ForumTag  @relation(fields: [tagId], references: [id], onDelete: Cascade)
+
+  @@id([postId, tagId])
+  @@map("forum_post_tags")
 }
