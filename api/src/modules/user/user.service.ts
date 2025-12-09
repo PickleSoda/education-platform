@@ -212,13 +212,14 @@ export const removeRoleFromUser = async (
   return updatedUser;
 };
 
-export const getUserRoles = async (userId: string) => {
+export const getUserRoles = async (userId: string): Promise<string[]> => {
   const user = await userRepository.findById(userId);
   if (!user) {
     throw new ApiError(httpStatus.NOT_FOUND, 'User not found');
   }
 
-  return userRepository.getUserRoles(userId);
+  const userRoles = await userRepository.getUserRoles(userId);
+  return userRoles.map((ur) => ur.role.name);
 };
 
 export const userHasRole = async (userId: string, roleName: string): Promise<boolean> => {

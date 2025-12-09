@@ -74,7 +74,7 @@ describe('Auth Module', () => {
         .post('/v1/auth/register')
         .send({
           email: 'default@test.com',
-          password: 'Pass123',
+          password: 'Pass1234',
           firstName: 'Default',
           lastName: 'User',
         })

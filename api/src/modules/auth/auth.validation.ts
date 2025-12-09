@@ -13,7 +13,7 @@ export const registerSchema = z.object({
     password: password,
     firstName: z.string().min(1, 'First name is required').max(100),
     lastName: z.string().min(1, 'Last name is required').max(100),
-    roleName: z.enum(['student', 'teacher']).default('student'),
+    roleName: z.enum(['student', 'teacher']).optional().default('student'),
   }),
 });
 

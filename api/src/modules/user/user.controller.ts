@@ -140,7 +140,7 @@ export const removeRole = catchAsync(async (req): Promise<ApiResponse<UserWithRo
   };
 });
 
-export const getUserRoles = catchAsync(async (req): Promise<ApiResponse<any>> => {
+export const getUserRoles = catchAsync(async (req): Promise<ApiResponse<string[]>> => {
   const { params } = await zParse(getUserSchema, req);
 
   const roles = await userService.getUserRoles(params.id);
