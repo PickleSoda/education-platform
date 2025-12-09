@@ -1,8 +1,75 @@
 import { Icon } from "@/components/icon";
 import type { NavProps } from "@/components/nav";
 import { Badge } from "@/ui/badge";
+import type { NavItemDataProps } from "@/components/nav/types";
+import { useUserPermissions } from "@/store/userStore";
+import { checkAny } from "@/utils";
+import { useMemo } from "react";
 
-export const frontendNavData: NavProps["data"] = [
+/**
+ *Recursively process navigation data, filtering out items without permissions
+ * @param items Navigation items array
+ * @param permissions Permissions list
+ * @returns Filtered navigation items array
+ */
+const filterItems = (items: NavItemDataProps[], permissions: string[]) => {
+	return items.filter((item) => {
+		// Check if the current item has permission
+		const hasPermission = item.auth ? checkAny(item.auth, permissions) : true;
+
+		// If there are child items, process them recursively
+		if (item.children?.length) {
+			const filteredChildren = filterItems(item.children, permissions);
+			// If all child items are filtered out, filter out the current item
+			if (filteredChildren.length === 0) {
+				return false;
+			}
+			// Update child items
+			item.children = filteredChildren;
+		}
+
+		return hasPermission;
+	});
+};
+
+/**
+ *
+ * Filter navigation data based on permissions
+ * @param permissions Permissions list
+ * @returns Filtered navigation data
+ */
+const filterNavData = (permissions: string[]) => {
+	return navData
+		.map((group) => {
+			// Filter items within the group
+			const filteredItems = filterItems(group.items, permissions);
+
+			// If there are no items in the group, return null
+			if (filteredItems.length === 0) {
+				return null;
+			}
+
+			// Return the filtered group
+			return {
+				...group,
+				items: filteredItems,
+			};
+		})
+		.filter((group): group is NonNullable<typeof group> => group !== null); // Filter out empty groups
+};
+
+/**
+ * Hook to get filtered navigation data based on user permissions
+ * @returns Filtered navigation data
+ */
+export const useFilteredNavData = () => {
+	const permissions = useUserPermissions();
+	const permissionCodes = useMemo(() => permissions, [permissions]);
+	const filteredNavData = useMemo(() => filterNavData(permissionCodes), [permissionCodes]);
+	return filteredNavData;
+};
+
+export const navData: NavProps["data"] = [
 	{
 		name: "sys.nav.dashboard",
 		items: [

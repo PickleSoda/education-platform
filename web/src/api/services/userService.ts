@@ -139,7 +139,7 @@ const resetPassword = (token: string, data: ResetPasswordReq) =>
 // User CRUD endpoints
 const createUser = (data: CreateUserReq) => apiClient.post<ApiResponse<UserInfo>>({ url: UserApi.Users, data });
 const listUsers = (params?: ListUsersParams) =>
-	apiClient.get<ApiResponse<PaginatedResponse<UserInfo>>>({ url: UserApi.Users, params });
+	apiClient.get<PaginatedResponse<UserInfo>>({ url: UserApi.Users, params });
 const getUserById = (id: string) => apiClient.get<ApiResponse<UserInfo>>({ url: `${UserApi.Users}/${id}` });
 const updateUser = (id: string, data: UpdateUserReq) =>
 	apiClient.patch<ApiResponse<UserInfo>>({ url: `${UserApi.Users}/${id}`, data });

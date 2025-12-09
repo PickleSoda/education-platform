@@ -49,7 +49,6 @@ alwaysApply: true
 ├─ public/
 │  
 ├─ src/                         # Core source code
-│  ├─ _mock/                    # Mock API data and handlers
 │  ├─ api/                      # API request services
 │  ├─ assets/                   # Static assets (images, icons)
 │  ├─ components/               # Global reusable components

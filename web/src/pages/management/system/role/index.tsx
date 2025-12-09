@@ -1,17 +1,13 @@
-// import { ROLE_LIST } from "@/_mock/assets";
 import { Icon } from "@/components/icon";
-import { Badge } from "@/ui/badge";
 import { Button } from "@/ui/button";
 import { Card, CardContent, CardHeader } from "@/ui/card";
 import Table, { type ColumnsType } from "antd/es/table";
 import { useState } from "react";
+import { useQuery } from "@tanstack/react-query";
 import type { Role_Old } from "#/entity";
 import { BasicStatus } from "#/enum";
 import { RoleModal, type RoleModalProps } from "./role-modal";
-
-// TODO: fix
-// const ROLES: Role_Old[] = ROLE_LIST as Role_Old[];
-const ROLES: Role_Old[] = [];
+import roleService, { type Role } from "@/api/services/roleService";
 
 const DEFAULE_ROLE_VALUE: Role_Old = {
 	id: "",
@@ -20,7 +16,15 @@ const DEFAULE_ROLE_VALUE: Role_Old = {
 	status: BasicStatus.ENABLE,
 	permission: [],
 };
+
 export default function RolePage() {
+	const { data, isLoading } = useQuery({
+		queryKey: ["roles"],
+		queryFn: () => roleService.getRoles(),
+	});
+
+	const roles = data?.data || [];
+
 	const [roleModalPros, setRoleModalProps] = useState<RoleModalProps>({
 		formValue: { ...DEFAULE_ROLE_VALUE },
 		title: "New",
@@ -32,29 +36,24 @@ export default function RolePage() {
 			setRoleModalProps((prev) => ({ ...prev, show: false }));
 		},
 	});
-	const columns: ColumnsType<Role_Old> = [
+
+	const columns: ColumnsType<Role> = [
+		{
+			title: "ID",
+			dataIndex: "id",
+			width: 80,
+		},
 		{
 			title: "Name",
 			dataIndex: "name",
-			width: 300,
+			width: 200,
+			render: (name) => <span className="font-medium capitalize">{name}</span>,
 		},
 		{
-			title: "Label",
-			dataIndex: "label",
+			title: "Description",
+			dataIndex: "description",
+			render: (description) => description || <span className="text-text-secondary">No description</span>,
 		},
-		{ title: "Order", dataIndex: "order", width: 60 },
-		{
-			title: "Status",
-			dataIndex: "status",
-			align: "center",
-			width: 120,
-			render: (status) => (
-				<Badge variant={status === BasicStatus.DISABLE ? "error" : "success"}>
-					{status === BasicStatus.DISABLE ? "Disable" : "Enable"}
-				</Badge>
-			),
-		},
-		{ title: "Desc", dataIndex: "desc" },
 		{
 			title: "Action",
 			key: "operation",
@@ -85,12 +84,19 @@ export default function RolePage() {
 		}));
 	};
 
-	const onEdit = (formValue: Role_Old) => {
+	const onEdit = (formValue: Role) => {
+		// Convert Role to Role_Old format for the modal
 		setRoleModalProps((prev) => ({
 			...prev,
 			show: true,
 			title: "Edit",
-			formValue,
+			formValue: {
+				id: String(formValue.id),
+				name: formValue.name,
+				code: formValue.name,
+				status: BasicStatus.ENABLE,
+				permission: [],
+			},
 		}));
 	};
 
@@ -109,7 +115,8 @@ export default function RolePage() {
 					scroll={{ x: "max-content" }}
 					pagination={false}
 					columns={columns}
-					dataSource={ROLES}
+					dataSource={roles}
+					loading={isLoading}
 				/>
 			</CardContent>
 			<RoleModal {...roleModalPros} />
