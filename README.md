@@ -1,4 +1,4 @@
-# Educational Platform
+# Argus Educational Platform
 
 A full-stack educational platform built with modern technologies in a monorepo structure.
 
@@ -14,10 +14,22 @@ Access: Frontend at <http://localhost:3001>, API at <http://localhost:8000>
 
 ## 📚 Documentation
 
-- **[QUICKSTART.md](QUICKSTART.md)** - Complete setup summary and commands
+### Getting Started
+
+- **[SETUP.md](docs/SETUP.md)** - Complete setup, development, and testing guide
+- **[QUICKSTART.md](docs/QUICKSTART.md)** - Quick reference and common commands
 - **[PNPM-GUIDE.md](PNPM-GUIDE.md)** - Understanding the @edu-platform/ workspace
+
+### Infrastructure
+
 - **[DOCKER-ASSESSMENT.md](DOCKER-ASSESSMENT.md)** - Docker configuration details
-- **[SETUP.md](SETUP.md)** - Detailed setup instructions
+- **[DATABASE-SETUP.md](api/docs/DATABASE-SETUP.md)** - Database configuration guide
+- **[MIGRATION-GUIDE.md](api/docs/MIGRATION-GUIDE.md)** - Database migration guide
+
+### Architecture
+
+- **[MODULE-STRUCTURE.md](api/docs/MODULE-STRUCTURE.md)** - Backend module architecture
+- **[PAGE-STRUCTURE.md](docs/PAGE-STRUCTURE.md)** - Frontend page structure and user flows
 
 ## Tech Stack
 
@@ -55,115 +67,19 @@ Access: Frontend at <http://localhost:3001>, API at <http://localhost:8000>
 
 ```
 argus/
-├── api/              # Backend (@edu-platform/api)
-├── web/              # Frontend (@edu-platform/web)
-├── docker/           # Nginx & SSL configs
-├── package.json      # Root workspace config
-├── pnpm-workspace.yaml
-└── .npmrc
-```
-
-## Quick Start
-
-### 1. Clone and Setup
-
-```bash
-# Clone the repository
-git clone <repository-url>
-cd user-management
-
-# Copy environment file
-cp .env.example .env
-
-# Install dependencies
-pnpm install
-```
-
-### 2. Start with Docker (Recommended)
-
-```bash
-# Start all services (postgres, redis, api, web)
-pnpm docker:dev
-
-# View logs
-pnpm docker:dev:logs
-
-# Stop services
-pnpm docker:dev:down
-```
-
-### 3. Access the Application
-
-- **Frontend**: <http://localhost:3001>
-- **Backend API**: <http://localhost:8000>
-- **API Docs**: <http://localhost:8000/v1/docs>
-- **Prisma Studio**: Run `pnpm db:studio` (after starting containers)
-
-## Development
-
-### Without Docker
-
-```bash
-# Terminal 1: Start PostgreSQL and Redis (you need these running)
-docker compose -f docker-compose.dev.yml up postgres redis
-
-# Terminal 2: Start API
-pnpm dev:api
-
-# Terminal 3: Start Web
-pnpm dev:web
-```
-
-### Database Commands
-
-```bash
-# Run migrations
-pnpm db:migrate
-
-# Open Prisma Studio
-pnpm db:studio
-
-# Seed database
-pnpm db:seed
-
-# Generate Prisma client
-pnpm --filter @user-management/api exec prisma generate
-```
-
-## Project Structure
-
-```
-user-management/
-├── apps/
-│   ├── api/                 # Express + Prisma backend
-│   │   ├── prisma/          # Database schema & migrations
-│   │   ├── src/
-│   │   │   ├── config/      # App configuration
-│   │   │   ├── modules/     # Feature modules (auth, user, etc.)
-│   │   │   ├── shared/      # Shared utilities & middlewares
-│   │   │   └── routes/      # Route definitions
-│   │   └── test/            # Tests
-│   │
-│   └── web/                 # React + Vite frontend
-│       ├── public/
-│       └── src/
-│           ├── api/         # API client
-│           ├── components/  # React components
-│           ├── pages/       # Page components
-│           ├── router/      # Route configuration
-│           └── store/       # Zustand stores
-│
-├── packages/
-│   └── shared/              # Shared types & utilities
-│
-├── docker/
-│   ├── nginx/               # Nginx configuration
-│   └── postgres/            # Database init scripts
-│
-├── docker-compose.yml       # Production compose
-├── docker-compose.dev.yml   # Development compose
-├── pnpm-workspace.yaml      # Workspace configuration
-└── package.json             # Root package.json
+├── api/                    # Backend (@edu-platform/api)
+│   ├── src/               # Source code
+│   ├── prisma/            # Database schema & migrations
+│   ├── test/              # Test files
+│   └── docs/              # API-specific documentation
+├── web/                    # Frontend (@edu-platform/web)
+│   ├── src/               # Source code
+│   └── public/            # Static assets
+├── docs/                   # Project documentation
+├── docker/                 # Nginx & SSL configs
+├── package.json            # Root workspace config
+├── pnpm-workspace.yaml     # Workspace definition
+└── .npmrc                  # PNPM configuration
 ```
 
 ## Available Scripts
@@ -183,31 +99,139 @@ user-management/
 
 ## Environment Variables
 
-See `.env.example` for all available environment variables.
+Key environment variables (see `.env.example` for complete list):
 
-### Required Variables
+| Variable | Description | Default |
+|----------|-------------|---------|
+| `DATABASE_URL` | PostgreSQL connection string | postgresql://... |
+| `JWT_SECRET` | Secret for JWT signing | (generate 64+ chars) |
+| `REDIS_HOST` | Redis hostname | localhost |
+| `PORT` | API port | 8000 |
+| `VITE_API_URL` | API URL for frontend | <http://localhost:8000> |
 
-| Variable | Description |
-|----------|-------------|
-| `POSTGRES_USER` | PostgreSQL username |
-| `POSTGRES_PASSWORD` | PostgreSQL password |
-| `POSTGRES_DB` | Database name |
-| `JWT_SECRET` | Secret for JWT signing |
-| `VITE_API_URL` | API URL for frontend |
+## Test Accounts
+
+After running `pnpm db:seed`:
+
+| Email | Password | Role |
+|-------|----------|------|
+| <admin@argus.edu> | Admin123! | Admin |
+| <teacher@argus.edu> | Teacher123! | Teacher |
+| <student1@argus.edu> | Student123! | Student |
+| <student2@argus.edu> | Student123! | Student |
 
 ## API Documentation
 
-When the API is running, access Swagger documentation at:
+Access Swagger documentation when API is running:
 
-- <http://localhost:8000/v1/docs>
+- **Swagger UI**: <http://localhost:8000/v1/docs>
+- **OpenAPI JSON**: <http://localhost:8000/v1/docs.json>
+
+## Troubleshooting
+
+### Port Already in Use
+
+```bash
+# Find and kill process (Windows)
+netstat -ano | findstr :8000
+taskkill /PID <PID> /F
+```
+
+### Database Connection Issues
+
+```bash
+# Restart PostgreSQL container
+docker compose -f docker-compose.dev.yml restart postgres
+```
+
+### PNPM Workspace Issues
+
+```bash
+# Clean reinstall
+rm -rf node_modules api/node_modules web/node_modules
+pnpm install
+```
+
+See **[SETUP.md](docs/SETUP.md)** for comprehensive troubleshooting guide.
 
 ## Contributing
 
 1. Create a feature branch
 2. Make your changes
 3. Run `pnpm lint` and `pnpm test`
-4. Submit a pull request
+4. Ensure all tests pass
+5. Submit a pull request
 
 ## License
 
 MIT
+
+## Development Workflow
+
+### Start Development Environment
+
+```bash
+# With Docker (recommended)
+pnpm docker:dev             # Start all services
+pnpm docker:dev:logs        # View logs
+pnpm docker:dev:down        # Stop services
+
+# Without Docker
+pnpm dev                    # Start API and Web
+pnpm dev:api                # Start only API
+pnpm dev:web                # Start only Web
+```
+
+### Testing
+
+```bash
+# Run all tests
+pnpm test
+
+# Run tests in watch mode
+pnpm --filter @edu-platform/api test:watch
+
+# Run tests with coverage
+pnpm --filter @edu-platform/api test:coverage
+
+# Run specific test file
+pnpm --filter @edu-platform/api test src/modules/auth/auth.test.ts
+```
+
+See **[SETUP.md](docs/SETUP.md)** for detailed testing instructions.
+
+### Database Management
+
+```bash
+pnpm db:migrate             # Run migrations
+pnpm db:seed                # Seed database
+pnpm db:studio              # Open Prisma Studio
+```
+
+### Code Quality
+
+```bash
+pnpm lint                   # Lint all packages
+pnpm format                 # Format all files
+pnpm type-check             # TypeScript check
+```
+
+## Available Scripts
+
+| Command | Description |
+|---------|-------------|
+| `pnpm dev` | Start all services locally |
+| `pnpm dev:api` | Start backend API only |
+| `pnpm dev:web` | Start frontend only |
+| `pnpm test` | Run all tests |
+| `pnpm test:watch` | Run tests in watch mode |
+| `pnpm test:coverage` | Run tests with coverage |
+| `pnpm build` | Build all packages |
+| `pnpm lint` | Lint all packages |
+| `pnpm format` | Format code with Prettier |
+| `pnpm type-check` | TypeScript type checking |
+| `pnpm docker:dev` | Start with Docker (dev) |
+| `pnpm docker:prod` | Start with Docker (prod) |
+| `pnpm db:migrate` | Run database migrations |
+| `pnpm db:seed` | Seed database with test data |
+| `pnpm db:studio` | Open Prisma Studio |
