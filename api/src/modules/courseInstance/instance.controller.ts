@@ -1,13 +1,17 @@
 import httpStatus from 'http-status';
 import { instanceService } from './instance.service';
 import catchAsync from '@/shared/utils/catch-async';
+import zParse from '@/shared/utils/z-parse';
 import type { ApiResponse, PaginatedResponse, ExtendedUser } from '@/types/response';
 import type {
   InstanceWithRelations,
   InstanceWithDetails,
   PublishedAssignmentWithCriteria,
   InstanceStats,
+  InstanceUpdateInput,
+  PublishAssignmentInput,
 } from './instance.types';
+import * as instanceValidation from './instance.validation';
 
 // ============================================================================
 // INSTANCE CONTROLLERS
@@ -19,24 +23,17 @@ import type {
  */
 export const createInstance = catchAsync(
   async (req): Promise<ApiResponse<InstanceWithRelations>> => {
-    console.log('=== createInstance controller called ===');
-    console.log('req.user:', req.user);
-    console.log('req.body:', req.body);
-
+    const { body } = await zParse(instanceValidation.createInstanceSchema, req);
     const userId = (req.user as ExtendedUser)!.id;
-    console.log('userId:', userId);
 
     const data = {
-      ...req.body,
+      ...body,
       createdBy: userId,
-      startDate: new Date(req.body.startDate),
-      endDate: new Date(req.body.endDate),
+      startDate: new Date(body.startDate),
+      endDate: new Date(body.endDate),
     };
-    console.log('data:', data);
 
-    console.log('Calling instanceService.create...');
     const instance = await instanceService.create(data);
-    console.log('Instance created:', instance?.id);
 
     return {
       statusCode: httpStatus.CREATED,
@@ -51,8 +48,8 @@ export const createInstance = catchAsync(
  * GET /instances/:id
  */
 export const getInstance = catchAsync(async (req): Promise<ApiResponse<InstanceWithRelations>> => {
-  const { id } = req.params;
-  const instance = await instanceService.get(id);
+  const { params } = await zParse(instanceValidation.getInstanceSchema, req);
+  const instance = await instanceService.get(params.id);
   return {
     statusCode: httpStatus.OK,
     message: 'Instance retrieved successfully',
@@ -66,8 +63,8 @@ export const getInstance = catchAsync(async (req): Promise<ApiResponse<InstanceW
  */
 export const getInstanceWithDetails = catchAsync(
   async (req): Promise<ApiResponse<InstanceWithDetails>> => {
-    const { id } = req.params;
-    const instance = await instanceService.getWithDetails(id);
+    const { params } = await zParse(instanceValidation.getInstanceSchema, req);
+    const instance = await instanceService.getWithDetails(params.id);
     return {
       statusCode: httpStatus.OK,
       message: 'Instance details retrieved successfully',
@@ -82,20 +79,20 @@ export const getInstanceWithDetails = catchAsync(
  */
 export const listInstances = catchAsync(
   async (req): Promise<PaginatedResponse<InstanceWithRelations>> => {
-    const { courseId, status, semester, lecturerId, page, limit, sortBy, sortOrder } = req.query;
+    const { query } = await zParse(instanceValidation.listInstancesSchema, req);
 
     const filters = {
-      courseId: courseId as string,
-      status: status as any,
-      semester: semester as string,
-      lecturerId: lecturerId as string,
+      courseId: query.courseId,
+      status: query.status,
+      semester: query.semester,
+      lecturerId: query.lecturerId,
     };
 
     const options = {
-      page: page ? parseInt(page as string) : 1,
-      limit: limit ? parseInt(limit as string) : 20,
-      sortBy: sortBy as string,
-      sortOrder: sortOrder as 'asc' | 'desc',
+      page: query.page ? parseInt(query.page) : 1,
+      limit: query.limit ? parseInt(query.limit) : 20,
+      sortBy: query.sortBy,
+      sortOrder: query.sortOrder,
     };
 
     const result = await instanceService.list(filters, options);
@@ -151,14 +148,14 @@ export const getMyTeachingInstances = catchAsync(
  */
 export const updateInstance = catchAsync(
   async (req): Promise<ApiResponse<InstanceWithRelations>> => {
-    const { id } = req.params;
+    const { params, body } = await zParse(instanceValidation.updateInstanceSchema, req);
     const data = {
-      ...req.body,
-      ...(req.body.startDate && { startDate: new Date(req.body.startDate) }),
-      ...(req.body.endDate && { endDate: new Date(req.body.endDate) }),
-    };
+      ...body,
+      ...(body.startDate && { startDate: new Date(body.startDate) }),
+      ...(body.endDate && { endDate: new Date(body.endDate) }),
+    } as InstanceUpdateInput;
 
-    const instance = await instanceService.update(id, data);
+    const instance = await instanceService.update(params.id, data);
     return {
       statusCode: httpStatus.OK,
       message: 'Instance updated successfully',
@@ -173,10 +170,9 @@ export const updateInstance = catchAsync(
  */
 export const updateInstanceStatus = catchAsync(
   async (req): Promise<ApiResponse<InstanceWithRelations>> => {
-    const { id } = req.params;
-    const { status } = req.body;
+    const { params, body } = await zParse(instanceValidation.updateInstanceStatusSchema, req);
 
-    const instance = await instanceService.updateStatus(id, status);
+    const instance = await instanceService.updateStatus(params.id, body.status);
     return {
       statusCode: httpStatus.OK,
       message: 'Instance status updated successfully',
@@ -191,16 +187,12 @@ export const updateInstanceStatus = catchAsync(
  */
 export const toggleEnrollment = catchAsync(
   async (req): Promise<ApiResponse<InstanceWithRelations>> => {
-    const { id } = req.params;
-    const { isOpen, enrollmentOpen } = req.body;
+    const { params, body } = await zParse(instanceValidation.toggleEnrollmentSchema, req);
 
-    // Support both field names
-    const shouldOpen = isOpen !== undefined ? isOpen : enrollmentOpen;
-
-    const instance = await instanceService.toggleEnrollment(id, shouldOpen);
+    const instance = await instanceService.toggleEnrollment(params.id, body.isOpen);
     return {
       statusCode: httpStatus.OK,
-      message: `Enrollment ${shouldOpen ? 'opened' : 'closed'} successfully`,
+      message: `Enrollment ${instance.enrollmentOpen ? 'opened' : 'closed'} successfully`,
       data: instance,
     };
   }
@@ -211,8 +203,8 @@ export const toggleEnrollment = catchAsync(
  * DELETE /instances/:id
  */
 export const deleteInstance = catchAsync(async (req): Promise<ApiResponse<void>> => {
-  const { id } = req.params;
-  await instanceService.delete(id);
+  const { params } = await zParse(instanceValidation.deleteInstanceSchema, req);
+  await instanceService.delete(params.id);
   return {
     statusCode: httpStatus.NO_CONTENT,
     message: 'Instance deleted successfully',
@@ -225,15 +217,14 @@ export const deleteInstance = catchAsync(async (req): Promise<ApiResponse<void>>
  */
 export const cloneInstance = catchAsync(
   async (req): Promise<ApiResponse<InstanceWithRelations>> => {
-    const { id } = req.params;
+    const { params, body } = await zParse(instanceValidation.cloneInstanceSchema, req);
     const userId = (req.user as ExtendedUser)!.id;
-    const { semester, startDate, endDate } = req.body;
 
     const instance = await instanceService.clone(
-      id,
-      semester,
-      new Date(startDate),
-      new Date(endDate),
+      params.id,
+      body.semester,
+      new Date(body.startDate),
+      new Date(body.endDate),
       userId
     );
 
@@ -250,8 +241,8 @@ export const cloneInstance = catchAsync(
  * GET /instances/:id/stats
  */
 export const getInstanceStats = catchAsync(async (req): Promise<ApiResponse<InstanceStats>> => {
-  const { id } = req.params;
-  const stats = await instanceService.getStats(id);
+  const { params } = await zParse(instanceValidation.getInstanceSchema, req);
+  const stats = await instanceService.getStats(params.id);
   return {
     statusCode: httpStatus.OK,
     message: 'Instance statistics retrieved successfully',
@@ -269,17 +260,17 @@ export const getInstanceStats = catchAsync(async (req): Promise<ApiResponse<Inst
  */
 export const publishAssignment = catchAsync(
   async (req): Promise<ApiResponse<PublishedAssignmentWithCriteria>> => {
-    const { id } = req.params;
+    const { params, body } = await zParse(instanceValidation.publishAssignmentSchema, req);
     const userId = (req.user as ExtendedUser)!.id;
 
     const data = {
-      ...req.body,
-      instanceId: id,
+      ...body,
+      instanceId: params.id,
       publishedBy: userId,
-      deadline: new Date(req.body.deadline),
-      ...(req.body.publishAt && { publishAt: new Date(req.body.publishAt) }),
-      ...(req.body.lateDeadline && { lateDeadline: new Date(req.body.lateDeadline) }),
-    };
+      deadline: new Date(body.deadline),
+      ...(body.publishAt && { publishAt: new Date(body.publishAt) }),
+      ...(body.lateDeadline && { lateDeadline: new Date(body.lateDeadline) }),
+    } as PublishAssignmentInput;
 
     const assignment = await instanceService.publishAssignment(data);
     return {
@@ -296,10 +287,9 @@ export const publishAssignment = catchAsync(
  */
 export const getInstanceAssignments = catchAsync(
   async (req): Promise<ApiResponse<PublishedAssignmentWithCriteria[]>> => {
-    const { id } = req.params;
-    const { status } = req.query;
+    const { params, query } = await zParse(instanceValidation.getInstanceAssignmentsSchema, req);
 
-    const assignments = await instanceService.getInstanceAssignments(id, status as string);
+    const assignments = await instanceService.getInstanceAssignments(params.id, query.status);
     return {
       statusCode: httpStatus.OK,
       message: 'Assignments retrieved successfully',
@@ -314,8 +304,8 @@ export const getInstanceAssignments = catchAsync(
  */
 export const getPublishedAssignment = catchAsync(
   async (req): Promise<ApiResponse<PublishedAssignmentWithCriteria>> => {
-    const { assignmentId } = req.params;
-    const assignment = await instanceService.getPublishedAssignment(assignmentId);
+    const { params } = await zParse(instanceValidation.getPublishedAssignmentSchema, req);
+    const assignment = await instanceService.getPublishedAssignment(params.assignmentId);
     return {
       statusCode: httpStatus.OK,
       message: 'Assignment retrieved successfully',
@@ -330,17 +320,14 @@ export const getPublishedAssignment = catchAsync(
  */
 export const togglePublishStatus = catchAsync(
   async (req): Promise<ApiResponse<PublishedAssignmentWithCriteria>> => {
-    const { assignmentId } = req.params;
-    const { publish, status } = req.body;
+    const { params, body } = await zParse(instanceValidation.togglePublishStatusSchema, req);
 
-    // Support both 'publish' boolean and 'status' string
-    const shouldPublish = publish !== undefined ? publish : status === 'published';
-    const statusValue = status || (shouldPublish ? 'published' : 'draft');
+    const statusValue = body.publish ? 'published' : 'draft';
 
-    const assignment = await instanceService.togglePublishStatus(assignmentId, statusValue);
+    const assignment = await instanceService.togglePublishStatus(params.assignmentId, statusValue);
     return {
       statusCode: httpStatus.OK,
-      message: `Assignment ${shouldPublish ? 'published' : 'unpublished'} successfully`,
+      message: `Assignment ${assignment.status === 'published' ? 'published' : 'unpublished'} successfully`,
       data: assignment,
     };
   }

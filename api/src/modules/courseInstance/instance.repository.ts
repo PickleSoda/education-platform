@@ -16,7 +16,6 @@ import type {
   PublishAssignmentInput,
   PublishedAssignmentWithCriteria,
 } from './instance.types';
-
 // ============================================================================
 // HELPER FUNCTIONS
 // ============================================================================
@@ -185,6 +184,7 @@ export const listInstances = async (
   options: PaginationOptions = {}
 ): Promise<PaginatedResult<InstanceWithRelations>> => {
   const { courseId, status, semester, lecturerId, studentId } = filters;
+  console.log('Filters:', filters);
   const { page = 1, limit = 20, sortBy = 'startDate', sortOrder = 'desc' } = options;
 
   const where: Prisma.CourseInstanceWhereInput = {

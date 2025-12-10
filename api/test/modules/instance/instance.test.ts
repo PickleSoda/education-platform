@@ -343,7 +343,7 @@ describe('Instance Module', () => {
 
     it('should get instance details', async () => {
       const res = await request(app)
-        .get(`/v1/instances/${localInstanceId}`)
+        .get(`/v1/courses/instances/${localInstanceId}`)
         .set('Authorization', `Bearer ${studentToken}`)
         .expect(httpStatus.OK);
 
@@ -354,13 +354,15 @@ describe('Instance Module', () => {
 
     it('should return 404 for non-existent instance', async () => {
       await request(app)
-        .get('/v1/instances/00000000-0000-0000-0000-000000000000')
+        .get('/v1/courses/instances/00000000-0000-0000-0000-000000000000')
         .set('Authorization', `Bearer ${studentToken}`)
         .expect(httpStatus.NOT_FOUND);
     });
 
     it('should fail without authentication', async () => {
-      await request(app).get(`/v1/instances/${localInstanceId}`).expect(httpStatus.UNAUTHORIZED);
+      await request(app)
+        .get(`/v1/courses/instances/${localInstanceId}`)
+        .expect(httpStatus.UNAUTHORIZED);
     });
   });
 
@@ -385,7 +387,7 @@ describe('Instance Module', () => {
 
     it('should update instance as admin', async () => {
       const res = await request(app)
-        .patch(`/v1/instances/${localInstanceId}`)
+        .patch(`/v1/courses/instances/${localInstanceId}`)
         .set('Authorization', `Bearer ${adminToken}`)
         .send({
           semester: 'Updated Fall 2024',
@@ -400,7 +402,7 @@ describe('Instance Module', () => {
 
     it('should update instance as teacher', async () => {
       const res = await request(app)
-        .patch(`/v1/instances/${localInstanceId}`)
+        .patch(`/v1/courses/instances/${localInstanceId}`)
         .set('Authorization', `Bearer ${teacherToken}`)
         .send({
           enrollmentLimit: 40,
@@ -413,7 +415,7 @@ describe('Instance Module', () => {
 
     it('should fail to update as student', async () => {
       await request(app)
-        .patch(`/v1/instances/${localInstanceId}`)
+        .patch(`/v1/courses/instances/${localInstanceId}`)
         .set('Authorization', `Bearer ${studentToken}`)
         .send({
           semester: 'Updated',
@@ -423,7 +425,7 @@ describe('Instance Module', () => {
 
     it('should return 404 for non-existent instance', async () => {
       await request(app)
-        .patch('/v1/instances/00000000-0000-0000-0000-000000000000')
+        .patch('/v1/courses/instances/00000000-0000-0000-0000-000000000000')
         .set('Authorization', `Bearer ${adminToken}`)
         .send({ semester: 'Updated' })
         .expect(httpStatus.NOT_FOUND);
@@ -451,7 +453,7 @@ describe('Instance Module', () => {
 
     it('should update status to scheduled', async () => {
       const res = await request(app)
-        .patch(`/v1/instances/${localInstanceId}/status`)
+        .patch(`/v1/courses/instances/${localInstanceId}/status`)
         .set('Authorization', `Bearer ${teacherToken}`)
         .send({ status: 'scheduled' })
         .expect(httpStatus.OK);
@@ -468,7 +470,7 @@ describe('Instance Module', () => {
       });
 
       const res = await request(app)
-        .patch(`/v1/instances/${localInstanceId}/status`)
+        .patch(`/v1/courses/instances/${localInstanceId}/status`)
         .set('Authorization', `Bearer ${teacherToken}`)
         .send({ status: 'active' })
         .expect(httpStatus.OK);
@@ -484,7 +486,7 @@ describe('Instance Module', () => {
       });
 
       const res = await request(app)
-        .patch(`/v1/instances/${localInstanceId}/status`)
+        .patch(`/v1/courses/instances/${localInstanceId}/status`)
         .set('Authorization', `Bearer ${teacherToken}`)
         .send({ status: 'completed' })
         .expect(httpStatus.OK);
@@ -495,7 +497,7 @@ describe('Instance Module', () => {
 
     it('should fail to update status as student', async () => {
       await request(app)
-        .patch(`/v1/instances/${localInstanceId}/status`)
+        .patch(`/v1/courses/instances/${localInstanceId}/status`)
         .set('Authorization', `Bearer ${studentToken}`)
         .send({ status: 'active' })
         .expect(httpStatus.FORBIDDEN);
@@ -524,7 +526,7 @@ describe('Instance Module', () => {
 
     it('should toggle enrollment open', async () => {
       const res = await request(app)
-        .patch(`/v1/instances/${localInstanceId}/enrollment`)
+        .patch(`/v1/courses/instances/${localInstanceId}/enrollment`)
         .set('Authorization', `Bearer ${teacherToken}`)
         .send({ enrollmentOpen: true })
         .expect(httpStatus.OK);
@@ -540,7 +542,7 @@ describe('Instance Module', () => {
       });
 
       const res = await request(app)
-        .patch(`/v1/instances/${localInstanceId}/enrollment`)
+        .patch(`/v1/courses/instances/${localInstanceId}/enrollment`)
         .set('Authorization', `Bearer ${teacherToken}`)
         .send({ enrollmentOpen: false })
         .expect(httpStatus.OK);
@@ -551,7 +553,7 @@ describe('Instance Module', () => {
 
     it('should fail as student', async () => {
       await request(app)
-        .patch(`/v1/instances/${localInstanceId}/enrollment`)
+        .patch(`/v1/courses/instances/${localInstanceId}/enrollment`)
         .set('Authorization', `Bearer ${studentToken}`)
         .send({ enrollmentOpen: true })
         .expect(httpStatus.FORBIDDEN);
@@ -579,7 +581,7 @@ describe('Instance Module', () => {
 
     it('should delete instance as admin', async () => {
       await request(app)
-        .delete(`/v1/instances/${localInstanceId}`)
+        .delete(`/v1/courses/instances/${localInstanceId}`)
         .set('Authorization', `Bearer ${adminToken}`)
         .expect(httpStatus.NO_CONTENT);
 
@@ -592,21 +594,21 @@ describe('Instance Module', () => {
 
     it('should fail to delete as teacher', async () => {
       await request(app)
-        .delete(`/v1/instances/${localInstanceId}`)
+        .delete(`/v1/courses/instances/${localInstanceId}`)
         .set('Authorization', `Bearer ${teacherToken}`)
         .expect(httpStatus.FORBIDDEN);
     });
 
     it('should fail to delete as student', async () => {
       await request(app)
-        .delete(`/v1/instances/${localInstanceId}`)
+        .delete(`/v1/courses/instances/${localInstanceId}`)
         .set('Authorization', `Bearer ${studentToken}`)
         .expect(httpStatus.FORBIDDEN);
     });
 
     it('should return 404 for non-existent instance', async () => {
       await request(app)
-        .delete('/v1/instances/00000000-0000-0000-0000-000000000000')
+        .delete('/v1/courses/instances/00000000-0000-0000-0000-000000000000')
         .set('Authorization', `Bearer ${adminToken}`)
         .expect(httpStatus.NOT_FOUND);
     });
@@ -638,7 +640,7 @@ describe('Instance Module', () => {
 
     it('should clone instance as teacher', async () => {
       const res = await request(app)
-        .post(`/v1/instances/${localInstanceId}/clone`)
+        .post(`/v1/courses/instances/${localInstanceId}/clone`)
         .set('Authorization', `Bearer ${teacherToken}`)
         .send({
           semester: 'Fall 2025',
@@ -655,7 +657,7 @@ describe('Instance Module', () => {
 
     it('should clone instance as admin', async () => {
       const res = await request(app)
-        .post(`/v1/instances/${localInstanceId}/clone`)
+        .post(`/v1/courses/instances/${localInstanceId}/clone`)
         .set('Authorization', `Bearer ${adminToken}`)
         .send({
           semester: 'Spring 2025',
@@ -670,7 +672,7 @@ describe('Instance Module', () => {
 
     it('should fail to clone as student', async () => {
       await request(app)
-        .post(`/v1/instances/${localInstanceId}/clone`)
+        .post(`/v1/courses/instances/${localInstanceId}/clone`)
         .set('Authorization', `Bearer ${studentToken}`)
         .send({
           semester: 'Fall 2025',
@@ -705,7 +707,7 @@ describe('Instance Module', () => {
 
     it('should publish assignment from template', async () => {
       const res = await request(app)
-        .post(`/v1/instances/${localInstanceId}/assignments/publish`)
+        .post(`/v1/courses/instances/${localInstanceId}/assignments/publish`)
         .set('Authorization', `Bearer ${teacherToken}`)
         .send({
           templateId: assignmentTemplateId,
@@ -720,7 +722,7 @@ describe('Instance Module', () => {
 
     it('should publish assignment with custom settings', async () => {
       const res = await request(app)
-        .post(`/v1/instances/${localInstanceId}/assignments/publish`)
+        .post(`/v1/courses/instances/${localInstanceId}/assignments/publish`)
         .set('Authorization', `Bearer ${teacherToken}`)
         .send({
           templateId: assignmentTemplateId,
@@ -736,7 +738,7 @@ describe('Instance Module', () => {
 
     it('should fail as student', async () => {
       await request(app)
-        .post(`/v1/instances/${localInstanceId}/assignments/publish`)
+        .post(`/v1/courses/instances/${localInstanceId}/assignments/publish`)
         .set('Authorization', `Bearer ${studentToken}`)
         .send({
           templateId: assignmentTemplateId,
@@ -747,7 +749,7 @@ describe('Instance Module', () => {
 
     it('should fail with invalid template ID', async () => {
       await request(app)
-        .post(`/v1/instances/${localInstanceId}/assignments/publish`)
+        .post(`/v1/courses/instances/${localInstanceId}/assignments/publish`)
         .set('Authorization', `Bearer ${teacherToken}`)
         .send({
           templateId: '00000000-0000-0000-0000-000000000000',
@@ -795,7 +797,7 @@ describe('Instance Module', () => {
 
     it('should get instance assignments as student', async () => {
       const res = await request(app)
-        .get(`/v1/instances/${localInstanceId}/assignments`)
+        .get(`/v1/courses/instances/${localInstanceId}/assignments`)
         .set('Authorization', `Bearer ${studentToken}`)
         .expect(httpStatus.OK);
 
@@ -806,7 +808,7 @@ describe('Instance Module', () => {
 
     it('should get instance assignments as teacher', async () => {
       const res = await request(app)
-        .get(`/v1/instances/${localInstanceId}/assignments`)
+        .get(`/v1/courses/instances/${localInstanceId}/assignments`)
         .set('Authorization', `Bearer ${teacherToken}`)
         .expect(httpStatus.OK);
 
@@ -816,7 +818,7 @@ describe('Instance Module', () => {
 
     it('should fail without authentication', async () => {
       await request(app)
-        .get(`/v1/instances/${localInstanceId}/assignments`)
+        .get(`/v1/courses/instances/${localInstanceId}/assignments`)
         .expect(httpStatus.UNAUTHORIZED);
     });
   });
@@ -857,7 +859,7 @@ describe('Instance Module', () => {
 
     it('should get published assignment details', async () => {
       const res = await request(app)
-        .get(`/v1/instances/${localInstanceId}/assignments/${publishedAssignmentId}`)
+        .get(`/v1/courses/instances/${localInstanceId}/assignments/${publishedAssignmentId}`)
         .set('Authorization', `Bearer ${studentToken}`)
         .expect(httpStatus.OK);
 
@@ -868,7 +870,9 @@ describe('Instance Module', () => {
 
     it('should return 404 for non-existent assignment', async () => {
       await request(app)
-        .get(`/v1/instances/${localInstanceId}/assignments/00000000-0000-0000-0000-000000000000`)
+        .get(
+          `/v1/courses/instances/${localInstanceId}/assignments/00000000-0000-0000-0000-000000000000`
+        )
         .set('Authorization', `Bearer ${studentToken}`)
         .expect(httpStatus.NOT_FOUND);
     });
@@ -910,7 +914,9 @@ describe('Instance Module', () => {
 
     it('should toggle to published', async () => {
       const res = await request(app)
-        .patch(`/v1/instances/${localInstanceId}/assignments/${publishedAssignmentId}/publish`)
+        .patch(
+          `/v1/courses/instances/${localInstanceId}/assignments/${publishedAssignmentId}/publish`
+        )
         .set('Authorization', `Bearer ${teacherToken}`)
         .send({ status: 'published' })
         .expect(httpStatus.OK);
@@ -926,7 +932,9 @@ describe('Instance Module', () => {
       });
 
       const res = await request(app)
-        .patch(`/v1/instances/${localInstanceId}/assignments/${publishedAssignmentId}/publish`)
+        .patch(
+          `/v1/courses/instances/${localInstanceId}/assignments/${publishedAssignmentId}/publish`
+        )
         .set('Authorization', `Bearer ${teacherToken}`)
         .send({ status: 'closed' })
         .expect(httpStatus.OK);
@@ -937,7 +945,9 @@ describe('Instance Module', () => {
 
     it('should fail as student', async () => {
       await request(app)
-        .patch(`/v1/instances/${localInstanceId}/assignments/${publishedAssignmentId}/publish`)
+        .patch(
+          `/v1/courses/instances/${localInstanceId}/assignments/${publishedAssignmentId}/publish`
+        )
         .set('Authorization', `Bearer ${studentToken}`)
         .send({ status: 'published' })
         .expect(httpStatus.FORBIDDEN);
@@ -977,7 +987,7 @@ describe('Instance Module', () => {
 
     it('should get enrolled instances as student', async () => {
       const res = await request(app)
-        .get('/v1/instances/my/enrolled')
+        .get('/v1/courses/instances/my/enrolled')
         .set('Authorization', `Bearer ${studentToken}`)
         .expect(httpStatus.OK);
 
@@ -986,7 +996,7 @@ describe('Instance Module', () => {
     });
 
     it('should fail without authentication', async () => {
-      await request(app).get('/v1/instances/my/enrolled').expect(httpStatus.UNAUTHORIZED);
+      await request(app).get('/v1/courses/instances/my/enrolled').expect(httpStatus.UNAUTHORIZED);
     });
   });
 
@@ -1017,7 +1027,7 @@ describe('Instance Module', () => {
 
     it('should get teaching instances as teacher', async () => {
       const res = await request(app)
-        .get('/v1/instances/my/teaching')
+        .get('/v1/courses/instances/my/teaching')
         .set('Authorization', `Bearer ${teacherToken}`)
         .expect(httpStatus.OK);
 
@@ -1027,7 +1037,7 @@ describe('Instance Module', () => {
 
     it('should fail as student', async () => {
       await request(app)
-        .get('/v1/instances/my/teaching')
+        .get('/v1/courses/instances/my/teaching')
         .set('Authorization', `Bearer ${studentToken}`)
         .expect(httpStatus.FORBIDDEN);
     });
@@ -1062,7 +1072,7 @@ describe('Instance Module', () => {
 
     it('should get instance statistics as teacher', async () => {
       const res = await request(app)
-        .get(`/v1/instances/${localInstanceId}/stats`)
+        .get(`/v1/courses/instances/${localInstanceId}/stats`)
         .set('Authorization', `Bearer ${teacherToken}`)
         .expect(httpStatus.OK);
 
@@ -1072,7 +1082,7 @@ describe('Instance Module', () => {
 
     it('should get instance statistics as admin', async () => {
       const res = await request(app)
-        .get(`/v1/instances/${localInstanceId}/stats`)
+        .get(`/v1/courses/instances/${localInstanceId}/stats`)
         .set('Authorization', `Bearer ${adminToken}`)
         .expect(httpStatus.OK);
 
@@ -1081,7 +1091,7 @@ describe('Instance Module', () => {
 
     it('should fail as student', async () => {
       await request(app)
-        .get(`/v1/instances/${localInstanceId}/stats`)
+        .get(`/v1/courses/instances/${localInstanceId}/stats`)
         .set('Authorization', `Bearer ${studentToken}`)
         .expect(httpStatus.FORBIDDEN);
     });
