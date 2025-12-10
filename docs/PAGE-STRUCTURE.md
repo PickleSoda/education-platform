@@ -64,13 +64,11 @@ This document outlines the visual structure and user flows for course management
     - Learning objectives
     - Prerequisites
     - Typical duration
-  
   - **Lecturers Tab**
     - List of all lecturers
     - Primary lecturer highlighted
     - Contact information
     - Office hours (if available)
-  
   - **Instances Tab**
     - List of available instances
     - For each instance:
@@ -80,7 +78,6 @@ This document outlines the visual structure and user flows for course management
       - Enrollment info (X/Y enrolled, "Full" badge)
       - "Join Instance" button (if enrollment open)
       - "View Instance" button (if already enrolled)
-  
   - **Assignments Tab** (Preview of templates)
     - Overview of grading structure
     - Assignment types breakdown (homework %, quiz %, projects %)
@@ -152,9 +149,8 @@ This document outlines the visual structure and user flows for course management
   - Status indicator
 
 - **Tabbed Management Interface**
-  
-  #### **Basic Info Tab**
 
+  #### **Basic Info Tab**
   - Editable form fields:
     - Course code
     - Title
@@ -162,9 +158,8 @@ This document outlines the visual structure and user flows for course management
     - Credits
     - Typical duration
   - "Save" and "Cancel" buttons
-  
-  #### **Tags Tab**
 
+  #### **Tags Tab**
   - **Current Tags Section**
     - List of assigned tags (removable chips)
     - Color-coded tags
@@ -173,9 +168,8 @@ This document outlines the visual structure and user flows for course management
     - "Create New Tag" button
     - Color picker for new tags
     - Recently used tags
-  
-  #### **Lecturers Tab**
 
+  #### **Lecturers Tab**
   - **Current Lecturers List**
     - Each lecturer card shows:
       - Name and email
@@ -186,9 +180,8 @@ This document outlines the visual structure and user flows for course management
     - User search (teachers only)
     - Role selector (primary/assistant)
     - "Add Lecturer" button
-  
-  #### **Assignment Templates Tab**
 
+  #### **Assignment Templates Tab**
   - **Grading Structure Overview**
     - Visual weight distribution chart
     - Total weight indicator (should equal 100%)
@@ -216,9 +209,8 @@ This document outlines the visual structure and user flows for course management
       - Each criterion: name, description, max points
       - Points validation (sum must equal max points)
       - "Add Criterion" button
-  
-  #### **Instances Tab**
 
+  #### **Instances Tab**
   - **Quick Actions**
     - "Create New Instance" button
     - Filter by semester/status
@@ -238,9 +230,8 @@ This document outlines the visual structure and user flows for course management
     - Lecturer assignment
     - "Copy from template" option
     - "Create" button
-  
-  #### **Statistics Tab**
 
+  #### **Statistics Tab**
   - Dashboard-style layout:
     - Total instances chart
     - Enrollment trends graph
@@ -368,7 +359,6 @@ This document outlines the visual structure and user flows for course management
     - Quick links (syllabus, assignments, forums)
     - Recent activity feed
     - Current grade widget
-  
   - **Assignments Tab**
     - List of all published assignments
     - Each assignment card:
@@ -380,7 +370,6 @@ This document outlines the visual structure and user flows for course management
       - "View/Submit" button
     - Filter: All, Upcoming, Overdue, Completed
     - Sort: By deadline, by weight, by status
-  
   - **Grades Tab**
     - Grade summary card (current total)
     - Weight distribution chart
@@ -393,7 +382,6 @@ This document outlines the visual structure and user flows for course management
       - Status
       - Feedback link
     - Grade prediction calculator
-  
   - **Resources Tab**
     - Organized by week/topic
     - File browser interface
@@ -403,14 +391,12 @@ This document outlines the visual structure and user flows for course management
       - File size
       - Download button
       - Preview (if applicable)
-  
   - **Forums Tab**
     - Forum list (General, Q&A, Assignments, Announcements)
     - Each forum:
       - Recent posts preview
       - Unread count badge
       - "View Forum" button
-  
   - **People Tab**
     - **Lecturers Section**
       - Lecturer cards with contact info
@@ -502,9 +488,8 @@ This document outlines the visual structure and user flows for course management
   - Action buttons: "Publish Assignment", "Upload Resource", "Create Announcement"
 
 - **Management Tabs**
-  
-  #### **Dashboard Tab**
 
+  #### **Dashboard Tab**
   - **Quick Stats Cards**
     - Total enrollments
     - Pending submissions
@@ -518,9 +503,8 @@ This document outlines the visual structure and user flows for course management
     - Students at risk
     - Overdue assignments
     - System notifications
-  
-  #### **Enrollments Tab**
 
+  #### **Enrollments Tab**
   - **Enrollment Controls**
     - Toggle enrollment open/closed
     - Set enrollment limit
@@ -537,9 +521,8 @@ This document outlines the visual structure and user flows for course management
     - Search and filter
     - Export to CSV
     - Bulk actions
-  
-  #### **Assignments Tab**
 
+  #### **Assignments Tab**
   - **Published Assignments List**
     - Each assignment card:
       - Title and template indicator
@@ -556,9 +539,8 @@ This document outlines the visual structure and user flows for course management
     - "Publish" button
   - **Assignment Templates Link**
     - Quick access to manage course-level templates
-  
-  #### **Resources Tab**
 
+  #### **Resources Tab**
   - **Resource Library**
     - Folder tree structure
     - Upload area (drag & drop)
@@ -568,9 +550,8 @@ This document outlines the visual structure and user flows for course management
       - Upload date
       - Visibility toggle (published/draft)
       - Actions (Edit, Download, Delete, Move)
-  
-  #### **Forums Tab**
 
+  #### **Forums Tab**
   - **Forum Management**
     - List of forums
     - Create new forum button
@@ -583,9 +564,8 @@ This document outlines the visual structure and user flows for course management
     - Flagged posts queue
     - Pin/unpin posts
     - Lock/unlock threads
-  
-  #### **Grades Tab**
 
+  #### **Grades Tab**
   - **Gradebook Interface**
     - Spreadsheet-style layout
     - Rows: Students
@@ -599,9 +579,8 @@ This document outlines the visual structure and user flows for course management
     - Drop lowest score
     - Extra credit assignment
     - Grade statistics view
-  
-  #### **Settings Tab**
 
+  #### **Settings Tab**
   - Instance-specific settings:
     - Semester and dates
     - Enrollment settings
@@ -681,7 +660,7 @@ This document outlines the visual structure and user flows for course management
 
 ### 11. Assignment Submission (Student View)
 
-**Route:** `/instances/:instanceId/assignments/:assignmentId`
+**Route:** `/my-courses/:instanceId/assignments/:assignmentId`
 
 **Purpose:** View assignment details and submit work
 
@@ -771,12 +750,10 @@ This document outlines the visual structure and user flows for course management
     - Submission timestamp
     - Late penalty indicator
     - Previous/Next student navigation
-  
   - **Submission Viewer**
     - Submitted files (viewer/download)
     - Embedded document viewer (if supported)
     - Side-by-side comparison (if resubmission)
-  
   - **Grading Form**
     - Grading criteria checklist/table:
       - Each criterion row:
@@ -787,7 +764,6 @@ This document outlines the visual structure and user flows for course management
     - Overall feedback text area (rich text)
     - "Save Draft" button
     - "Submit Grade" button
-  
   - **Quick Actions**
     - Copy grade from previous submission
     - Apply rubric template

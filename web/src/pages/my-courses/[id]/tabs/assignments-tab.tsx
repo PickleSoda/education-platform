@@ -9,6 +9,7 @@ import type { PublishedAssignment } from "#/entity";
 import { format, isPast, isFuture } from "date-fns";
 import { useState } from "react";
 import { Tabs, TabsList, TabsTrigger } from "@/ui/tabs";
+import { useNavigate } from "react-router";
 
 interface AssignmentsTabProps {
 	instanceId: string;
@@ -20,6 +21,7 @@ type FilterType = "all" | "upcoming" | "overdue" | "completed";
 
 export default function AssignmentsTab({ assignments, isLoading }: AssignmentsTabProps) {
 	const [filter, setFilter] = useState<FilterType>("all");
+	const navigate = useNavigate();
 
 	const assignmentTypeColors: Record<string, "info" | "warning" | "error" | "success" | "default"> = {
 		homework: "info",
@@ -128,8 +130,8 @@ export default function AssignmentsTab({ assignments, isLoading }: AssignmentsTa
 			key: "action",
 			align: "center",
 			width: 120,
-			render: () => (
-				<Button size="sm">
+			render: (_, record) => (
+				<Button size="sm" onClick={() => navigate(`assignments/${record.id}`)}>
 					<Icon icon="solar:eye-bold-duotone" size={16} className="mr-2" />
 					View
 				</Button>

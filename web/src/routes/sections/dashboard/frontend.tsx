@@ -10,7 +10,16 @@ export function getFrontendDashboardRoutes(): RouteObject[] {
 			path: "my-courses",
 			children: [
 				{ index: true, element: Component("/pages/my-courses") },
-				{ path: ":id", element: Component("/pages/my-courses/[id]") },
+				{
+					path: ":id",
+					children: [
+						{ index: true, element: Component("/pages/my-courses/[id]") },
+						{
+							path: "assignments/:assignmentId",
+							element: Component("/pages/my-courses/[id]/assignments/[assignmentId]"),
+						},
+					],
+				},
 			],
 		},
 		{
@@ -76,7 +85,24 @@ export function getFrontendDashboardRoutes(): RouteObject[] {
 					path: "instance",
 					children: [
 						{ index: true, element: Component("/pages/management/instance") },
-						{ path: ":id", element: Component("/pages/management/instance/[id]") },
+						{
+							path: ":id",
+							children: [
+								{ index: true, element: Component("/pages/management/instance/[id]") },
+								{
+									path: "assignments/:assignmentId",
+									children: [
+										{ index: true, element: Component("/pages/management/instance/[id]/assignments/[assignmentId]") },
+										{
+											path: "grade/:submissionId",
+											element: Component(
+												"/pages/management/instance/[id]/assignments/[assignmentId]/grade/[submissionId]"
+											),
+										},
+									],
+								},
+							],
+						},
 					],
 				},
 			],
