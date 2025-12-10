@@ -2,7 +2,9 @@ import dotenv from 'dotenv';
 import path from 'path';
 import { z } from 'zod';
 
-dotenv.config({ path: path.join(process.cwd(), '.env') });
+// Load environment-specific .env file
+const envFile = process.env.NODE_ENV === 'test' ? '.env.test' : '.env';
+dotenv.config({ path: path.join(process.cwd(), envFile) });
 
 // Define env vars schema
 const envVarsSchema = z.object({

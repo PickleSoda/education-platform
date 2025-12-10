@@ -85,7 +85,7 @@ export const deleteAssignmentTemplateSchema = z.object({
 
 export const reorderAssignmentTemplatesSchema = z.object({
   body: z.object({
-    templateOrder: z.array(z.string().uuid()).min(1),
+    order: z.array(z.string().uuid()).min(1),
   }),
   params: z.object({
     courseId: z.string().uuid(),
@@ -95,6 +95,7 @@ export const reorderAssignmentTemplatesSchema = z.object({
 export const copyAssignmentTemplateSchema = z.object({
   body: z.object({
     targetCourseId: z.string().uuid().optional(),
+    title: z.string().min(1).max(200).optional(),
   }),
   params: z.object({
     id: z.string().uuid(),
@@ -134,7 +135,7 @@ export const deleteGradingCriteriaSchema = z.object({
 
 export const reorderGradingCriteriaSchema = z.object({
   body: z.object({
-    criteriaOrder: z.array(z.string().uuid()).min(1),
+    order: z.array(z.string().uuid()).min(1),
   }),
   params: z.object({
     id: z.string().uuid(),

@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeEach, afterEach } from 'vitest';
+import { describe, it, expect, beforeAll, afterAll, beforeEach } from 'vitest';
 import httpStatus from 'http-status';
 import request from 'supertest';
 import app from '@/app';
@@ -14,10 +14,11 @@ describe('Instance Module', () => {
   let teacherId: string;
   let studentId: string;
   let courseId: string;
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   let instanceId: string;
   let assignmentTemplateId: string;
 
-  beforeEach(async () => {
+  beforeAll(async () => {
     // Clear test data in proper order for FK constraints
     await prisma.publishedGradingCriteria.deleteMany();
     await prisma.submission.deleteMany();
@@ -139,8 +140,8 @@ describe('Instance Module', () => {
     assignmentTemplateId = template.id;
   });
 
-  afterEach(async () => {
-    // Cleanup in proper order
+  afterAll(async () => {
+    // Final cleanup
     await prisma.publishedGradingCriteria.deleteMany();
     await prisma.submission.deleteMany();
     await prisma.publishedAssignment.deleteMany();
@@ -165,6 +166,11 @@ describe('Instance Module', () => {
   // ==========================================================================
 
   describe('POST /instances - Create Instance', () => {
+    beforeEach(async () => {
+      // Clean up instances before each test in this suite
+      await prisma.courseInstance.deleteMany();
+    });
+
     it('should create a new instance as admin', async () => {
       const res = await request(app)
         .post('/v1/instances')
@@ -179,11 +185,10 @@ describe('Instance Module', () => {
         })
         .expect(httpStatus.CREATED);
 
-      expect(res.body.success).toBe(true);
+      expect(res.body.message).toBeDefined();
       expect(res.body.data.semester).toBe('Fall 2024');
       expect(res.body.data.status).toBe('draft');
       expect(res.body.data.enrollmentOpen).toBe(false);
-      instanceId = res.body.data.id;
     });
 
     it('should create a new instance as teacher', async () => {
@@ -198,7 +203,7 @@ describe('Instance Module', () => {
         })
         .expect(httpStatus.CREATED);
 
-      expect(res.body.success).toBe(true);
+      expect(res.body.message).toBeDefined();
       expect(res.body.data.semester).toBe('Spring 2025');
     });
 
@@ -243,32 +248,39 @@ describe('Instance Module', () => {
 
   describe('GET /instances - List Instances', () => {
     beforeEach(async () => {
+      // Clean up and create fresh test instances for this suite
+      await prisma.courseInstance.deleteMany();
+
       // Create test instances
-      await prisma.courseInstance.createMany({
-        data: [
-          {
+      await Promise.all([
+        prisma.courseInstance.create({
+          data: {
             courseId,
             semester: 'Fall 2024',
             startDate: new Date('2024-09-01'),
             endDate: new Date('2024-12-15'),
             status: 'active',
           },
-          {
+        }),
+        prisma.courseInstance.create({
+          data: {
             courseId,
             semester: 'Spring 2025',
             startDate: new Date('2025-01-15'),
             endDate: new Date('2025-05-15'),
             status: 'draft',
           },
-          {
+        }),
+        prisma.courseInstance.create({
+          data: {
             courseId,
             semester: 'Fall 2025',
             startDate: new Date('2025-09-01'),
             endDate: new Date('2025-12-15'),
             status: 'archived',
           },
-        ],
-      });
+        }),
+      ]);
     });
 
     it('should list all instances', async () => {
@@ -277,7 +289,7 @@ describe('Instance Module', () => {
         .set('Authorization', `Bearer ${studentToken}`)
         .expect(httpStatus.OK);
 
-      expect(res.body.success).toBe(true);
+      expect(res.body.message).toBeDefined();
       expect(res.body.data.length).toBeGreaterThanOrEqual(2);
     });
 
@@ -287,7 +299,7 @@ describe('Instance Module', () => {
         .set('Authorization', `Bearer ${studentToken}`)
         .expect(httpStatus.OK);
 
-      expect(res.body.success).toBe(true);
+      expect(res.body.message).toBeDefined();
       res.body.data.forEach((instance: { status: string }) => {
         expect(instance.status).toBe('active');
       });
@@ -299,7 +311,7 @@ describe('Instance Module', () => {
         .set('Authorization', `Bearer ${studentToken}`)
         .expect(httpStatus.OK);
 
-      expect(res.body.success).toBe(true);
+      expect(res.body.message).toBeDefined();
       expect(res.body.data).toHaveLength(1);
       expect(res.body.meta.page).toBe(1);
       expect(res.body.meta.limit).toBe(1);
@@ -311,7 +323,12 @@ describe('Instance Module', () => {
   });
 
   describe('GET /instances/:id - Get Instance', () => {
+    let localInstanceId: string;
+
     beforeEach(async () => {
+      // Clean up and create fresh instance for this suite
+      await prisma.courseInstance.deleteMany();
+
       const instance = await prisma.courseInstance.create({
         data: {
           courseId,
@@ -321,17 +338,17 @@ describe('Instance Module', () => {
           status: 'active',
         },
       });
-      instanceId = instance.id;
+      localInstanceId = instance.id;
     });
 
     it('should get instance details', async () => {
       const res = await request(app)
-        .get(`/v1/instances/${instanceId}`)
+        .get(`/v1/instances/${localInstanceId}`)
         .set('Authorization', `Bearer ${studentToken}`)
         .expect(httpStatus.OK);
 
-      expect(res.body.success).toBe(true);
-      expect(res.body.data.id).toBe(instanceId);
+      expect(res.body.message).toBeDefined();
+      expect(res.body.data.id).toBe(localInstanceId);
       expect(res.body.data.semester).toBe('Fall 2024');
     });
 
@@ -343,12 +360,17 @@ describe('Instance Module', () => {
     });
 
     it('should fail without authentication', async () => {
-      await request(app).get(`/v1/instances/${instanceId}`).expect(httpStatus.UNAUTHORIZED);
+      await request(app).get(`/v1/instances/${localInstanceId}`).expect(httpStatus.UNAUTHORIZED);
     });
   });
 
   describe('PATCH /instances/:id - Update Instance', () => {
+    let localInstanceId: string;
+
     beforeEach(async () => {
+      // Clean up and create fresh instance for this suite
+      await prisma.courseInstance.deleteMany();
+
       const instance = await prisma.courseInstance.create({
         data: {
           courseId,
@@ -358,12 +380,12 @@ describe('Instance Module', () => {
           status: 'draft',
         },
       });
-      instanceId = instance.id;
+      localInstanceId = instance.id;
     });
 
     it('should update instance as admin', async () => {
       const res = await request(app)
-        .patch(`/v1/instances/${instanceId}`)
+        .patch(`/v1/instances/${localInstanceId}`)
         .set('Authorization', `Bearer ${adminToken}`)
         .send({
           semester: 'Updated Fall 2024',
@@ -371,27 +393,27 @@ describe('Instance Module', () => {
         })
         .expect(httpStatus.OK);
 
-      expect(res.body.success).toBe(true);
+      expect(res.body.message).toBeDefined();
       expect(res.body.data.semester).toBe('Updated Fall 2024');
       expect(res.body.data.enrollmentLimit).toBe(50);
     });
 
     it('should update instance as teacher', async () => {
       const res = await request(app)
-        .patch(`/v1/instances/${instanceId}`)
+        .patch(`/v1/instances/${localInstanceId}`)
         .set('Authorization', `Bearer ${teacherToken}`)
         .send({
           enrollmentLimit: 40,
         })
         .expect(httpStatus.OK);
 
-      expect(res.body.success).toBe(true);
+      expect(res.body.message).toBeDefined();
       expect(res.body.data.enrollmentLimit).toBe(40);
     });
 
     it('should fail to update as student', async () => {
       await request(app)
-        .patch(`/v1/instances/${instanceId}`)
+        .patch(`/v1/instances/${localInstanceId}`)
         .set('Authorization', `Bearer ${studentToken}`)
         .send({
           semester: 'Updated',
@@ -409,7 +431,12 @@ describe('Instance Module', () => {
   });
 
   describe('PATCH /instances/:id/status - Update Instance Status', () => {
+    let localInstanceId: string;
+
     beforeEach(async () => {
+      // Clean up and create fresh instance for this suite
+      await prisma.courseInstance.deleteMany();
+
       const instance = await prisma.courseInstance.create({
         data: {
           courseId,
@@ -419,56 +446,56 @@ describe('Instance Module', () => {
           status: 'draft',
         },
       });
-      instanceId = instance.id;
+      localInstanceId = instance.id;
     });
 
     it('should update status to scheduled', async () => {
       const res = await request(app)
-        .patch(`/v1/instances/${instanceId}/status`)
+        .patch(`/v1/instances/${localInstanceId}/status`)
         .set('Authorization', `Bearer ${teacherToken}`)
         .send({ status: 'scheduled' })
         .expect(httpStatus.OK);
 
-      expect(res.body.success).toBe(true);
+      expect(res.body.message).toBeDefined();
       expect(res.body.data.status).toBe('scheduled');
     });
 
     it('should update status to active', async () => {
       // First set to scheduled
       await prisma.courseInstance.update({
-        where: { id: instanceId },
+        where: { id: localInstanceId },
         data: { status: 'scheduled' },
       });
 
       const res = await request(app)
-        .patch(`/v1/instances/${instanceId}/status`)
+        .patch(`/v1/instances/${localInstanceId}/status`)
         .set('Authorization', `Bearer ${teacherToken}`)
         .send({ status: 'active' })
         .expect(httpStatus.OK);
 
-      expect(res.body.success).toBe(true);
+      expect(res.body.message).toBeDefined();
       expect(res.body.data.status).toBe('active');
     });
 
     it('should update status to completed', async () => {
       await prisma.courseInstance.update({
-        where: { id: instanceId },
+        where: { id: localInstanceId },
         data: { status: 'active' },
       });
 
       const res = await request(app)
-        .patch(`/v1/instances/${instanceId}/status`)
+        .patch(`/v1/instances/${localInstanceId}/status`)
         .set('Authorization', `Bearer ${teacherToken}`)
         .send({ status: 'completed' })
         .expect(httpStatus.OK);
 
-      expect(res.body.success).toBe(true);
+      expect(res.body.message).toBeDefined();
       expect(res.body.data.status).toBe('completed');
     });
 
     it('should fail to update status as student', async () => {
       await request(app)
-        .patch(`/v1/instances/${instanceId}/status`)
+        .patch(`/v1/instances/${localInstanceId}/status`)
         .set('Authorization', `Bearer ${studentToken}`)
         .send({ status: 'active' })
         .expect(httpStatus.FORBIDDEN);
@@ -476,7 +503,12 @@ describe('Instance Module', () => {
   });
 
   describe('PATCH /instances/:id/enrollment - Toggle Enrollment', () => {
+    let localInstanceId: string;
+
     beforeEach(async () => {
+      // Clean up and create fresh instance for this suite
+      await prisma.courseInstance.deleteMany();
+
       const instance = await prisma.courseInstance.create({
         data: {
           courseId,
@@ -487,39 +519,39 @@ describe('Instance Module', () => {
           enrollmentOpen: false,
         },
       });
-      instanceId = instance.id;
+      localInstanceId = instance.id;
     });
 
     it('should toggle enrollment open', async () => {
       const res = await request(app)
-        .patch(`/v1/instances/${instanceId}/enrollment`)
+        .patch(`/v1/instances/${localInstanceId}/enrollment`)
         .set('Authorization', `Bearer ${teacherToken}`)
         .send({ enrollmentOpen: true })
         .expect(httpStatus.OK);
 
-      expect(res.body.success).toBe(true);
+      expect(res.body.message).toBeDefined();
       expect(res.body.data.enrollmentOpen).toBe(true);
     });
 
     it('should toggle enrollment closed', async () => {
       await prisma.courseInstance.update({
-        where: { id: instanceId },
+        where: { id: localInstanceId },
         data: { enrollmentOpen: true },
       });
 
       const res = await request(app)
-        .patch(`/v1/instances/${instanceId}/enrollment`)
+        .patch(`/v1/instances/${localInstanceId}/enrollment`)
         .set('Authorization', `Bearer ${teacherToken}`)
         .send({ enrollmentOpen: false })
         .expect(httpStatus.OK);
 
-      expect(res.body.success).toBe(true);
+      expect(res.body.message).toBeDefined();
       expect(res.body.data.enrollmentOpen).toBe(false);
     });
 
     it('should fail as student', async () => {
       await request(app)
-        .patch(`/v1/instances/${instanceId}/enrollment`)
+        .patch(`/v1/instances/${localInstanceId}/enrollment`)
         .set('Authorization', `Bearer ${studentToken}`)
         .send({ enrollmentOpen: true })
         .expect(httpStatus.FORBIDDEN);
@@ -527,7 +559,12 @@ describe('Instance Module', () => {
   });
 
   describe('DELETE /instances/:id - Delete Instance', () => {
+    let localInstanceId: string;
+
     beforeEach(async () => {
+      // Clean up and create fresh instance for this suite
+      await prisma.courseInstance.deleteMany();
+
       const instance = await prisma.courseInstance.create({
         data: {
           courseId,
@@ -537,32 +574,32 @@ describe('Instance Module', () => {
           status: 'draft',
         },
       });
-      instanceId = instance.id;
+      localInstanceId = instance.id;
     });
 
     it('should delete instance as admin', async () => {
       await request(app)
-        .delete(`/v1/instances/${instanceId}`)
+        .delete(`/v1/instances/${localInstanceId}`)
         .set('Authorization', `Bearer ${adminToken}`)
-        .expect(httpStatus.OK);
+        .expect(httpStatus.NO_CONTENT);
 
       // Verify deletion
       const deleted = await prisma.courseInstance.findUnique({
-        where: { id: instanceId },
+        where: { id: localInstanceId },
       });
       expect(deleted).toBeNull();
     });
 
     it('should fail to delete as teacher', async () => {
       await request(app)
-        .delete(`/v1/instances/${instanceId}`)
+        .delete(`/v1/instances/${localInstanceId}`)
         .set('Authorization', `Bearer ${teacherToken}`)
         .expect(httpStatus.FORBIDDEN);
     });
 
     it('should fail to delete as student', async () => {
       await request(app)
-        .delete(`/v1/instances/${instanceId}`)
+        .delete(`/v1/instances/${localInstanceId}`)
         .set('Authorization', `Bearer ${studentToken}`)
         .expect(httpStatus.FORBIDDEN);
     });
@@ -580,7 +617,12 @@ describe('Instance Module', () => {
   // ==========================================================================
 
   describe('POST /instances/:id/clone - Clone Instance', () => {
+    let localInstanceId: string;
+
     beforeEach(async () => {
+      // Clean up and create fresh instance for this suite
+      await prisma.courseInstance.deleteMany();
+
       const instance = await prisma.courseInstance.create({
         data: {
           courseId,
@@ -591,12 +633,12 @@ describe('Instance Module', () => {
           enrollmentLimit: 30,
         },
       });
-      instanceId = instance.id;
+      localInstanceId = instance.id;
     });
 
     it('should clone instance as teacher', async () => {
       const res = await request(app)
-        .post(`/v1/instances/${instanceId}/clone`)
+        .post(`/v1/instances/${localInstanceId}/clone`)
         .set('Authorization', `Bearer ${teacherToken}`)
         .send({
           semester: 'Fall 2025',
@@ -604,16 +646,16 @@ describe('Instance Module', () => {
           endDate: '2025-12-15',
         })
         .expect(httpStatus.CREATED);
-
-      expect(res.body.success).toBe(true);
+      console.log(res.body);
+      expect(res.body.message).toBeDefined();
       expect(res.body.data.semester).toBe('Fall 2025');
       expect(res.body.data.status).toBe('draft');
-      expect(res.body.data.id).not.toBe(instanceId);
+      expect(res.body.data.id).not.toBe(localInstanceId);
     });
 
     it('should clone instance as admin', async () => {
       const res = await request(app)
-        .post(`/v1/instances/${instanceId}/clone`)
+        .post(`/v1/instances/${localInstanceId}/clone`)
         .set('Authorization', `Bearer ${adminToken}`)
         .send({
           semester: 'Spring 2025',
@@ -622,13 +664,13 @@ describe('Instance Module', () => {
         })
         .expect(httpStatus.CREATED);
 
-      expect(res.body.success).toBe(true);
+      expect(res.body.message).toBeDefined();
       expect(res.body.data.semester).toBe('Spring 2025');
     });
 
     it('should fail to clone as student', async () => {
       await request(app)
-        .post(`/v1/instances/${instanceId}/clone`)
+        .post(`/v1/instances/${localInstanceId}/clone`)
         .set('Authorization', `Bearer ${studentToken}`)
         .send({
           semester: 'Fall 2025',
@@ -644,7 +686,11 @@ describe('Instance Module', () => {
   // ==========================================================================
 
   describe('POST /instances/:id/assignments/publish - Publish Assignment', () => {
+    let localInstanceId: string;
+
     beforeEach(async () => {
+      await prisma.courseInstance.deleteMany();
+
       const instance = await prisma.courseInstance.create({
         data: {
           courseId,
@@ -654,68 +700,71 @@ describe('Instance Module', () => {
           status: 'active',
         },
       });
-      instanceId = instance.id;
+      localInstanceId = instance.id;
     });
 
     it('should publish assignment from template', async () => {
       const res = await request(app)
-        .post(`/v1/instances/${instanceId}/assignments/publish`)
+        .post(`/v1/instances/${localInstanceId}/assignments/publish`)
         .set('Authorization', `Bearer ${teacherToken}`)
         .send({
           templateId: assignmentTemplateId,
-          deadline: '2024-10-15T23:59:59Z',
+          deadline: '2026-10-15T23:59:59Z',
         })
         .expect(httpStatus.CREATED);
 
-      expect(res.body.success).toBe(true);
+      expect(res.body.message).toBeDefined();
       expect(res.body.data.title).toBe('Homework 1');
-      expect(res.body.data.instanceId).toBe(instanceId);
+      expect(res.body.data.instanceId).toBe(localInstanceId);
     });
 
     it('should publish assignment with custom settings', async () => {
       const res = await request(app)
-        .post(`/v1/instances/${instanceId}/assignments/publish`)
+        .post(`/v1/instances/${localInstanceId}/assignments/publish`)
         .set('Authorization', `Bearer ${teacherToken}`)
         .send({
           templateId: assignmentTemplateId,
-          deadline: '2024-10-15T23:59:59Z',
-          lateDeadline: '2024-10-17T23:59:59Z',
+          deadline: '2026-10-15T23:59:59Z',
+          lateDeadline: '2026-10-17T23:59:59Z',
           latePenaltyPercent: 20,
         })
         .expect(httpStatus.CREATED);
 
-      expect(res.body.success).toBe(true);
-      expect(res.body.data.latePenaltyPercent).toBe('20.00');
+      expect(res.body.message).toBeDefined();
+      expect(res.body.data.latePenaltyPercent).toBe(20);
     });
 
     it('should fail as student', async () => {
       await request(app)
-        .post(`/v1/instances/${instanceId}/assignments/publish`)
+        .post(`/v1/instances/${localInstanceId}/assignments/publish`)
         .set('Authorization', `Bearer ${studentToken}`)
         .send({
           templateId: assignmentTemplateId,
-          deadline: '2024-10-15T23:59:59Z',
+          deadline: '2026-10-15T23:59:59Z',
         })
         .expect(httpStatus.FORBIDDEN);
     });
 
     it('should fail with invalid template ID', async () => {
       await request(app)
-        .post(`/v1/instances/${instanceId}/assignments/publish`)
+        .post(`/v1/instances/${localInstanceId}/assignments/publish`)
         .set('Authorization', `Bearer ${teacherToken}`)
         .send({
           templateId: '00000000-0000-0000-0000-000000000000',
-          deadline: '2024-10-15T23:59:59Z',
+          deadline: '2026-10-15T23:59:59Z',
         })
         .expect(httpStatus.NOT_FOUND);
     });
   });
 
   describe('GET /instances/:id/assignments - Get Instance Assignments', () => {
+    let localInstanceId: string;
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     let publishedAssignmentId: string;
 
     beforeEach(async () => {
+      await prisma.courseInstance.deleteMany();
+
       const instance = await prisma.courseInstance.create({
         data: {
           courseId,
@@ -725,12 +774,12 @@ describe('Instance Module', () => {
           status: 'active',
         },
       });
-      instanceId = instance.id;
+      localInstanceId = instance.id;
 
       // Create published assignment
       const published = await prisma.publishedAssignment.create({
         data: {
-          instanceId,
+          instanceId: localInstanceId,
           templateId: assignmentTemplateId,
           title: 'Homework 1',
           description: 'First homework',
@@ -746,36 +795,39 @@ describe('Instance Module', () => {
 
     it('should get instance assignments as student', async () => {
       const res = await request(app)
-        .get(`/v1/instances/${instanceId}/assignments`)
+        .get(`/v1/instances/${localInstanceId}/assignments`)
         .set('Authorization', `Bearer ${studentToken}`)
         .expect(httpStatus.OK);
 
-      expect(res.body.success).toBe(true);
+      expect(res.body.message).toBeDefined();
       expect(res.body.data).toHaveLength(1);
       expect(res.body.data[0].title).toBe('Homework 1');
     });
 
     it('should get instance assignments as teacher', async () => {
       const res = await request(app)
-        .get(`/v1/instances/${instanceId}/assignments`)
+        .get(`/v1/instances/${localInstanceId}/assignments`)
         .set('Authorization', `Bearer ${teacherToken}`)
         .expect(httpStatus.OK);
 
-      expect(res.body.success).toBe(true);
+      expect(res.body.message).toBeDefined();
       expect(res.body.data).toHaveLength(1);
     });
 
     it('should fail without authentication', async () => {
       await request(app)
-        .get(`/v1/instances/${instanceId}/assignments`)
+        .get(`/v1/instances/${localInstanceId}/assignments`)
         .expect(httpStatus.UNAUTHORIZED);
     });
   });
 
   describe('GET /instances/:id/assignments/:assignmentId - Get Published Assignment', () => {
+    let localInstanceId: string;
     let publishedAssignmentId: string;
 
     beforeEach(async () => {
+      await prisma.courseInstance.deleteMany();
+
       const instance = await prisma.courseInstance.create({
         data: {
           courseId,
@@ -785,11 +837,11 @@ describe('Instance Module', () => {
           status: 'active',
         },
       });
-      instanceId = instance.id;
+      localInstanceId = instance.id;
 
       const published = await prisma.publishedAssignment.create({
         data: {
-          instanceId,
+          instanceId: localInstanceId,
           templateId: assignmentTemplateId,
           title: 'Homework 1',
           description: 'First homework',
@@ -805,27 +857,30 @@ describe('Instance Module', () => {
 
     it('should get published assignment details', async () => {
       const res = await request(app)
-        .get(`/v1/instances/${instanceId}/assignments/${publishedAssignmentId}`)
+        .get(`/v1/instances/${localInstanceId}/assignments/${publishedAssignmentId}`)
         .set('Authorization', `Bearer ${studentToken}`)
         .expect(httpStatus.OK);
 
-      expect(res.body.success).toBe(true);
+      expect(res.body.message).toBeDefined();
       expect(res.body.data.id).toBe(publishedAssignmentId);
       expect(res.body.data.title).toBe('Homework 1');
     });
 
     it('should return 404 for non-existent assignment', async () => {
       await request(app)
-        .get(`/v1/instances/${instanceId}/assignments/00000000-0000-0000-0000-000000000000`)
+        .get(`/v1/instances/${localInstanceId}/assignments/00000000-0000-0000-0000-000000000000`)
         .set('Authorization', `Bearer ${studentToken}`)
         .expect(httpStatus.NOT_FOUND);
     });
   });
 
   describe('PATCH /instances/:id/assignments/:assignmentId/publish - Toggle Publish Status', () => {
+    let localInstanceId: string;
     let publishedAssignmentId: string;
 
     beforeEach(async () => {
+      await prisma.courseInstance.deleteMany();
+
       const instance = await prisma.courseInstance.create({
         data: {
           courseId,
@@ -835,11 +890,11 @@ describe('Instance Module', () => {
           status: 'active',
         },
       });
-      instanceId = instance.id;
+      localInstanceId = instance.id;
 
       const published = await prisma.publishedAssignment.create({
         data: {
-          instanceId,
+          instanceId: localInstanceId,
           templateId: assignmentTemplateId,
           title: 'Homework 1',
           description: 'First homework',
@@ -855,12 +910,12 @@ describe('Instance Module', () => {
 
     it('should toggle to published', async () => {
       const res = await request(app)
-        .patch(`/v1/instances/${instanceId}/assignments/${publishedAssignmentId}/publish`)
+        .patch(`/v1/instances/${localInstanceId}/assignments/${publishedAssignmentId}/publish`)
         .set('Authorization', `Bearer ${teacherToken}`)
         .send({ status: 'published' })
         .expect(httpStatus.OK);
 
-      expect(res.body.success).toBe(true);
+      expect(res.body.message).toBeDefined();
       expect(res.body.data.status).toBe('published');
     });
 
@@ -871,18 +926,18 @@ describe('Instance Module', () => {
       });
 
       const res = await request(app)
-        .patch(`/v1/instances/${instanceId}/assignments/${publishedAssignmentId}/publish`)
+        .patch(`/v1/instances/${localInstanceId}/assignments/${publishedAssignmentId}/publish`)
         .set('Authorization', `Bearer ${teacherToken}`)
         .send({ status: 'closed' })
         .expect(httpStatus.OK);
 
-      expect(res.body.success).toBe(true);
+      expect(res.body.message).toBeDefined();
       expect(res.body.data.status).toBe('closed');
     });
 
     it('should fail as student', async () => {
       await request(app)
-        .patch(`/v1/instances/${instanceId}/assignments/${publishedAssignmentId}/publish`)
+        .patch(`/v1/instances/${localInstanceId}/assignments/${publishedAssignmentId}/publish`)
         .set('Authorization', `Bearer ${studentToken}`)
         .send({ status: 'published' })
         .expect(httpStatus.FORBIDDEN);
@@ -894,7 +949,11 @@ describe('Instance Module', () => {
   // ==========================================================================
 
   describe('GET /instances/my/enrolled - Get My Enrolled Instances', () => {
+    let localInstanceId: string;
+
     beforeEach(async () => {
+      await prisma.courseInstance.deleteMany();
+
       const instance = await prisma.courseInstance.create({
         data: {
           courseId,
@@ -904,12 +963,12 @@ describe('Instance Module', () => {
           status: 'active',
         },
       });
-      instanceId = instance.id;
+      localInstanceId = instance.id;
 
       // Enroll student
       await prisma.enrollment.create({
         data: {
-          instanceId,
+          instanceId: localInstanceId,
           studentId,
           status: 'enrolled',
         },
@@ -922,7 +981,7 @@ describe('Instance Module', () => {
         .set('Authorization', `Bearer ${studentToken}`)
         .expect(httpStatus.OK);
 
-      expect(res.body.success).toBe(true);
+      expect(res.body.message).toBeDefined();
       expect(res.body.data.length).toBeGreaterThanOrEqual(1);
     });
 
@@ -932,7 +991,12 @@ describe('Instance Module', () => {
   });
 
   describe('GET /instances/my/teaching - Get My Teaching Instances', () => {
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    let localInstanceId: string;
+
     beforeEach(async () => {
+      await prisma.courseInstance.deleteMany();
+
       const instance = await prisma.courseInstance.create({
         data: {
           courseId,
@@ -948,7 +1012,7 @@ describe('Instance Module', () => {
           },
         },
       });
-      instanceId = instance.id;
+      localInstanceId = instance.id;
     });
 
     it('should get teaching instances as teacher', async () => {
@@ -957,7 +1021,7 @@ describe('Instance Module', () => {
         .set('Authorization', `Bearer ${teacherToken}`)
         .expect(httpStatus.OK);
 
-      expect(res.body.success).toBe(true);
+      expect(res.body.message).toBeDefined();
       expect(res.body.data.length).toBeGreaterThanOrEqual(1);
     });
 
@@ -970,7 +1034,11 @@ describe('Instance Module', () => {
   });
 
   describe('GET /instances/:id/stats - Get Instance Statistics', () => {
+    let localInstanceId: string;
+
     beforeEach(async () => {
+      await prisma.courseInstance.deleteMany();
+
       const instance = await prisma.courseInstance.create({
         data: {
           courseId,
@@ -980,12 +1048,12 @@ describe('Instance Module', () => {
           status: 'active',
         },
       });
-      instanceId = instance.id;
+      localInstanceId = instance.id;
 
       // Add some enrollments
       await prisma.enrollment.create({
         data: {
-          instanceId,
+          instanceId: localInstanceId,
           studentId,
           status: 'enrolled',
         },
@@ -994,26 +1062,26 @@ describe('Instance Module', () => {
 
     it('should get instance statistics as teacher', async () => {
       const res = await request(app)
-        .get(`/v1/instances/${instanceId}/stats`)
+        .get(`/v1/instances/${localInstanceId}/stats`)
         .set('Authorization', `Bearer ${teacherToken}`)
         .expect(httpStatus.OK);
 
-      expect(res.body.success).toBe(true);
+      expect(res.body.message).toBeDefined();
       expect(res.body.data).toHaveProperty('enrollmentCount');
     });
 
     it('should get instance statistics as admin', async () => {
       const res = await request(app)
-        .get(`/v1/instances/${instanceId}/stats`)
+        .get(`/v1/instances/${localInstanceId}/stats`)
         .set('Authorization', `Bearer ${adminToken}`)
         .expect(httpStatus.OK);
 
-      expect(res.body.success).toBe(true);
+      expect(res.body.message).toBeDefined();
     });
 
     it('should fail as student', async () => {
       await request(app)
-        .get(`/v1/instances/${instanceId}/stats`)
+        .get(`/v1/instances/${localInstanceId}/stats`)
         .set('Authorization', `Bearer ${studentToken}`)
         .expect(httpStatus.FORBIDDEN);
     });

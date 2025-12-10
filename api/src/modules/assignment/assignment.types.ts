@@ -65,6 +65,7 @@ export interface AssignmentListFilters {
 
 export interface GradingStructure {
   templates: AssignmentTemplateWithCriteria[];
+  assignments: AssignmentTemplateWithCriteria[];
   totalWeight: number;
   totalMaxPoints: number;
 }
@@ -73,6 +74,7 @@ export interface AssignmentStats {
   templateId: string;
   title: string;
   usageCount: number;
+  publishedCount: number;
   instances: {
     instanceId: string;
     semester: string;

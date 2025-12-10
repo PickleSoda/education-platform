@@ -66,7 +66,7 @@ export const createInstance = async (data: InstanceCreateInput): Promise<Instanc
       endDate: data.endDate,
       createdBy: data.createdBy,
       enrollmentLimit: data.enrollmentLimit,
-      enrollmentOpen: data.enrollmentOpen ?? true,
+      enrollmentOpen: data.enrollmentOpen ?? false,
       status: 'draft',
       lecturers: data.lecturerIds
         ? {
@@ -372,7 +372,7 @@ export const publishAssignment = async (
     include: { gradingCriteria: true },
   });
 
-  if (!template) throw new Error('Template not found');
+  if (!template) throw new Error('Assignment template not found');
 
   const status =
     data.autoPublish && data.publishAt && data.publishAt <= new Date()
@@ -471,18 +471,18 @@ export const getPublishedAssignment = async (
  */
 export const togglePublishStatus = async (
   assignmentId: string,
-  publish: boolean
+  status: string
 ): Promise<PublishedAssignment> => {
   const assignment = await prisma.publishedAssignment.update({
     where: { id: assignmentId },
     data: {
-      status: publish ? 'published' : 'draft',
-      ...(publish && { publishAt: new Date() }),
+      status: status as any,
+      ...(status === 'published' && { publishAt: new Date() }),
     },
     include: { instance: true },
   });
 
-  if (publish) {
+  if (status === 'published') {
     await notifyStudentsOfAssignment(assignment.instanceId, assignment.id, assignment.title);
   }
 

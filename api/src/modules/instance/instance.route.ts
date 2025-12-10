@@ -1,6 +1,6 @@
 import { Router } from 'express';
 import auth, { requireAnyRole } from '@/shared/middlewares/auth';
-import * as controller from './instance.controller';
+import { instanceController } from './instance.controller';
 
 const router = Router();
 
@@ -13,21 +13,26 @@ const router = Router();
  * POST /instances
  * Requires: teacher or admin role
  */
-router.post('/instances', auth, requireAnyRole(['teacher', 'admin']), controller.createInstance);
+router.post(
+  '/instances',
+  auth(),
+  requireAnyRole(['teacher', 'admin']),
+  instanceController.createInstance
+);
 
 /**
  * List instances
  * GET /instances
  * Requires: authenticated
  */
-router.get('/instances', auth, controller.listInstances);
+router.get('/instances', auth(), instanceController.listInstances);
 
 /**
  * Get my enrolled instances (for students)
  * GET /instances/my/enrolled
  * Requires: authenticated
  */
-router.get('/instances/my/enrolled', auth, controller.getMyEnrolledInstances);
+router.get('/instances/my/enrolled', auth(), instanceController.getMyEnrolledInstances);
 
 /**
  * Get my teaching instances (for teachers)
@@ -36,9 +41,9 @@ router.get('/instances/my/enrolled', auth, controller.getMyEnrolledInstances);
  */
 router.get(
   '/instances/my/teaching',
-  auth,
+  auth(),
   requireAnyRole(['teacher', 'admin']),
-  controller.getMyTeachingInstances
+  instanceController.getMyTeachingInstances
 );
 
 /**
@@ -46,14 +51,14 @@ router.get(
  * GET /instances/:id
  * Requires: authenticated
  */
-router.get('/instances/:id', auth, controller.getInstance);
+router.get('/instances/:id', auth(), instanceController.getInstance);
 
 /**
  * Get instance with full details
  * GET /instances/:id/details
  * Requires: authenticated
  */
-router.get('/instances/:id/details', auth, controller.getInstanceWithDetails);
+router.get('/instances/:id/details', auth(), instanceController.getInstanceWithDetails);
 
 /**
  * Update instance
@@ -62,9 +67,9 @@ router.get('/instances/:id/details', auth, controller.getInstanceWithDetails);
  */
 router.patch(
   '/instances/:id',
-  auth,
+  auth(),
   requireAnyRole(['teacher', 'admin']),
-  controller.updateInstance
+  instanceController.updateInstance
 );
 
 /**
@@ -74,9 +79,9 @@ router.patch(
  */
 router.patch(
   '/instances/:id/status',
-  auth,
+  auth(),
   requireAnyRole(['teacher', 'admin']),
-  controller.updateInstanceStatus
+  instanceController.updateInstanceStatus
 );
 
 /**
@@ -86,9 +91,9 @@ router.patch(
  */
 router.patch(
   '/instances/:id/enrollment',
-  auth,
+  auth(),
   requireAnyRole(['teacher', 'admin']),
-  controller.toggleEnrollment
+  instanceController.toggleEnrollment
 );
 
 /**
@@ -96,7 +101,12 @@ router.patch(
  * DELETE /instances/:id
  * Requires: admin role
  */
-router.delete('/instances/:id', auth, requireAnyRole(['admin']), controller.deleteInstance);
+router.delete(
+  '/instances/:id',
+  auth(),
+  requireAnyRole(['admin']),
+  instanceController.deleteInstance
+);
 
 /**
  * Clone instance
@@ -105,9 +115,9 @@ router.delete('/instances/:id', auth, requireAnyRole(['admin']), controller.dele
  */
 router.post(
   '/instances/:id/clone',
-  auth,
+  auth(),
   requireAnyRole(['teacher', 'admin']),
-  controller.cloneInstance
+  instanceController.cloneInstance
 );
 
 /**
@@ -117,9 +127,9 @@ router.post(
  */
 router.get(
   '/instances/:id/stats',
-  auth,
+  auth(),
   requireAnyRole(['teacher', 'admin']),
-  controller.getInstanceStats
+  instanceController.getInstanceStats
 );
 
 // ============================================================================
@@ -133,9 +143,9 @@ router.get(
  */
 router.post(
   '/instances/:id/assignments/publish',
-  auth,
+  auth(),
   requireAnyRole(['teacher', 'admin']),
-  controller.publishAssignment
+  instanceController.publishAssignment
 );
 
 /**
@@ -143,14 +153,18 @@ router.post(
  * GET /instances/:id/assignments
  * Requires: authenticated
  */
-router.get('/instances/:id/assignments', auth, controller.getInstanceAssignments);
+router.get('/instances/:id/assignments', auth(), instanceController.getInstanceAssignments);
 
 /**
  * Get published assignment
  * GET /instances/:id/assignments/:assignmentId
  * Requires: authenticated
  */
-router.get('/instances/:id/assignments/:assignmentId', auth, controller.getPublishedAssignment);
+router.get(
+  '/instances/:id/assignments/:assignmentId',
+  auth(),
+  instanceController.getPublishedAssignment
+);
 
 /**
  * Toggle assignment publish status
@@ -159,9 +173,9 @@ router.get('/instances/:id/assignments/:assignmentId', auth, controller.getPubli
  */
 router.patch(
   '/instances/:id/assignments/:assignmentId/publish',
-  auth,
+  auth(),
   requireAnyRole(['teacher', 'admin']),
-  controller.togglePublishStatus
+  instanceController.togglePublishStatus
 );
 
 export default router;
