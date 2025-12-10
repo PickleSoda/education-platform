@@ -20,7 +20,7 @@ export default defineConfig({
       shuffle: false,
     },
     maxConcurrency: 1, // Run tests sequentially
-    isolate: true, // Ensure proper test isolation
+    isolate: false, // Disable isolation to prevent connection issues
     pool: 'forks', // Use fork pool for better isolation
     poolOptions: {
       forks: {

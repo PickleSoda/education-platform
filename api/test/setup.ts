@@ -1,12 +1,21 @@
 import { beforeAll, afterAll } from 'vitest';
 import dotenv from 'dotenv';
+import path from 'path';
 import { PrismaClient } from '@prisma/client';
 
-// Load test environment variables
-dotenv.config({ path: '.env.test' });
-
-// Set test environment
+// Set test environment FIRST before loading any env files
 process.env.NODE_ENV = 'test';
+
+// Load test environment variables with absolute path
+const envPath = path.join(__dirname, '..', '.env.test');
+dotenv.config({ path: envPath });
+
+// Manually set DATABASE_URL to ensure it's using test database
+// This overrides any value that might be set elsewhere
+if (!process.env.DATABASE_URL || !process.env.DATABASE_URL.includes('test')) {
+  process.env.DATABASE_URL =
+    'postgresql://postgres:postgres@localhost:5432/user_management_test?schema=public';
+}
 
 const prisma = new PrismaClient();
 

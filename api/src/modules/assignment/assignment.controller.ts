@@ -151,7 +151,7 @@ export const deleteAssignmentTemplate = catchAsync(async (req): Promise<ApiRespo
 export const reorderAssignmentTemplates = catchAsync(async (req): Promise<ApiResponse<void>> => {
   const { params, body } = await zParse(reorderAssignmentTemplatesSchema, req);
 
-  await assignmentService.reorder(params.courseId, body.templateOrder);
+  await assignmentService.reorder(params.courseId, body.order);
 
   return {
     statusCode: httpStatus.OK,
@@ -167,7 +167,7 @@ export const copyAssignmentTemplate = catchAsync(
   async (req): Promise<ApiResponse<AssignmentTemplateWithCriteria>> => {
     const { params, body } = await zParse(copyAssignmentTemplateSchema, req);
 
-    const template = await assignmentService.copy(params.id, body?.targetCourseId);
+    const template = await assignmentService.copy(params.id, body?.targetCourseId, body?.title);
 
     return {
       statusCode: httpStatus.CREATED,
@@ -271,7 +271,7 @@ export const deleteGradingCriteria = catchAsync(async (req): Promise<ApiResponse
 export const reorderGradingCriteria = catchAsync(async (req): Promise<ApiResponse<void>> => {
   const { params, body } = await zParse(reorderGradingCriteriaSchema, req);
 
-  await assignmentService.reorderCriteria(params.id, body.criteriaOrder);
+  await assignmentService.reorderCriteria(params.id, body.order);
 
   return {
     statusCode: httpStatus.OK,

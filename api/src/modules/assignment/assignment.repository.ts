@@ -31,6 +31,14 @@ const transformTemplate = (template: any): AssignmentTemplateWithCriteria => {
   };
 };
 
+const transformCriteria = (criteria: any): any => {
+  if (!criteria) return criteria;
+  return {
+    ...criteria,
+    maxPoints: criteria.maxPoints ? Number(criteria.maxPoints) : criteria.maxPoints,
+  };
+};
+
 // ============================================================================
 // REPOSITORY FUNCTIONS
 // ============================================================================
@@ -135,6 +143,7 @@ export const getGradingStructure = async (courseId: string): Promise<GradingStru
 
   return {
     templates: transformed,
+    assignments: transformed, // Alias for backward compatibility
     totalWeight,
     totalMaxPoints,
   };
@@ -241,7 +250,7 @@ export const addGradingCriteria = async (
     },
   });
 
-  return result;
+  return transformCriteria(result);
 };
 
 /**
@@ -251,12 +260,21 @@ export const updateGradingCriteria = async (
   criteriaId: string,
   data: GradingCriteriaUpdateInput
 ): Promise<GradingCriteria> => {
+  // Check if criteria exists first
+  const existing = await prisma.gradingCriteria.findUnique({
+    where: { id: criteriaId },
+  });
+
+  if (!existing) {
+    throw new Error('Grading criteria not found');
+  }
+
   const result = await prisma.gradingCriteria.update({
     where: { id: criteriaId },
     data,
   });
 
-  return result;
+  return transformCriteria(result);
 };
 
 /**

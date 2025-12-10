@@ -151,7 +151,8 @@ export const reorderAssignmentTemplates = async (
  */
 export const copyAssignmentTemplate = async (
   templateId: string,
-  targetCourseId?: string
+  targetCourseId?: string,
+  title?: string
 ): Promise<AssignmentTemplateWithCriteria> => {
   const source = await assignmentRepository.getWithCriteria(templateId);
   if (!source) {
@@ -168,7 +169,7 @@ export const copyAssignmentTemplate = async (
 
   const copyData: AssignmentTemplateCreateInput = {
     courseId,
-    title: targetCourseId ? source.title : `${source.title} (Copy)`,
+    title: title || (targetCourseId ? source.title : `${source.title} (Copy)`),
     description: source.description,
     assignmentType: source.assignmentType,
     gradingMode: source.gradingMode,
@@ -236,7 +237,14 @@ export const updateGradingCriteria = async (
   criteriaId: string,
   data: GradingCriteriaUpdateInput
 ): Promise<any> => {
-  return assignmentRepository.updateCriteria(criteriaId, data);
+  try {
+    return await assignmentRepository.updateCriteria(criteriaId, data);
+  } catch (error: any) {
+    if (error.message === 'Grading criteria not found') {
+      throw new ApiError(httpStatus.NOT_FOUND, 'Grading criteria not found');
+    }
+    throw error;
+  }
 };
 
 /**
@@ -278,6 +286,7 @@ export const getTemplateStats = async (templateId: string): Promise<AssignmentSt
     templateId,
     title: template.title,
     usageCount,
+    publishedCount: 0, // Would need to query instance assignments to get actual count
     instances: [], // Would need additional query to get instance details
   };
 };

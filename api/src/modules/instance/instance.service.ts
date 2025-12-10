@@ -224,7 +224,14 @@ export const publishAssignment = async (
     throw new ApiError(httpStatus.BAD_REQUEST, 'Late deadline must be after regular deadline');
   }
 
-  return instanceRepository.publishAssignment(data);
+  try {
+    return await instanceRepository.publishAssignment(data);
+  } catch (error: any) {
+    if (error.message === 'Assignment template not found') {
+      throw new ApiError(httpStatus.NOT_FOUND, 'Assignment template not found');
+    }
+    throw error;
+  }
 };
 
 /**
@@ -260,14 +267,23 @@ export const getPublishedAssignment = async (
  */
 export const togglePublishStatus = async (
   assignmentId: string,
-  publish: boolean
+  status: string
 ): Promise<PublishedAssignmentWithCriteria> => {
   const existing = await instanceRepository.getPublishedAssignment(assignmentId);
   if (!existing) {
     throw new ApiError(httpStatus.NOT_FOUND, 'Published assignment not found');
   }
 
-  await instanceRepository.togglePublishStatus(assignmentId, publish);
+  // Validate status
+  const validStatuses = ['draft', 'published', 'closed'];
+  if (!validStatuses.includes(status)) {
+    throw new ApiError(
+      httpStatus.BAD_REQUEST,
+      `Invalid status. Must be one of: ${validStatuses.join(', ')}`
+    );
+  }
+
+  await instanceRepository.togglePublishStatus(assignmentId, status);
   return instanceRepository.getPublishedAssignment(
     assignmentId
   ) as Promise<PublishedAssignmentWithCriteria>;
