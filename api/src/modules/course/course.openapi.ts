@@ -713,4 +713,3 @@ export const registerCoursePaths = (registry: OpenAPIRegistry) => {
     },
   });
 };
-

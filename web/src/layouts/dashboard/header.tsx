@@ -6,7 +6,6 @@ import AccountDropdown from "../components/account-dropdown";
 import BreadCrumb from "../components/bread-crumb";
 import NoticeButton from "../components/notice";
 import SearchBar from "../components/search-bar";
-import SettingButton from "../components/setting-button";
 
 interface HeaderProps {
 	leftSlot?: ReactNode;
@@ -34,7 +33,6 @@ export default function Header({ leftSlot }: HeaderProps) {
 				<SearchBar />
 				<LocalePicker />
 				<NoticeButton />
-				<SettingButton />
 				<AccountDropdown />
 			</div>
 		</header>

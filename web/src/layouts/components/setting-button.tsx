@@ -79,8 +79,8 @@ export default function SettingButton() {
 	return (
 		<Sheet modal={false}>
 			<SheetTrigger asChild>
-				<Button variant="ghost" size="icon" className="rounded-full animate-slow-spin">
-					<Icon icon="local:ic-setting" size={24} />
+				<Button variant="ghost" size="default" className="p-2 w-full justify-start">
+					{t("sys.settings.theme")}
 				</Button>
 			</SheetTrigger>
 			<SheetContent style={sheetContentBgStyle} className="gap-0" onOpenAutoFocus={(e) => e.preventDefault()}>
