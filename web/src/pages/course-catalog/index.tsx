@@ -16,21 +16,32 @@ import { Spin } from "antd";
 import { useQuery } from "@tanstack/react-query";
 import type { Course } from "#/entity";
 import courseService from "@/api/services/courseService";
-import { useState } from "react";
+import { useState, useMemo } from "react";
+import { debounce } from "lodash-es";
 
 export default function CourseCatalogPage() {
 	const { push } = useRouter();
 	const [searchTerm, setSearchTerm] = useState("");
+	const [debouncedSearchTerm, setDebouncedSearchTerm] = useState("");
 	const [currentPage, setCurrentPage] = useState(1);
 	const [pageSize] = useState(20);
 
+	const debouncedSetSearch = useMemo(
+		() =>
+			debounce((value: string) => {
+				setDebouncedSearchTerm(value);
+				setCurrentPage(1);
+			}, 300),
+		[]
+	);
+
 	const { data, isLoading } = useQuery({
-		queryKey: ["courses", currentPage, pageSize, searchTerm],
+		queryKey: ["courses", currentPage, pageSize, debouncedSearchTerm],
 		queryFn: () =>
 			courseService.getCourses({
 				page: String(currentPage),
 				limit: String(pageSize),
-				search: searchTerm || undefined,
+				search: debouncedSearchTerm || undefined,
 			}),
 	});
 
@@ -44,16 +55,8 @@ export default function CourseCatalogPage() {
 
 	const handleSearchChange = (value: string) => {
 		setSearchTerm(value);
-		setCurrentPage(1); // Reset to first page on search
+		debouncedSetSearch(value);
 	};
-
-	if (isLoading) {
-		return (
-			<div className="flex h-96 items-center justify-center">
-				<Spin size="large" />
-			</div>
-		);
-	}
 
 	return (
 		<div className="space-y-6">
@@ -72,11 +75,17 @@ export default function CourseCatalogPage() {
 				/>
 			</div>
 
-			<div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
-				{courses.map((course) => (
-					<CourseCard key={course.id} course={course} onViewDetails={() => push(`/courses/${course.id}`)} />
-				))}
-			</div>
+			{isLoading ? (
+				<div className="flex h-64 items-center justify-center">
+					<Spin size="large" />
+				</div>
+			) : (
+				<div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
+					{courses.map((course) => (
+						<CourseCard key={course.id} course={course} onViewDetails={() => push(`/courses/${course.id}`)} />
+					))}
+				</div>
+			)}
 
 			{courses.length === 0 && (
 				<div className="flex h-64 flex-col items-center justify-center text-text-secondary">
