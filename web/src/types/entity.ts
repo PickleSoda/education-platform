@@ -311,6 +311,88 @@ export interface Menu extends CommonOptions, MenuMetaInfo {
 	type: PermissionType;
 }
 
+// Submission types
+export type SubmissionStatus = "draft" | "submitted" | "late" | "graded" | "returned";
+
+export interface Submission {
+	id: string;
+	publishedAssignmentId: string;
+	studentId: string;
+	content: string | null;
+	attachments: any | null;
+	status: SubmissionStatus;
+	submittedAt: string | null;
+	totalPoints: number | null;
+	finalPoints: number | null;
+	latePenaltyApplied: number | null;
+	isPassed: boolean | null;
+	isLate: boolean;
+	feedback: string | null;
+	gradedAt: string | null;
+	createdAt: string;
+	updatedAt: string;
+}
+
+export interface SubmissionWithRelations extends Submission {
+	student?: {
+		id: string;
+		email: string;
+		firstName: string;
+		lastName: string;
+	} | null;
+	publishedAssignment?: {
+		id: string;
+		title: string;
+		deadline: string | null;
+		lateDeadline: string | null;
+		latePenaltyPercent: number | null;
+	} | null;
+	grades?: Array<{
+		id: string;
+		submissionId: string;
+		publishedCriteriaId: string;
+		pointsAwarded: number;
+		feedback: string | null;
+	}>;
+	gradedBy?: {
+		id: string;
+		email: string;
+		firstName: string;
+		lastName: string;
+	} | null;
+}
+
+export interface GradebookEntry {
+	id: string;
+	title: string;
+	type: string;
+	gradingMode: string;
+	maxPoints: number | null;
+	weightPercentage: number | null;
+	deadline: string | null;
+	submission: SubmissionWithRelations | null;
+	criteria: Array<{
+		id: string;
+		name: string;
+		maxPoints: number;
+	}>;
+}
+
+export interface StudentGradebook {
+	assignments: GradebookEntry[];
+	finalGrade: number | null;
+	finalLetter: string | null;
+}
+
+export interface SubmissionStats {
+	total: number;
+	submitted: number;
+	graded: number;
+	pending: number;
+	late: number;
+	averageScore: number | null;
+}
+
 export type MenuMetaInfo = Partial<
 	Pick<NavItemDataProps, "path" | "icon" | "caption" | "info" | "disabled" | "auth" | "hidden">
 > & {
