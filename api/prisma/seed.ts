@@ -1,6 +1,11 @@
 import { PrismaClient } from '@prisma/client';
 import bcrypt from 'bcryptjs';
 import { seedTags, seedCourses } from '../src/modules/course/course.seed';
+import { seedAssignmentsByCourse } from '../src/modules/assignment/assignment.seed';
+import {
+  seedInstances,
+  seedPublishedAssignments,
+} from '../src/modules/courseInstance/instance.seed';
 
 const prisma = new PrismaClient();
 
@@ -9,12 +14,22 @@ async function main() {
 
   // Clean existing data (optional, be careful in production)
   console.log('Cleaning existing data...');
+  await prisma.publishedGradingCriteria.deleteMany();
+  await prisma.publishedAssignment.deleteMany();
+  await prisma.instanceLecturer.deleteMany();
+  await prisma.forum.deleteMany();
+  await prisma.enrollment.deleteMany();
+  await prisma.courseInstance.deleteMany();
+  await prisma.gradingCriteria.deleteMany();
+  await prisma.assignmentTemplate.deleteMany();
   await prisma.courseLecturer.deleteMany();
   await prisma.courseTag.deleteMany();
   await prisma.course.deleteMany();
   await prisma.tag.deleteMany();
   await prisma.userRole.deleteMany();
   await prisma.role.deleteMany();
+  await prisma.teacherProfile.deleteMany();
+  await prisma.studentProfile.deleteMany();
   await prisma.user.deleteMany();
 
   // 1. Create Roles
@@ -197,7 +212,7 @@ async function main() {
 
   // 6. Create Courses
   console.log('Creating courses...');
-  const createdCourses = [];
+  const createdCourses: any[] = [];
 
   for (const courseData of seedCourses) {
     const course = await prisma.course.create({
@@ -232,8 +247,221 @@ async function main() {
 
   console.log(
     '✓ Courses created:',
-    createdCourses.map((c) => ({ code: c.code, title: c.title, tags: c.tags.map((t) => t.tag.name) }))
+    createdCourses.map((c: any) => ({
+      code: c.code,
+      title: c.title,
+      tags: c.tags.map((t: any) => t.tag.name),
+    }))
   );
+
+  // 7. Create Assignment Templates
+  console.log('Creating assignment templates...');
+  const createdTemplates = new Map<string, any>();
+
+  for (const courseAssignments of seedAssignmentsByCourse) {
+    const course = createdCourses.find((c) => c.code === courseAssignments.courseCode);
+    if (!course) continue;
+
+    for (const templateData of courseAssignments.templates) {
+      const template = await prisma.assignmentTemplate.create({
+        data: {
+          courseId: course.id,
+          title: templateData.title,
+          description: templateData.description,
+          assignmentType: templateData.assignmentType,
+          gradingMode: templateData.gradingMode,
+          maxPoints: templateData.maxPoints,
+          weightPercentage: templateData.weightPercentage,
+          defaultDurationDays: templateData.defaultDurationDays,
+          instructions: templateData.instructions,
+          sortOrder: courseAssignments.templates.indexOf(templateData),
+          gradingCriteria: {
+            create: templateData.gradingCriteria.map((criteria, index) => ({
+              name: criteria.name,
+              description: criteria.description,
+              maxPoints: criteria.maxPoints,
+              sortOrder: index,
+            })),
+          },
+        },
+        include: {
+          gradingCriteria: true,
+        },
+      });
+
+      // Store template with composite key for later reference
+      const key = `${courseAssignments.courseCode}:${templateData.title}`;
+      createdTemplates.set(key, template);
+    }
+  }
+
+  console.log(
+    '✓ Assignment templates created:',
+    Array.from(createdTemplates.values()).map((t) => ({
+      course: createdCourses.find((c) => c.id === t.courseId)?.code,
+      title: t.title,
+      type: t.assignmentType,
+      weight: t.weightPercentage + '%',
+    }))
+  );
+
+  // 8. Create Course Instances
+  console.log('Creating course instances...');
+  const createdInstances = new Map<string, any>();
+
+  for (const instanceData of seedInstances) {
+    const course = createdCourses.find((c) => c.code === instanceData.courseCode);
+    if (!course) continue;
+
+    const instance = await prisma.courseInstance.create({
+      data: {
+        courseId: course.id,
+        semester: instanceData.semester,
+        startDate: instanceData.startDate,
+        endDate: instanceData.endDate,
+        status: instanceData.status,
+        enrollmentLimit: instanceData.enrollmentLimit,
+        enrollmentOpen: instanceData.enrollmentOpen,
+        createdBy: teacherUser.id,
+        lecturers: {
+          create: {
+            userId: teacherUser.id,
+            role: 'primary_lecturer',
+          },
+        },
+        forums: {
+          create: [
+            {
+              title: 'General Discussion',
+              description: 'General course discussion and announcements',
+              forumType: 'general',
+              sortOrder: 0,
+            },
+            {
+              title: 'Q&A',
+              description: 'Questions and answers about course material',
+              forumType: 'qa',
+              sortOrder: 1,
+            },
+            {
+              title: 'Announcements',
+              description: 'Course announcements and updates',
+              forumType: 'announcements',
+              sortOrder: 2,
+            },
+          ],
+        },
+      },
+      include: {
+        course: true,
+        lecturers: true,
+        forums: true,
+      },
+    });
+
+    // Store instance with composite key for later reference
+    const key = `${instanceData.courseCode}:${instanceData.semester}`;
+    createdInstances.set(key, instance);
+  }
+
+  console.log(
+    '✓ Course instances created:',
+    Array.from(createdInstances.values()).map((i) => ({
+      course: i.course.code,
+      semester: i.semester,
+      status: i.status,
+      enrollment: `${i.enrollmentLimit} seats`,
+    }))
+  );
+
+  // 9. Publish Assignments to Instances
+  console.log('Publishing assignments to instances...');
+  const createdPublishedAssignments = [];
+
+  for (const publishData of seedPublishedAssignments) {
+    const instanceKey = `${publishData.courseCode}:${publishData.semester}`;
+    const instance = createdInstances.get(instanceKey);
+    if (!instance) continue;
+
+    const templateKey = `${publishData.courseCode}:${publishData.templateTitle}`;
+    const template = createdTemplates.get(templateKey);
+    if (!template) continue;
+
+    const publishedAssignment = await prisma.publishedAssignment.create({
+      data: {
+        instanceId: instance.id,
+        templateId: template.id,
+        title: template.title,
+        description: template.description,
+        assignmentType: template.assignmentType,
+        gradingMode: template.gradingMode,
+        maxPoints: template.maxPoints,
+        weightPercentage: template.weightPercentage,
+        instructions: template.instructions,
+        publishAt: publishData.publishAt,
+        deadline: publishData.deadline,
+        lateDeadline: publishData.lateDeadline,
+        latePenaltyPercent: publishData.latePenaltyPercent,
+        status: publishData.status,
+        autoPublish: publishData.autoPublish,
+        publishedBy: teacherUser.id,
+        gradingCriteria: {
+          create: template.gradingCriteria.map((criteria: any) => ({
+            name: criteria.name,
+            description: criteria.description,
+            maxPoints: criteria.maxPoints,
+            sortOrder: criteria.sortOrder,
+          })),
+        },
+      },
+      include: {
+        gradingCriteria: true,
+      },
+    });
+
+    createdPublishedAssignments.push(publishedAssignment);
+  }
+
+  console.log(
+    '✓ Published assignments created:',
+    createdPublishedAssignments.map((pa) => {
+      const instance = Array.from(createdInstances.values()).find((i) => i.id === pa.instanceId);
+      return {
+        course: instance?.course.code,
+        semester: instance?.semester,
+        assignment: pa.title,
+        status: pa.status,
+      };
+    })
+  );
+
+  // 10. Enroll Students in Active Instances
+  console.log('Enrolling students in active instances...');
+  const activeInstances = Array.from(createdInstances.values()).filter(
+    (i) => i.status === 'active'
+  );
+
+  for (const instance of activeInstances) {
+    // Enroll both students in all active instances
+    await prisma.enrollment.createMany({
+      data: [
+        {
+          instanceId: instance.id,
+          studentId: student1.id,
+          enrolledAt: new Date(),
+          status: 'enrolled',
+        },
+        {
+          instanceId: instance.id,
+          studentId: student2.id,
+          enrolledAt: new Date(),
+          status: 'enrolled',
+        },
+      ],
+    });
+  }
+
+  console.log(`✓ Enrolled students in ${activeInstances.length} active instances`);
 
   console.log('\n✅ Database seeding completed successfully!');
   console.log('\n📝 Test Credentials:');

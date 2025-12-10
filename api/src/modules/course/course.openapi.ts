@@ -120,7 +120,7 @@ export const registerCoursePaths = (registry: OpenAPIRegistry) => {
           'application/json': {
             schema: withSuccessResponse(courseSchema),
             example: {
-              success: true,
+              statusCode: 201,
               message: 'Course created successfully',
               data: courseExamples.courseResponse,
             },
@@ -149,7 +149,7 @@ export const registerCoursePaths = (registry: OpenAPIRegistry) => {
           'application/json': {
             schema: withPaginatedResponse(courseSchema),
             example: {
-              success: true,
+              statusCode: 200,
               message: 'Courses retrieved successfully',
               data: courseExamples.courseListResponse,
               meta: {
@@ -186,7 +186,7 @@ export const registerCoursePaths = (registry: OpenAPIRegistry) => {
           'application/json': {
             schema: withSuccessResponse(courseSchema),
             example: {
-              success: true,
+              statusCode: 200,
               message: 'Course retrieved successfully',
               data: courseExamples.courseResponse,
             },
@@ -225,7 +225,7 @@ export const registerCoursePaths = (registry: OpenAPIRegistry) => {
           'application/json': {
             schema: withSuccessResponse(courseSchema),
             example: {
-              success: true,
+              statusCode: 200,
               message: 'Course updated successfully',
               data: {
                 ...courseExamples.courseResponse,
@@ -342,7 +342,7 @@ export const registerCoursePaths = (registry: OpenAPIRegistry) => {
           'application/json': {
             schema: withSuccessResponse(courseSchema),
             example: {
-              success: true,
+              statusCode: 201,
               message: 'Course copied successfully',
               data: {
                 ...courseExamples.courseResponse,
@@ -397,7 +397,7 @@ export const registerCoursePaths = (registry: OpenAPIRegistry) => {
               })
             ),
             example: {
-              success: true,
+              statusCode: 201,
               message: 'Course statistics retrieved successfully',
               data: courseExamples.statsResponse,
             },
@@ -436,7 +436,7 @@ export const registerCoursePaths = (registry: OpenAPIRegistry) => {
           'application/json': {
             schema: withSuccessResponse(lecturerSchema),
             example: {
-              success: true,
+              statusCode: 201,
               message: 'Lecturer added successfully',
               data: courseExamples.lecturerResponse,
             },
@@ -489,7 +489,7 @@ export const registerCoursePaths = (registry: OpenAPIRegistry) => {
           'application/json': {
             schema: withSuccessResponse(z.array(lecturerSchema)),
             example: {
-              success: true,
+              statusCode: 201,
               message: 'Lecturers retrieved successfully',
               data: [courseExamples.lecturerResponse],
             },
@@ -576,7 +576,7 @@ export const registerCoursePaths = (registry: OpenAPIRegistry) => {
           'application/json': {
             schema: withSuccessResponse(z.array(tagSchema)),
             example: {
-              success: true,
+              statusCode: 201,
               message: 'Tags retrieved successfully',
               data: courseExamples.tagListResponse,
             },
@@ -612,7 +612,7 @@ export const registerCoursePaths = (registry: OpenAPIRegistry) => {
           'application/json': {
             schema: withSuccessResponse(tagSchema),
             example: {
-              success: true,
+              statusCode: 201,
               message: 'Tag created successfully',
               data: { id: 9, ...courseExamples.createTagRequest },
             },
@@ -644,7 +644,7 @@ export const registerCoursePaths = (registry: OpenAPIRegistry) => {
           'application/json': {
             schema: withPaginatedResponse(courseSchema),
             example: {
-              success: true,
+              statusCode: 201,
               message: 'Search results retrieved successfully',
               data: courseExamples.courseListResponse,
               meta: {
@@ -676,7 +676,7 @@ export const registerCoursePaths = (registry: OpenAPIRegistry) => {
           'application/json': {
             schema: withSuccessResponse(z.array(courseSchema)),
             example: {
-              success: true,
+              statusCode: 200,
               message: 'Courses retrieved successfully',
               data: courseExamples.courseListResponse,
             },
@@ -702,7 +702,7 @@ export const registerCoursePaths = (registry: OpenAPIRegistry) => {
           'application/json': {
             schema: withSuccessResponse(z.array(courseSchema)),
             example: {
-              success: true,
+              statusCode: 200,
               message: 'Courses retrieved successfully',
               data: courseExamples.courseListResponse,
             },
@@ -713,3 +713,4 @@ export const registerCoursePaths = (registry: OpenAPIRegistry) => {
     },
   });
 };
+

@@ -168,7 +168,7 @@ export const registerAssignmentPaths = (registry: OpenAPIRegistry) => {
           'application/json': {
             schema: withSuccessResponse(assignmentTemplateSchema),
             example: {
-              success: true,
+              statusCode: 201,
               message: 'Assignment template created successfully',
               data: assignmentExample,
             },
@@ -201,7 +201,7 @@ export const registerAssignmentPaths = (registry: OpenAPIRegistry) => {
           'application/json': {
             schema: withSuccessResponse(z.array(assignmentTemplateSchema)),
             example: {
-              success: true,
+              statusCode: 200,
               message: 'Assignment templates retrieved successfully',
               data: [assignmentExample],
             },
@@ -231,7 +231,7 @@ export const registerAssignmentPaths = (registry: OpenAPIRegistry) => {
           'application/json': {
             schema: withSuccessResponse(gradingStructureSchema),
             example: {
-              success: true,
+              statusCode: 200,
               message: 'Grading structure retrieved successfully',
               data: {
                 templates: [assignmentExample],
@@ -264,7 +264,7 @@ export const registerAssignmentPaths = (registry: OpenAPIRegistry) => {
           'application/json': {
             schema: withSuccessResponse(assignmentTemplateSchema),
             example: {
-              success: true,
+              statusCode: 200,
               message: 'Assignment template retrieved successfully',
               data: assignmentExample,
             },
@@ -477,7 +477,7 @@ export const registerAssignmentPaths = (registry: OpenAPIRegistry) => {
               })
             ),
             example: {
-              success: true,
+              statusCode: 200,
               message: 'Validation completed',
               data: { valid: true, criteriaSum: 100, maxPoints: 100 },
             },
