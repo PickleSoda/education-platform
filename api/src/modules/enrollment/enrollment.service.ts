@@ -121,6 +121,7 @@ export const getStudentEnrollments = async (
 export const updateEnrollmentStatus = async (
   enrollmentId: string,
   status: EnrollmentStatus,
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   requesterId: string
 ): Promise<EnrollmentWithRelations> => {
   const enrollment = await enrollmentRepository.findById(enrollmentId);
