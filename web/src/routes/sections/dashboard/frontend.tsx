@@ -10,7 +10,7 @@ export function getFrontendDashboardRoutes(): RouteObject[] {
 			path: "courses",
 			children: [
 				{ index: true, element: Component("/pages/course-catalog") },
-				{ path: ":id", element: Component("/pages/management/course/detail") },
+				{ path: ":id", element: Component("/pages/course-catalog/detail") },
 			],
 		},
 		{
@@ -63,7 +63,6 @@ export function getFrontendDashboardRoutes(): RouteObject[] {
 						{ index: true, element: Component("/pages/management/course") },
 						{ path: "create", element: Component("/pages/management/course/edit") },
 						{ path: "edit/:id", element: Component("/pages/management/course/edit") },
-						{ path: ":id", element: Component("/pages/management/course/detail") },
 					],
 				},
 			],
