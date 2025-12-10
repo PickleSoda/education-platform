@@ -2,13 +2,21 @@ import { HoverCard, HoverCardContent, HoverCardTrigger } from "@/ui/hover-card";
 import { useLocation } from "react-router";
 import type { NavListProps } from "../types";
 import { NavItem } from "./nav-item";
+import { useUserPermissions, useUserRoles } from "@/store/userStore";
+import { checkAny } from "@/utils";
 
 export function NavList({ data, depth = 0 }: NavListProps) {
 	const hasChild = data.children && data.children.length > 0;
 	const location = useLocation();
 	const isActive = location.pathname.includes(data.path);
 
-	if (data.hidden) {
+	// Auth guard check
+	const permissions = useUserPermissions();
+	const roles = useUserRoles();
+	const allPermissions = [...permissions, ...roles.map((role) => `role:${role}`)];
+	const hasAuth = data.auth ? checkAny(data.auth, allPermissions) : true;
+
+	if (data.hidden || !hasAuth) {
 		return null;
 	}
 
