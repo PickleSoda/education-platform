@@ -136,7 +136,10 @@
 			"workbench": "Workbench",
 			"courses": "Course Catalog",
 			"myCourses": "My Courses",
-			"manageCourses": "Manage Courses"
+			"manageCourses": "Manage Courses",
+			"instances": "Course Instances",
+			"assignments": "Assignments",
+			"submissions": "Submissions"
 		},
 		"settings": {
 			"accordion": "Accordion Menu",

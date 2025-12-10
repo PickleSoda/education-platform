@@ -46,6 +46,7 @@ export enum SubmissionApi {
 	Submissions = "/submissions",
 	Draft = "/submissions/assignments",
 	Gradebook = "/submissions/instances",
+	// eslint-disable-next-line @typescript-eslint/no-duplicate-enum-values
 	Stats = "/submissions/assignments",
 }
 

@@ -7,6 +7,7 @@ interface ResourcesTabProps {
 	instanceId: string;
 }
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 export default function ResourcesTab({ instanceId }: ResourcesTabProps) {
 	// This would fetch from an API in a real implementation
 	const resources: any[] = [];
@@ -35,7 +36,7 @@ export default function ResourcesTab({ instanceId }: ResourcesTabProps) {
 						<div className="flex flex-col items-center justify-center py-16 text-text-secondary">
 							<Icon icon="solar:folder-open-bold-duotone" size={64} className="opacity-50 mb-4" />
 							<p className="text-lg font-medium mb-2">No resources yet</p>
-							<p className="text-sm">Your instructor hasn't uploaded any resources yet.</p>
+							<p className="text-sm">Your instructor hasn&apos;t uploaded any resources yet.</p>
 							<p className="text-sm">Check back later for course materials.</p>
 						</div>
 					) : (

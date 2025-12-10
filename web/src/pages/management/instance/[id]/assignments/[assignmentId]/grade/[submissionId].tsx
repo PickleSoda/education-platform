@@ -150,7 +150,7 @@ export default function SubmissionGradingPage() {
 								<div>
 									<h3 className="text-lg font-semibold mb-4">Score by Criteria</h3>
 									<div className="space-y-4">
-										{assignment.gradingCriteria?.map((criteria, idx) => (
+										{assignment.gradingCriteria?.map((criteria) => (
 											<div key={criteria.id} className="border rounded-lg p-4 space-y-3">
 												<div className="flex items-start justify-between">
 													<div>

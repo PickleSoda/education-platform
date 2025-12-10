@@ -403,3 +403,108 @@ export type MenuMetaInfo = Partial<
 export type MenuTree = Menu & {
 	children?: MenuTree[];
 };
+
+// ============================================================================
+// DASHBOARD TYPES
+// ============================================================================
+
+export interface TeacherQuickStats {
+	totalStudents: number;
+	pendingGrading: number;
+	activeInstances: number;
+}
+
+export interface TeacherDashboard {
+	activeInstances: Array<
+		CourseInstance & {
+			course: Course;
+			_count: {
+				enrollments: number;
+			};
+		}
+	>;
+	pendingGrading: number;
+	recentPosts: Array<{
+		id: string;
+		title: string;
+		content: string;
+		createdAt: string;
+		author: User;
+		forum: {
+			id: string;
+			name: string;
+			instance: {
+				id: string;
+				semester: string;
+				course: Course;
+			};
+		};
+	}>;
+	upcomingDeadlines: Array<
+		PublishedAssignment & {
+			instance: {
+				id: string;
+				semester: string;
+				course: Course;
+			};
+		}
+	>;
+	quickStats: TeacherQuickStats;
+}
+
+export interface StudentQuickStats {
+	enrolledCourses: number;
+	pendingAssignments: number;
+	upcomingDeadlines: number;
+}
+
+export interface StudentDashboard {
+	enrollments: Array<
+		Enrollment & {
+			instance: CourseInstance & {
+				course: Course;
+				lecturers: Array<{
+					userId: string;
+					isPrimary: boolean;
+					user: User;
+				}>;
+			};
+		}
+	>;
+	upcomingAssignments: Array<
+		PublishedAssignment & {
+			instance: {
+				id: string;
+				semester: string;
+				course: Course;
+			};
+		}
+	>;
+	recentGrades: Array<
+		Submission & {
+			publishedAssignment: PublishedAssignment & {
+				instance: {
+					id: string;
+					semester: string;
+					course: Course;
+				};
+			};
+		}
+	>;
+	unreadNotifications: number;
+	quickStats: StudentQuickStats;
+}
+
+export interface GradeDistribution {
+	"A (90-100)": number;
+	"B (80-89)": number;
+	"C (70-79)": number;
+	"D (60-69)": number;
+	"F (<60)": number;
+}
+
+export interface InstanceAnalytics {
+	gradeDistribution: GradeDistribution;
+	averageGrade: number;
+	totalSubmissions: number;
+}

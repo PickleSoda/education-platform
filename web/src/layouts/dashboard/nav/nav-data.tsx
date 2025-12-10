@@ -76,8 +76,8 @@ export const navData: NavProps["data"] = [
 		name: "sys.nav.dashboard",
 		items: [
 			{
-				title: "sys.nav.workbench",
-				path: "/workbench",
+				title: "sys.nav.dashboard",
+				path: "/dashboard",
 				icon: <Icon icon="local:ic-workbench" size="24" />,
 			},
 			{
@@ -114,13 +114,13 @@ export const navData: NavProps["data"] = [
 						auth: ["role:admin", "role:teacher"],
 					},
 					{
-						title: "sys.nav.manageInstances",
+						title: "sys.nav.instances",
 						path: "/management/instance",
 						icon: <Icon icon="solar:clipboard-bold-duotone" size="24" />,
 						auth: ["role:admin", "role:teacher"],
 					},
 					{
-						title: "sys.nav.manageAssignments",
+						title: "sys.nav.assignments",
 						path: "/management/assignment",
 						icon: <Icon icon="solar:document-text-bold-duotone" size="24" />,
 						auth: ["role:admin", "role:teacher"],
