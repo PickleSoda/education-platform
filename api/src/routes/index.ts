@@ -5,7 +5,7 @@ import assignmentRoute from '../modules/assignment/assignment.route';
 import courseRoute from '../modules/course/course.route';
 import fileRoute from '../modules/file/file.route';
 import healthRoute from '../modules/health/health.route';
-import instanceRoute from '../modules/instance/instance.route';
+import instanceRoute from '../modules/courseInstance/instance.route';
 import notificationRoute from '../modules/notification/notification.route';
 import userRoute from '../modules/user/user.route';
 import docsRoute from './docs.route';
@@ -36,6 +36,10 @@ const routes: RouteConfig[] = [
     route: courseRoute,
   },
   {
+    path: '/courses/instances',
+    route: instanceRoute,
+  },
+  {
     path: '/docs',
     route: docsRoute,
   },
@@ -50,10 +54,6 @@ const routes: RouteConfig[] = [
   {
     path: '/',
     route: assignmentRoute,
-  },
-  {
-    path: '/',
-    route: instanceRoute,
   },
 ];
 

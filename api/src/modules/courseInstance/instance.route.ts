@@ -10,11 +10,11 @@ const router = Router();
 
 /**
  * Create instance
- * POST /instances
+ * POST 
  * Requires: teacher or admin role
  */
 router.post(
-  '/instances',
+  '',
   auth(),
   requireAnyRole(['teacher', 'admin']),
   instanceController.createInstance
@@ -22,25 +22,25 @@ router.post(
 
 /**
  * List instances
- * GET /instances
+ * GET 
  * Requires: authenticated
  */
-router.get('/instances', auth(), instanceController.listInstances);
+router.get('', auth(), instanceController.listInstances);
 
 /**
  * Get my enrolled instances (for students)
- * GET /instances/my/enrolled
+ * GET /my/enrolled
  * Requires: authenticated
  */
-router.get('/instances/my/enrolled', auth(), instanceController.getMyEnrolledInstances);
+router.get('/my/enrolled', auth(), instanceController.getMyEnrolledInstances);
 
 /**
  * Get my teaching instances (for teachers)
- * GET /instances/my/teaching
+ * GET /my/teaching
  * Requires: teacher role
  */
 router.get(
-  '/instances/my/teaching',
+  '/my/teaching',
   auth(),
   requireAnyRole(['teacher', 'admin']),
   instanceController.getMyTeachingInstances
@@ -48,25 +48,25 @@ router.get(
 
 /**
  * Get instance by ID
- * GET /instances/:id
+ * GET /:id
  * Requires: authenticated
  */
-router.get('/instances/:id', auth(), instanceController.getInstance);
+router.get('/:id', auth(), instanceController.getInstance);
 
 /**
  * Get instance with full details
- * GET /instances/:id/details
+ * GET /:id/details
  * Requires: authenticated
  */
-router.get('/instances/:id/details', auth(), instanceController.getInstanceWithDetails);
+router.get('/:id/details', auth(), instanceController.getInstanceWithDetails);
 
 /**
  * Update instance
- * PATCH /instances/:id
+ * PATCH /:id
  * Requires: teacher or admin role
  */
 router.patch(
-  '/instances/:id',
+  '/:id',
   auth(),
   requireAnyRole(['teacher', 'admin']),
   instanceController.updateInstance
@@ -74,11 +74,11 @@ router.patch(
 
 /**
  * Update instance status
- * PATCH /instances/:id/status
+ * PATCH /:id/status
  * Requires: teacher or admin role
  */
 router.patch(
-  '/instances/:id/status',
+  '/:id/status',
   auth(),
   requireAnyRole(['teacher', 'admin']),
   instanceController.updateInstanceStatus
@@ -86,11 +86,11 @@ router.patch(
 
 /**
  * Toggle enrollment
- * PATCH /instances/:id/enrollment
+ * PATCH /:id/enrollment
  * Requires: teacher or admin role
  */
 router.patch(
-  '/instances/:id/enrollment',
+  '/:id/enrollment',
   auth(),
   requireAnyRole(['teacher', 'admin']),
   instanceController.toggleEnrollment
@@ -98,11 +98,11 @@ router.patch(
 
 /**
  * Delete instance
- * DELETE /instances/:id
+ * DELETE /:id
  * Requires: admin role
  */
 router.delete(
-  '/instances/:id',
+  '/:id',
   auth(),
   requireAnyRole(['admin']),
   instanceController.deleteInstance
@@ -110,11 +110,11 @@ router.delete(
 
 /**
  * Clone instance
- * POST /instances/:id/clone
+ * POST /:id/clone
  * Requires: teacher or admin role
  */
 router.post(
-  '/instances/:id/clone',
+  '/:id/clone',
   auth(),
   requireAnyRole(['teacher', 'admin']),
   instanceController.cloneInstance
@@ -122,11 +122,11 @@ router.post(
 
 /**
  * Get instance statistics
- * GET /instances/:id/stats
+ * GET /:id/stats
  * Requires: teacher or admin role
  */
 router.get(
-  '/instances/:id/stats',
+  '/:id/stats',
   auth(),
   requireAnyRole(['teacher', 'admin']),
   instanceController.getInstanceStats
@@ -138,11 +138,11 @@ router.get(
 
 /**
  * Publish assignment from template
- * POST /instances/:id/assignments/publish
+ * POST /:id/assignments/publish
  * Requires: teacher or admin role
  */
 router.post(
-  '/instances/:id/assignments/publish',
+  '/:id/assignments/publish',
   auth(),
   requireAnyRole(['teacher', 'admin']),
   instanceController.publishAssignment
@@ -150,29 +150,29 @@ router.post(
 
 /**
  * Get instance assignments
- * GET /instances/:id/assignments
+ * GET /:id/assignments
  * Requires: authenticated
  */
-router.get('/instances/:id/assignments', auth(), instanceController.getInstanceAssignments);
+router.get('/:id/assignments', auth(), instanceController.getInstanceAssignments);
 
 /**
  * Get published assignment
- * GET /instances/:id/assignments/:assignmentId
+ * GET /:id/assignments/:assignmentId
  * Requires: authenticated
  */
 router.get(
-  '/instances/:id/assignments/:assignmentId',
+  '/:id/assignments/:assignmentId',
   auth(),
   instanceController.getPublishedAssignment
 );
 
 /**
  * Toggle assignment publish status
- * PATCH /instances/:id/assignments/:assignmentId/publish
+ * PATCH /:id/assignments/:assignmentId/publish
  * Requires: teacher or admin role
  */
 router.patch(
-  '/instances/:id/assignments/:assignmentId/publish',
+  '/:id/assignments/:assignmentId/publish',
   auth(),
   requireAnyRole(['teacher', 'admin']),
   instanceController.togglePublishStatus

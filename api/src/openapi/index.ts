@@ -4,7 +4,7 @@ import { registerAssignmentPaths } from '@/modules/assignment/assignment.openapi
 import { registerAuthPaths } from '@/modules/auth/auth.openapi';
 import { registerCoursePaths } from '@/modules/course/course.openapi';
 import { registerFilePaths } from '@/modules/file/file.openapi';
-import { registerInstancePaths } from '@/modules/instance/instance.openapi';
+import { registerInstancePaths } from '@/modules/courseInstance/instance.openapi';
 import { registerNotificationPaths } from '@/modules/notification/notification.openapi';
 import { registerUserPaths } from '@/modules/user/user.openapi';
 

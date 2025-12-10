@@ -193,7 +193,7 @@ describe('Instance Module', () => {
 
     it('should create a new instance as teacher', async () => {
       const res = await request(app)
-        .post('/v1/instances')
+        .post('/v1/course/instances')
         .set('Authorization', `Bearer ${teacherToken}`)
         .send({
           courseId,
