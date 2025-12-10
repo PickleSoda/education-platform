@@ -7,6 +7,11 @@
  * All API endpoints return this structure
  */
 export interface ApiResponse<T = unknown> {
+	status: any;
+	content: undefined;
+	submittedAt: undefined;
+	totalPoints: undefined;
+	feedback: undefined;
 	success?: boolean;
 	statusCode?: number;
 	message?: string;
