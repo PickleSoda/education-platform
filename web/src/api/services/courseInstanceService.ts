@@ -124,7 +124,7 @@ const getMyTeachingInstances = () => apiClient.get<ApiResponse<CourseInstance[]>
 // Published assignment endpoints
 const publishAssignment = (instanceId: string, data: PublishAssignmentReq) =>
 	apiClient.post<ApiResponse<PublishedAssignment>>({
-		url: `${InstanceApi.Instances}/${instanceId}/assignments`,
+		url: `${InstanceApi.Instances}/${instanceId}/assignments/publish`,
 		data,
 	});
 

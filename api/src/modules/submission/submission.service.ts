@@ -17,11 +17,18 @@ export const saveSubmissionDraft = async (
   studentId: string,
   data: { content?: string; attachments?: any }
 ) => {
-  return submissionRepository.saveSubmission({
-    assignmentId,
-    studentId,
-    ...data,
-  });
+  try {
+    return await submissionRepository.saveSubmission({
+      assignmentId,
+      studentId,
+      ...data,
+    });
+  } catch (error) {
+    if (error instanceof Error && error.message === 'Assignment not found') {
+      throw new ApiError(httpStatus.NOT_FOUND, 'Assignment not found');
+    }
+    throw error;
+  }
 };
 
 /**

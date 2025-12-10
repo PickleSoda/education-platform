@@ -27,12 +27,8 @@ router.post('/instances/:instanceId/enroll', enrollmentController.enroll);
 // Get enrollment by ID
 router.get('/:id', enrollmentController.getEnrollment);
 
-// Update enrollment status (teacher, admin)
-router.patch(
-  '/:id/status',
-  requireAnyRole(['teacher', 'admin']),
-  enrollmentController.updateEnrollmentStatus
-);
+// Update enrollment status (students can drop themselves, teachers/admins can update any)
+router.patch('/:id/status', enrollmentController.updateEnrollmentStatus);
 
 // Delete enrollment (admin only)
 router.delete('/:id', requireAnyRole(['admin']), enrollmentController.deleteEnrollment);

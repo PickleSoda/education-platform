@@ -5,6 +5,14 @@
 
 import type { InstanceStatus } from '@prisma/client';
 
+// Helper to get dynamic dates
+const now = new Date();
+const getDate = (daysOffset: number) => {
+  const date = new Date(now);
+  date.setDate(date.getDate() + daysOffset);
+  return date;
+};
+
 // ============================================================================
 // COURSE INSTANCES
 // ============================================================================
@@ -24,8 +32,8 @@ export const seedInstances: SeedInstance[] = [
   {
     courseCode: 'CS-101',
     semester: 'Fall 2024',
-    startDate: new Date('2024-09-01'),
-    endDate: new Date('2024-12-15'),
+    startDate: getDate(-120), // ~4 months ago
+    endDate: getDate(-30), // ~1 month ago
     status: 'completed',
     enrollmentLimit: 30,
     enrollmentOpen: false,
@@ -33,8 +41,8 @@ export const seedInstances: SeedInstance[] = [
   {
     courseCode: 'CS-101',
     semester: 'Spring 2025',
-    startDate: new Date('2025-01-15'),
-    endDate: new Date('2025-05-15'),
+    startDate: getDate(-60), // ~2 months ago
+    endDate: getDate(60), // ~2 months from now
     status: 'active',
     enrollmentLimit: 35,
     enrollmentOpen: true,
@@ -42,8 +50,8 @@ export const seedInstances: SeedInstance[] = [
   {
     courseCode: 'CS-101',
     semester: 'Fall 2025',
-    startDate: new Date('2025-09-01'),
-    endDate: new Date('2025-12-15'),
+    startDate: getDate(90), // ~3 months from now
+    endDate: getDate(180), // ~6 months from now
     status: 'scheduled',
     enrollmentLimit: 30,
     enrollmentOpen: false,
@@ -53,8 +61,8 @@ export const seedInstances: SeedInstance[] = [
   {
     courseCode: 'CS-201',
     semester: 'Fall 2024',
-    startDate: new Date('2024-09-01'),
-    endDate: new Date('2024-12-15'),
+    startDate: getDate(-120),
+    endDate: getDate(-30),
     status: 'completed',
     enrollmentLimit: 25,
     enrollmentOpen: false,
@@ -62,8 +70,8 @@ export const seedInstances: SeedInstance[] = [
   {
     courseCode: 'CS-201',
     semester: 'Spring 2025',
-    startDate: new Date('2025-01-15'),
-    endDate: new Date('2025-05-15'),
+    startDate: getDate(-45), // Started 45 days ago
+    endDate: getDate(75), // Ends in 75 days
     status: 'active',
     enrollmentLimit: 28,
     enrollmentOpen: true,
@@ -73,8 +81,8 @@ export const seedInstances: SeedInstance[] = [
   {
     courseCode: 'CS-301',
     semester: 'Spring 2025',
-    startDate: new Date('2025-01-15'),
-    endDate: new Date('2025-05-15'),
+    startDate: getDate(-50),
+    endDate: getDate(70),
     status: 'active',
     enrollmentLimit: 30,
     enrollmentOpen: true,
@@ -82,8 +90,8 @@ export const seedInstances: SeedInstance[] = [
   {
     courseCode: 'CS-301',
     semester: 'Fall 2025',
-    startDate: new Date('2025-09-01'),
-    endDate: new Date('2025-12-15'),
+    startDate: getDate(90),
+    endDate: getDate(180),
     status: 'scheduled',
     enrollmentLimit: 32,
     enrollmentOpen: false,
@@ -93,8 +101,8 @@ export const seedInstances: SeedInstance[] = [
   {
     courseCode: 'CS-302',
     semester: 'Spring 2025',
-    startDate: new Date('2025-02-01'),
-    endDate: new Date('2025-05-20'),
+    startDate: getDate(-40),
+    endDate: getDate(80),
     status: 'active',
     enrollmentLimit: 25,
     enrollmentOpen: true,
@@ -104,8 +112,8 @@ export const seedInstances: SeedInstance[] = [
   {
     courseCode: 'CS-401',
     semester: 'Fall 2024',
-    startDate: new Date('2024-09-01'),
-    endDate: new Date('2024-12-15'),
+    startDate: getDate(-120),
+    endDate: getDate(-30),
     status: 'completed',
     enrollmentLimit: 20,
     enrollmentOpen: false,
@@ -113,8 +121,8 @@ export const seedInstances: SeedInstance[] = [
   {
     courseCode: 'CS-401',
     semester: 'Spring 2025',
-    startDate: new Date('2025-01-15'),
-    endDate: new Date('2025-05-15'),
+    startDate: getDate(-55),
+    endDate: getDate(65),
     status: 'active',
     enrollmentLimit: 22,
     enrollmentOpen: true,
@@ -124,8 +132,8 @@ export const seedInstances: SeedInstance[] = [
   {
     courseCode: 'CS-450',
     semester: 'Spring 2025',
-    startDate: new Date('2025-02-01'),
-    endDate: new Date('2025-05-30'),
+    startDate: getDate(-35),
+    endDate: getDate(85),
     status: 'active',
     enrollmentLimit: 20,
     enrollmentOpen: true,
@@ -133,8 +141,8 @@ export const seedInstances: SeedInstance[] = [
   {
     courseCode: 'CS-450',
     semester: 'Fall 2025',
-    startDate: new Date('2025-09-01'),
-    endDate: new Date('2025-12-15'),
+    startDate: getDate(90),
+    endDate: getDate(180),
     status: 'draft',
     enrollmentLimit: 25,
     enrollmentOpen: false,
@@ -158,14 +166,14 @@ export interface SeedPublishedAssignment {
 }
 
 export const seedPublishedAssignments: SeedPublishedAssignment[] = [
-  // CS-101 Spring 2025 - Active instance with published assignments
+  // CS-101 Spring 2025 - Active instance with varied assignments
   {
     courseCode: 'CS-101',
     semester: 'Spring 2025',
     templateTitle: 'Variables and Data Types',
     publishAt: null,
-    deadline: new Date('2025-02-15T23:59:59'),
-    lateDeadline: new Date('2025-02-17T23:59:59'),
+    deadline: getDate(-30), // Past - already closed
+    lateDeadline: getDate(-28),
     latePenaltyPercent: 20,
     status: 'closed',
     autoPublish: false,
@@ -175,33 +183,44 @@ export const seedPublishedAssignments: SeedPublishedAssignment[] = [
     semester: 'Spring 2025',
     templateTitle: 'Control Flow and Loops',
     publishAt: null,
-    deadline: new Date('2025-03-15T23:59:59'),
-    lateDeadline: new Date('2025-03-17T23:59:59'),
+    deadline: getDate(-10), // Recently past - can be graded
+    lateDeadline: getDate(-8),
     latePenaltyPercent: 20,
-    status: 'published',
+    status: 'closed',
     autoPublish: false,
   },
   {
     courseCode: 'CS-101',
     semester: 'Spring 2025',
     templateTitle: 'Midterm Exam',
-    publishAt: new Date('2025-03-20T00:00:00'),
-    deadline: new Date('2025-03-25T14:00:00'),
+    publishAt: null,
+    deadline: getDate(5), // Due in 5 days - can submit
     lateDeadline: null,
     latePenaltyPercent: 0,
-    status: 'scheduled',
-    autoPublish: true,
+    status: 'published',
+    autoPublish: false,
   },
   {
     courseCode: 'CS-101',
     semester: 'Spring 2025',
     templateTitle: 'Functions and Modules',
     publishAt: null,
-    deadline: new Date('2025-04-20T23:59:59'),
-    lateDeadline: new Date('2025-04-23T23:59:59'),
+    deadline: getDate(20), // Due in 20 days - can submit
+    lateDeadline: getDate(23),
     latePenaltyPercent: 15,
-    status: 'draft',
+    status: 'published',
     autoPublish: false,
+  },
+  {
+    courseCode: 'CS-101',
+    semester: 'Spring 2025',
+    templateTitle: 'Final Project',
+    publishAt: getDate(30),
+    deadline: getDate(50),
+    lateDeadline: getDate(52),
+    latePenaltyPercent: 10,
+    status: 'scheduled',
+    autoPublish: true,
   },
 
   // CS-201 Spring 2025 - Active instance
@@ -210,10 +229,10 @@ export const seedPublishedAssignments: SeedPublishedAssignment[] = [
     semester: 'Spring 2025',
     templateTitle: 'Array and List Operations',
     publishAt: null,
-    deadline: new Date('2025-03-01T23:59:59'),
-    lateDeadline: new Date('2025-03-03T23:59:59'),
+    deadline: getDate(-20), // Past - graded
+    lateDeadline: getDate(-18),
     latePenaltyPercent: 25,
-    status: 'published',
+    status: 'closed',
     autoPublish: false,
   },
   {
@@ -221,11 +240,33 @@ export const seedPublishedAssignments: SeedPublishedAssignment[] = [
     semester: 'Spring 2025',
     templateTitle: 'Trees and Graph Traversal',
     publishAt: null,
-    deadline: new Date('2025-04-01T23:59:59'),
-    lateDeadline: new Date('2025-04-05T23:59:59'),
+    deadline: getDate(7), // Due in a week - can submit
+    lateDeadline: getDate(11),
     latePenaltyPercent: 20,
-    status: 'draft',
+    status: 'published',
     autoPublish: false,
+  },
+  {
+    courseCode: 'CS-201',
+    semester: 'Spring 2025',
+    templateTitle: 'Algorithm Design Quiz',
+    publishAt: null,
+    deadline: getDate(15),
+    lateDeadline: null,
+    latePenaltyPercent: 0,
+    status: 'published',
+    autoPublish: false,
+  },
+  {
+    courseCode: 'CS-201',
+    semester: 'Spring 2025',
+    templateTitle: 'Final Exam',
+    publishAt: getDate(40),
+    deadline: getDate(60),
+    lateDeadline: null,
+    latePenaltyPercent: 0,
+    status: 'scheduled',
+    autoPublish: true,
   },
 
   // CS-301 Spring 2025 - Active instance
@@ -234,8 +275,8 @@ export const seedPublishedAssignments: SeedPublishedAssignment[] = [
     semester: 'Spring 2025',
     templateTitle: 'HTML & CSS Portfolio',
     publishAt: null,
-    deadline: new Date('2025-02-28T23:59:59'),
-    lateDeadline: new Date('2025-03-02T23:59:59'),
+    deadline: getDate(-25), // Past - graded
+    lateDeadline: getDate(-23),
     latePenaltyPercent: 15,
     status: 'closed',
     autoPublish: false,
@@ -245,8 +286,8 @@ export const seedPublishedAssignments: SeedPublishedAssignment[] = [
     semester: 'Spring 2025',
     templateTitle: 'JavaScript Interactive Features',
     publishAt: null,
-    deadline: new Date('2025-03-30T23:59:59'),
-    lateDeadline: new Date('2025-04-02T23:59:59'),
+    deadline: getDate(3), // Due in 3 days - urgent!
+    lateDeadline: getDate(5),
     latePenaltyPercent: 20,
     status: 'published',
     autoPublish: false,
@@ -255,12 +296,84 @@ export const seedPublishedAssignments: SeedPublishedAssignment[] = [
     courseCode: 'CS-301',
     semester: 'Spring 2025',
     templateTitle: 'React Application',
-    publishAt: new Date('2025-04-01T00:00:00'),
-    deadline: new Date('2025-05-10T23:59:59'),
-    lateDeadline: new Date('2025-05-12T23:59:59'),
+    publishAt: null,
+    deadline: getDate(35),
+    lateDeadline: getDate(37),
     latePenaltyPercent: 10,
-    status: 'scheduled',
-    autoPublish: true,
+    status: 'published',
+    autoPublish: false,
+  },
+
+  // CS-302 Spring 2025 - Active instance
+  {
+    courseCode: 'CS-302',
+    semester: 'Spring 2025',
+    templateTitle: 'SQL Queries Practice',
+    publishAt: null,
+    deadline: getDate(-15), // Past - graded
+    lateDeadline: getDate(-13),
+    latePenaltyPercent: 20,
+    status: 'closed',
+    autoPublish: false,
+  },
+  {
+    courseCode: 'CS-302',
+    semester: 'Spring 2025',
+    templateTitle: 'Database Design Project',
+    publishAt: null,
+    deadline: getDate(10),
+    lateDeadline: getDate(13),
+    latePenaltyPercent: 15,
+    status: 'published',
+    autoPublish: false,
+  },
+
+  // CS-401 Spring 2025 - Active instance
+  {
+    courseCode: 'CS-401',
+    semester: 'Spring 2025',
+    templateTitle: 'Agile Sprint 1',
+    publishAt: null,
+    deadline: getDate(-5), // Just passed - can grade
+    lateDeadline: getDate(-3),
+    latePenaltyPercent: 10,
+    status: 'closed',
+    autoPublish: false,
+  },
+  {
+    courseCode: 'CS-401',
+    semester: 'Spring 2025',
+    templateTitle: 'Testing Documentation',
+    publishAt: null,
+    deadline: getDate(12),
+    lateDeadline: getDate(14),
+    latePenaltyPercent: 15,
+    status: 'published',
+    autoPublish: false,
+  },
+
+  // CS-450 Spring 2025 - Active instance
+  {
+    courseCode: 'CS-450',
+    semester: 'Spring 2025',
+    templateTitle: 'Linear Regression Analysis',
+    publishAt: null,
+    deadline: getDate(-8), // Past - graded
+    lateDeadline: getDate(-6),
+    latePenaltyPercent: 25,
+    status: 'closed',
+    autoPublish: false,
+  },
+  {
+    courseCode: 'CS-450',
+    semester: 'Spring 2025',
+    templateTitle: 'Neural Network Implementation',
+    publishAt: null,
+    deadline: getDate(18),
+    lateDeadline: getDate(21),
+    latePenaltyPercent: 20,
+    status: 'published',
+    autoPublish: false,
   },
 ];
 

@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeAll, afterAll, beforeEach } from 'vitest';
+import { describe, it, expect, beforeAll, afterAll, beforeEach, afterEach } from 'vitest';
 import httpStatus from 'http-status';
 import request from 'supertest';
 import app from '@/app';
@@ -590,6 +590,8 @@ describe('Submission Module', () => {
   // ==========================================================================
 
   describe('POST /submissions/:submissionId/grade-pass-fail - Grade Pass/Fail', () => {
+    let passfailAssignmentId: string;
+
     beforeEach(async () => {
       // Create a pass/fail assignment
       const passfailAssignment = await prisma.publishedAssignment.create({
@@ -603,6 +605,7 @@ describe('Submission Module', () => {
           status: 'published',
         },
       });
+      passfailAssignmentId = passfailAssignment.id;
 
       const submission = await prisma.submission.create({
         data: {
@@ -614,6 +617,16 @@ describe('Submission Module', () => {
         },
       });
       submissionId = submission.id;
+    });
+
+    afterEach(async () => {
+      // Clean up pass/fail assignment and submissions created in this test group
+      await prisma.submission.deleteMany({
+        where: { publishedAssignmentId: passfailAssignmentId },
+      });
+      await prisma.publishedAssignment.delete({
+        where: { id: passfailAssignmentId },
+      });
     });
 
     it('should grade as pass', async () => {

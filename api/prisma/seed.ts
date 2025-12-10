@@ -1,5 +1,6 @@
 import { PrismaClient } from '@prisma/client';
 import bcrypt from 'bcryptjs';
+import { faker } from '@faker-js/faker';
 import { seedTags, seedCourses } from '../src/modules/course/course.seed';
 import { seedAssignmentsByCourse } from '../src/modules/assignment/assignment.seed';
 import {
@@ -14,6 +15,8 @@ async function main() {
 
   // Clean existing data (optional, be careful in production)
   console.log('Cleaning existing data...');
+  await prisma.submissionGrade.deleteMany();
+  await prisma.submission.deleteMany();
   await prisma.publishedGradingCriteria.deleteMany();
   await prisma.publishedAssignment.deleteMany();
   await prisma.instanceLecturer.deleteMany();
@@ -463,12 +466,157 @@ async function main() {
 
   console.log(`✓ Enrolled students in ${activeInstances.length} active instances`);
 
+  // 11. Create Submissions for Published Assignments
+  console.log('Creating assignment submissions...');
+  let submissionCount = 0;
+
+  for (const instance of activeInstances) {
+    const publishedAssignments = createdPublishedAssignments.filter(
+      (pa) => pa.instanceId === instance.id
+    );
+
+    for (const assignment of publishedAssignments) {
+      if (!assignment.deadline || !assignment.maxPoints) continue;
+
+      const isPastDeadline = new Date() > new Date(assignment.deadline);
+      const isClosedStatus = assignment.status === 'closed';
+
+      // Student 1 submissions - mostly on time
+      if (isClosedStatus || (isPastDeadline && Math.random() > 0.2)) {
+        // 80% submission rate for past assignments
+        const submittedDate = new Date(assignment.deadline);
+        submittedDate.setDate(submittedDate.getDate() - faker.number.int({ min: 1, max: 5 }));
+
+        const isGraded = isClosedStatus || Math.random() > 0.3;
+        const scorePercentage = faker.number.float({ min: 0.6, max: 1.0 });
+        const totalPoints = Math.round(Number(assignment.maxPoints) * scorePercentage);
+
+        const submission = await prisma.submission.create({
+          data: {
+            publishedAssignmentId: assignment.id,
+            studentId: student1.id,
+            submittedAt: submittedDate,
+            content: faker.lorem.paragraphs(3),
+            status: isGraded ? 'graded' : 'submitted',
+            totalPoints: isGraded ? totalPoints : null,
+            feedback: isGraded ? faker.lorem.paragraph() : null,
+            gradedAt: isGraded ? new Date() : null,
+            gradedBy: isGraded ? teacherUser.id : null,
+          },
+        });
+
+        submissionCount++;
+
+        // Add submission grades if graded
+        if (isGraded) {
+          const criteria = await prisma.publishedGradingCriteria.findMany({
+            where: { publishedAssignmentId: assignment.id },
+          });
+
+          for (const criterion of criteria) {
+            const criterionScorePercentage = faker.number.float({ min: 0.5, max: 1.0 });
+            await prisma.submissionGrade.create({
+              data: {
+                submissionId: submission.id,
+                publishedCriteriaId: criterion.id,
+                pointsAwarded: Math.round(Number(criterion.maxPoints) * criterionScorePercentage),
+                feedback: faker.lorem.sentence(),
+                gradedBy: teacherUser.id,
+              },
+            });
+          }
+        }
+      } else if (assignment.status === 'published' && !isPastDeadline && Math.random() > 0.5) {
+        // 50% chance of draft for current assignments
+        await prisma.submission.create({
+          data: {
+            publishedAssignmentId: assignment.id,
+            studentId: student1.id,
+            content: faker.lorem.paragraphs(2),
+            status: 'draft',
+          },
+        });
+        submissionCount++;
+      }
+
+      // Student 2 submissions - more varied performance
+      if (isClosedStatus || (isPastDeadline && Math.random() > 0.3)) {
+        // 70% submission rate
+        const submittedDate = new Date(assignment.deadline);
+        const isLate = Math.random() > 0.7; // 30% late submissions
+
+        if (isLate && assignment.lateDeadline) {
+          submittedDate.setDate(submittedDate.getDate() + faker.number.int({ min: 1, max: 3 }));
+        } else {
+          submittedDate.setDate(submittedDate.getDate() - faker.number.int({ min: 1, max: 7 }));
+        }
+
+        const isGraded = isClosedStatus || Math.random() > 0.4;
+        // More varied scores, including some failures
+        const scorePercentage = faker.number.float({ min: 0.4, max: 0.95 });
+        const totalPoints = Math.round(Number(assignment.maxPoints) * scorePercentage);
+
+        const submission = await prisma.submission.create({
+          data: {
+            publishedAssignmentId: assignment.id,
+            studentId: student2.id,
+            submittedAt: submittedDate,
+            content: faker.lorem.paragraphs(2),
+            status: isGraded ? 'graded' : 'submitted',
+            totalPoints: isGraded ? totalPoints : null,
+            isLate: isLate,
+            feedback: isGraded
+              ? scorePercentage < 0.6
+                ? `Needs improvement. ${faker.lorem.paragraph()}`
+                : faker.lorem.paragraph()
+              : null,
+            gradedAt: isGraded ? new Date() : null,
+            gradedBy: isGraded ? teacherUser.id : null,
+          },
+        });
+
+        submissionCount++;
+
+        // Add submission grades if graded
+        if (isGraded) {
+          const criteria = await prisma.publishedGradingCriteria.findMany({
+            where: { publishedAssignmentId: assignment.id },
+          });
+
+          for (const criterion of criteria) {
+            const criterionScorePercentage = faker.number.float({ min: 0.3, max: 1.0 });
+            await prisma.submissionGrade.create({
+              data: {
+                submissionId: submission.id,
+                publishedCriteriaId: criterion.id,
+                pointsAwarded: Math.round(Number(criterion.maxPoints) * criterionScorePercentage),
+                feedback:
+                  criterionScorePercentage < 0.6
+                    ? 'Needs improvement: ' + faker.lorem.sentence()
+                    : faker.lorem.sentence(),
+                gradedBy: teacherUser.id,
+              },
+            });
+          }
+        }
+      }
+    }
+  }
+
+  console.log(`✓ Created ${submissionCount} submissions with varied states`);
+
   console.log('\n✅ Database seeding completed successfully!');
   console.log('\n📝 Test Credentials:');
   console.log('Admin:   admin@argus.edu / Admin123!');
   console.log('Teacher: teacher@argus.edu / Teacher123!');
   console.log('Student: student1@argus.edu / Student123!');
   console.log('Student: student2@argus.edu / Student123!');
+  console.log('\n📊 Seed Data Summary:');
+  console.log(`- Courses: ${createdCourses.length}`);
+  console.log(`- Course Instances: ${createdInstances.size}`);
+  console.log(`- Assignment Templates: ${Array.from(createdTemplates.values()).length}`);
+  console.log(`- Published Assignments: ${createdPublishedAssignments.length}`);
+  console.log(`- Submissions: ${submissionCount}`);
 }
 
 main()

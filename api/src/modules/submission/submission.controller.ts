@@ -75,8 +75,18 @@ export const submitAssignment = catchAsync(
 export const getSubmission = catchAsync(
   async (req): Promise<ApiResponse<SubmissionWithRelations>> => {
     const { params } = await zParse(getSubmissionSchema, req);
+    const user = req.user as ExtendedUser;
 
     const submission = await submissionService.getSubmissionById(params.submissionId);
+
+    // Students can only view their own submissions
+    // Teachers and admins can view all submissions
+    const userRoles = user.roles?.map((r) => r.role.name) || [];
+    const isTeacherOrAdmin = userRoles.includes('teacher') || userRoles.includes('admin');
+
+    if (!isTeacherOrAdmin && submission.studentId !== user.id) {
+      throw new Error('You do not have permission to view this submission');
+    }
 
     return {
       statusCode: httpStatus.OK,
