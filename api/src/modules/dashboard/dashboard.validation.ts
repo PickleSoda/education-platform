@@ -5,7 +5,7 @@ import { z } from 'zod';
 // ============================================================================
 
 export const getTeacherDashboardSchema = z.object({
-	query: z.object({}).optional(),
+  query: z.object({}).optional(),
 });
 
 // ============================================================================
@@ -13,7 +13,7 @@ export const getTeacherDashboardSchema = z.object({
 // ============================================================================
 
 export const getStudentDashboardSchema = z.object({
-	query: z.object({}).optional(),
+  query: z.object({}).optional(),
 });
 
 // ============================================================================
@@ -21,12 +21,12 @@ export const getStudentDashboardSchema = z.object({
 // ============================================================================
 
 export const getInstanceAnalyticsSchema = z.object({
-	params: z.object({
-		instanceId: z.string().uuid('Invalid instance ID format'),
-	}),
-	query: z.object({
-		assignmentId: z.string().uuid('Invalid assignment ID format').optional(),
-	}),
+  params: z.object({
+    instanceId: z.string().uuid('Invalid instance ID format'),
+  }),
+  query: z.object({
+    assignmentId: z.string().uuid('Invalid assignment ID format').optional(),
+  }),
 });
 
 // ============================================================================

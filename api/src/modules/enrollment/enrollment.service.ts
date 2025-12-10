@@ -55,13 +55,18 @@ export const enrollStudent = async (
       const updated = await enrollmentRepository.updateStatus(existingEnrollment.id, 'enrolled');
 
       // Send notification
-      await notificationRepository.create({
-        userId: studentId,
-        title: 'Enrollment Confirmed',
-        message: `You have been re-enrolled in ${updated.instance.course.title}`,
-        entityType: 'enrollment',
-        entityId: updated.id,
-      });
+      try {
+        await notificationRepository.create({
+          userId: studentId,
+          type: 'enrollment_confirmed',
+          title: 'Enrollment Confirmed',
+          message: `You have been re-enrolled in ${updated.instance.course.title}`,
+          instanceId: updated.instanceId,
+          data: { enrollmentId: updated.id },
+        });
+      } catch (error) {
+        console.error('Failed to send enrollment notification:', error);
+      }
 
       return updated;
     }
@@ -75,13 +80,18 @@ export const enrollStudent = async (
   const enrollment = await enrollmentRepository.create({ instanceId, studentId });
 
   // Send notification
-  await notificationRepository.create({
-    userId: studentId,
-    title: 'Enrollment Confirmed',
-    message: `You have been enrolled in ${enrollment.instance.course.title}`,
-    entityType: 'enrollment',
-    entityId: enrollment.id,
-  });
+  try {
+    await notificationRepository.create({
+      userId: studentId,
+      type: 'enrollment_confirmed',
+      title: 'Enrollment Confirmed',
+      message: `You have been enrolled in ${enrollment.instance.course.title}`,
+      instanceId: enrollment.instanceId,
+      data: { enrollmentId: enrollment.id },
+    });
+  } catch (error) {
+    console.error('Failed to send enrollment notification:', error);
+  }
 
   return enrollment;
 };
@@ -167,13 +177,21 @@ export const updateEnrollmentStatus = async (
   }
 
   if (notificationMessage) {
-    await notificationRepository.create({
-      userId: updated.studentId,
-      title: 'Enrollment Status Updated',
-      message: notificationMessage,
-      entityType: 'enrollment',
-      entityId: updated.id,
-    });
+    try {
+      // Use appropriate notification type based on status
+      const notificationType = status === 'completed' ? 'course_completed' : 'enrollment_confirmed';
+
+      await notificationRepository.create({
+        userId: updated.studentId,
+        type: notificationType,
+        title: 'Enrollment Status Updated',
+        message: notificationMessage,
+        instanceId: updated.instanceId,
+        data: { enrollmentId: updated.id, newStatus: status },
+      });
+    } catch (error) {
+      console.error('Failed to send status update notification:', error);
+    }
   }
 
   return updated;
@@ -232,13 +250,22 @@ export const calculateFinalGrade = async (
   const result = await enrollmentRepository.calculateFinalGrade(instanceId, studentId);
 
   // Notify student of grade calculation
-  await notificationRepository.create({
-    userId: studentId,
-    title: 'Final Grade Calculated',
-    message: `Your final grade for ${enrollment.instance.course.title} has been calculated: ${result.finalLetter || 'N/A'}`,
-    entityType: 'enrollment',
-    entityId: enrollment.id,
-  });
+  try {
+    await notificationRepository.create({
+      userId: studentId,
+      type: 'grade_updated',
+      title: 'Final Grade Calculated',
+      message: `Your final grade for ${enrollment.instance.course.title} has been calculated: ${result.finalLetter || 'N/A'}`,
+      instanceId: enrollment.instanceId,
+      data: {
+        enrollmentId: enrollment.id,
+        finalGrade: result.finalGrade,
+        finalLetter: result.finalLetter,
+      },
+    });
+  } catch (error) {
+    console.error('Failed to send grade calculation notification:', error);
+  }
 
   return result;
 };

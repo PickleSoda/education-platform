@@ -17,12 +17,6 @@ export const saveSubmissionDraft = async (
   studentId: string,
   data: { content?: string; attachments?: any }
 ) => {
-  // Verify assignment exists
-  const assignment = await submissionRepository.getSubmissionById(assignmentId);
-  if (!assignment) {
-    throw new ApiError(httpStatus.NOT_FOUND, 'Assignment not found');
-  }
-
   return submissionRepository.saveSubmission({
     assignmentId,
     studentId,

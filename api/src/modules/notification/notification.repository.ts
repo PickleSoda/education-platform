@@ -8,11 +8,15 @@ import {
 
 export interface NotificationCreateInput {
   userId: string;
+  type: string; // NotificationType - required field
   title: string;
   message: string;
-  entityType?: string | null;
-  entityId?: string | null;
+  data?: any; // Flexible JSON payload
   isRead?: boolean;
+  // Optional references
+  instanceId?: string | null;
+  assignmentId?: string | null;
+  forumPostId?: string | null;
 }
 
 export type NotificationUpdateInput = Partial<Prisma.NotificationUpdateInput>;
