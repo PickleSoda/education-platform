@@ -1,10 +1,13 @@
+import { InstanceStatus } from '@prisma/client';
 import { z } from 'zod';
 
 // ============================================================================
 // INSTANCE VALIDATION SCHEMAS
 // ============================================================================
 
-export const instanceStatusEnum = z.enum(['draft', 'scheduled', 'active', 'completed', 'archived']);
+export const instanceStatusEnum = z.enum(
+  Object.values(InstanceStatus) as [InstanceStatus, ...InstanceStatus[]]
+);
 
 export const createInstanceSchema = z.object({
   body: z.object({

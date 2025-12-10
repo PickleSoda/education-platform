@@ -32,12 +32,12 @@ const routes: RouteConfig[] = [
     route: userRoute,
   },
   {
-    path: '/courses',
-    route: courseRoute,
-  },
-  {
     path: '/courses/instances',
     route: instanceRoute,
+  },
+  {
+    path: '/courses',
+    route: courseRoute,
   },
   {
     path: '/docs',
