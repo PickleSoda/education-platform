@@ -61,8 +61,8 @@ export function getFrontendDashboardRoutes(): RouteObject[] {
 					path: "course",
 					children: [
 						{ index: true, element: Component("/pages/management/course") },
-						{ path: "create", element: Component("/pages/management/course/course-form") },
-						{ path: "edit/:id", element: Component("/pages/management/course/course-form") },
+						{ path: "create", element: Component("/pages/management/course/edit") },
+						{ path: "edit/:id", element: Component("/pages/management/course/edit") },
 						{ path: ":id", element: Component("/pages/management/course/detail") },
 					],
 				},

@@ -63,6 +63,108 @@ export interface CourseStats {
 	} | null;
 }
 
+export interface CourseInstance {
+	id: string;
+	courseId: string;
+	semester: string;
+	startDate: string;
+	endDate: string;
+	status: "draft" | "scheduled" | "active" | "completed" | "archived";
+	enrollmentOpen: boolean;
+	enrollmentLimit: number | null;
+	createdBy: string;
+	createdAt: string;
+	updatedAt: string;
+	course?: Pick<Course, "id" | "code" | "title" | "description" | "credits">;
+	lecturers?: Array<{
+		userId: string;
+		role: string;
+		user: {
+			id: string;
+			email: string;
+			firstName: string;
+			lastName: string;
+		};
+	}>;
+	forums?: Array<{
+		id: string;
+		title: string;
+		forumType: string;
+		sortOrder: number;
+	}>;
+	_count?: {
+		enrollments: number;
+		publishedAssignments: number;
+		publishedResources: number;
+	};
+}
+
+export interface AssignmentTemplate {
+	id: string;
+	courseId: string;
+	title: string;
+	description: string | null;
+	assignmentType: "homework" | "quiz" | "midterm" | "final" | "project" | "participation";
+	gradingMode: "points" | "pass_fail";
+	maxPoints: number | null;
+	weightPercentage: number | null;
+	defaultDurationDays: number | null;
+	instructions: string | null;
+	attachments: any | null;
+	syllabusItemId: string | null;
+	sortOrder: number;
+	createdAt: string;
+	updatedAt: string;
+	gradingCriteria?: GradingCriteria[];
+	syllabusItem?: {
+		id: string;
+		title: string;
+		weekNumber: number | null;
+	} | null;
+}
+
+export interface GradingCriteria {
+	id: string;
+	templateId: string;
+	name: string;
+	description: string | null;
+	maxPoints: number;
+	sortOrder: number;
+}
+
+export interface PublishedAssignment {
+	id: string;
+	instanceId: string;
+	templateId: string;
+	title: string;
+	description: string | null;
+	assignmentType: "homework" | "quiz" | "midterm" | "final" | "project" | "participation";
+	gradingMode: "points" | "pass_fail";
+	maxPoints: number | null;
+	weightPercentage: number | null;
+	instructions: string | null;
+	publishAt: string | null;
+	deadline: string;
+	lateDeadline: string | null;
+	latePenaltyPercent: number | null;
+	status: "draft" | "scheduled" | "published" | "closed";
+	autoPublish: boolean;
+	publishedBy: string;
+	createdAt: string;
+	updatedAt: string;
+	gradingCriteria?: Array<{
+		id: string;
+		publishedAssignmentId: string;
+		name: string;
+		description: string | null;
+		maxPoints: number;
+		sortOrder: number;
+	}>;
+	_count?: {
+		submissions: number;
+	};
+}
+
 export interface TeacherProfile {
 	userId: string;
 	department: string | null;
