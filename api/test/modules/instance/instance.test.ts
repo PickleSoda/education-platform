@@ -173,13 +173,13 @@ describe('Instance Module', () => {
 
     it('should create a new instance as admin', async () => {
       const res = await request(app)
-        .post('/v1/instances')
+        .post('/v1/courses/instances')
         .set('Authorization', `Bearer ${adminToken}`)
         .send({
           courseId,
           semester: 'Fall 2024',
-          startDate: '2024-09-01',
-          endDate: '2024-12-15',
+          startDate: '2024-09-01T00:00:00Z',
+          endDate: '2024-12-15T23:59:59Z',
           enrollmentLimit: 30,
           lecturerIds: [teacherId],
         })
@@ -193,13 +193,13 @@ describe('Instance Module', () => {
 
     it('should create a new instance as teacher', async () => {
       const res = await request(app)
-        .post('/v1/course/instances')
+        .post('/v1/courses/instances')
         .set('Authorization', `Bearer ${teacherToken}`)
         .send({
           courseId,
           semester: 'Spring 2025',
-          startDate: '2025-01-15',
-          endDate: '2025-05-15',
+          startDate: '2025-01-15T00:00:00Z',
+          endDate: '2025-05-15T23:59:59Z',
         })
         .expect(httpStatus.CREATED);
 
@@ -209,7 +209,7 @@ describe('Instance Module', () => {
 
     it('should fail to create instance as student', async () => {
       await request(app)
-        .post('/v1/instances')
+        .post('/v1/courses/instances')
         .set('Authorization', `Bearer ${studentToken}`)
         .send({
           courseId,
@@ -222,7 +222,7 @@ describe('Instance Module', () => {
 
     it('should fail to create instance without authentication', async () => {
       await request(app)
-        .post('/v1/instances')
+        .post('/v1/courses/instances')
         .send({
           courseId,
           semester: 'Fall 2024',
@@ -234,13 +234,13 @@ describe('Instance Module', () => {
 
     it('should fail with invalid course ID', async () => {
       await request(app)
-        .post('/v1/instances')
+        .post('/v1/courses/instances')
         .set('Authorization', `Bearer ${adminToken}`)
         .send({
           courseId: '00000000-0000-0000-0000-000000000000',
           semester: 'Fall 2024',
-          startDate: '2024-09-01',
-          endDate: '2024-12-15',
+          startDate: '2024-09-01T00:00:00Z',
+          endDate: '2024-12-15T23:59:59Z',
         })
         .expect(httpStatus.NOT_FOUND);
     });
@@ -285,7 +285,7 @@ describe('Instance Module', () => {
 
     it('should list all instances', async () => {
       const res = await request(app)
-        .get('/v1/instances')
+        .get('/v1/courses/instances')
         .set('Authorization', `Bearer ${studentToken}`)
         .expect(httpStatus.OK);
 
@@ -295,7 +295,7 @@ describe('Instance Module', () => {
 
     it('should filter by status', async () => {
       const res = await request(app)
-        .get('/v1/instances?status=active')
+        .get('/v1/courses/instances?status=active')
         .set('Authorization', `Bearer ${studentToken}`)
         .expect(httpStatus.OK);
 
@@ -307,7 +307,7 @@ describe('Instance Module', () => {
 
     it('should support pagination', async () => {
       const res = await request(app)
-        .get('/v1/instances?page=1&limit=1')
+        .get('/v1/courses/instances?page=1&limit=1')
         .set('Authorization', `Bearer ${studentToken}`)
         .expect(httpStatus.OK);
 
@@ -318,7 +318,7 @@ describe('Instance Module', () => {
     });
 
     it('should fail without authentication', async () => {
-      await request(app).get('/v1/instances').expect(httpStatus.UNAUTHORIZED);
+      await request(app).get('/v1/courses/instances').expect(httpStatus.UNAUTHORIZED);
     });
   });
 
@@ -528,7 +528,7 @@ describe('Instance Module', () => {
       const res = await request(app)
         .patch(`/v1/courses/instances/${localInstanceId}/enrollment`)
         .set('Authorization', `Bearer ${teacherToken}`)
-        .send({ enrollmentOpen: true })
+        .send({ isOpen: true })
         .expect(httpStatus.OK);
 
       expect(res.body.message).toBeDefined();
@@ -544,7 +544,7 @@ describe('Instance Module', () => {
       const res = await request(app)
         .patch(`/v1/courses/instances/${localInstanceId}/enrollment`)
         .set('Authorization', `Bearer ${teacherToken}`)
-        .send({ enrollmentOpen: false })
+        .send({ isOpen: false })
         .expect(httpStatus.OK);
 
       expect(res.body.message).toBeDefined();
@@ -555,7 +555,7 @@ describe('Instance Module', () => {
       await request(app)
         .patch(`/v1/courses/instances/${localInstanceId}/enrollment`)
         .set('Authorization', `Bearer ${studentToken}`)
-        .send({ enrollmentOpen: true })
+        .send({ isOpen: true })
         .expect(httpStatus.FORBIDDEN);
     });
   });
@@ -644,8 +644,8 @@ describe('Instance Module', () => {
         .set('Authorization', `Bearer ${teacherToken}`)
         .send({
           semester: 'Fall 2025',
-          startDate: '2025-09-01',
-          endDate: '2025-12-15',
+          startDate: '2025-09-01T00:00:00Z',
+          endDate: '2025-12-15T23:59:59Z',
         })
         .expect(httpStatus.CREATED);
       console.log(res.body);
@@ -661,8 +661,8 @@ describe('Instance Module', () => {
         .set('Authorization', `Bearer ${adminToken}`)
         .send({
           semester: 'Spring 2025',
-          startDate: '2025-01-15',
-          endDate: '2025-05-15',
+          startDate: '2025-01-15T00:00:00Z',
+          endDate: '2025-05-15T23:59:59Z',
         })
         .expect(httpStatus.CREATED);
 
@@ -918,7 +918,7 @@ describe('Instance Module', () => {
           `/v1/courses/instances/${localInstanceId}/assignments/${publishedAssignmentId}/publish`
         )
         .set('Authorization', `Bearer ${teacherToken}`)
-        .send({ status: 'published' })
+        .send({ publish: true })
         .expect(httpStatus.OK);
 
       expect(res.body.message).toBeDefined();
@@ -936,11 +936,11 @@ describe('Instance Module', () => {
           `/v1/courses/instances/${localInstanceId}/assignments/${publishedAssignmentId}/publish`
         )
         .set('Authorization', `Bearer ${teacherToken}`)
-        .send({ status: 'closed' })
+        .send({ publish: false })
         .expect(httpStatus.OK);
 
       expect(res.body.message).toBeDefined();
-      expect(res.body.data.status).toBe('closed');
+      expect(res.body.data.status).toBe('draft');
     });
 
     it('should fail as student', async () => {
@@ -949,7 +949,7 @@ describe('Instance Module', () => {
           `/v1/courses/instances/${localInstanceId}/assignments/${publishedAssignmentId}/publish`
         )
         .set('Authorization', `Bearer ${studentToken}`)
-        .send({ status: 'published' })
+        .send({ publish: true })
         .expect(httpStatus.FORBIDDEN);
     });
   });
