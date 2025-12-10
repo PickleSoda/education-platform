@@ -7,6 +7,10 @@ import { Table } from "antd";
 import type { ColumnsType } from "antd/es/table";
 import type { CourseInstance } from "#/entity";
 import { format } from "date-fns";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import enrollmentService from "@/api/services/enrollmentService";
+import { toast } from "sonner";
+import { useState } from "react";
 
 interface InstancesTabProps {
 	instances: CourseInstance[];
@@ -14,6 +18,29 @@ interface InstancesTabProps {
 }
 
 export default function InstancesTab({ instances, isLoading }: InstancesTabProps) {
+	const queryClient = useQueryClient();
+	const [enrollingInstanceId, setEnrollingInstanceId] = useState<string | null>(null);
+
+	const enrollMutation = useMutation({
+		mutationFn: (instanceId: string) => enrollmentService.enrollInInstance(instanceId),
+		onSuccess: (_, _instanceId) => {
+			toast.success("Successfully enrolled in the course!");
+			queryClient.invalidateQueries({ queryKey: ["course-instances"] });
+			queryClient.invalidateQueries({ queryKey: ["my-enrollments"] });
+			setEnrollingInstanceId(null);
+		},
+		onError: (error: any) => {
+			const message = error?.response?.data?.message || "Failed to enroll. Please try again.";
+			toast.error(message);
+			setEnrollingInstanceId(null);
+		},
+	});
+
+	const handleEnroll = (instanceId: string) => {
+		setEnrollingInstanceId(instanceId);
+		enrollMutation.mutate(instanceId);
+	};
+
 	const statusColors: Record<string, string> = {
 		draft: "default",
 		scheduled: "info",
@@ -80,12 +107,45 @@ export default function InstancesTab({ instances, isLoading }: InstancesTabProps
 			key: "operation",
 			align: "center",
 			width: 120,
-			render: () => (
-				<Button size="sm" variant="outline">
-					<Icon icon="solar:login-2-bold-duotone" size={16} className="mr-2" />
-					Join
-				</Button>
-			),
+			render: (_, record) => {
+				const isEnrolling = enrollingInstanceId === record.id;
+				const canEnroll = record.enrollmentOpen && record.status === "active";
+				const isFull = record.enrollmentLimit ? (record._count?.enrollments || 0) >= record.enrollmentLimit : false;
+
+				if (!canEnroll) {
+					return (
+						<Button size="sm" variant="outline" disabled>
+							<Icon icon="solar:lock-bold-duotone" size={16} className="mr-2" />
+							Closed
+						</Button>
+					);
+				}
+
+				if (isFull) {
+					return (
+						<Button size="sm" variant="outline" disabled>
+							<Icon icon="solar:users-group-rounded-bold-duotone" size={16} className="mr-2" />
+							Full
+						</Button>
+					);
+				}
+
+				return (
+					<Button size="sm" variant="outline" disabled={isEnrolling} onClick={() => handleEnroll(record.id)}>
+						{isEnrolling ? (
+							<>
+								<Icon icon="svg-spinners:ring-resize" size={16} className="mr-2" />
+								Enrolling...
+							</>
+						) : (
+							<>
+								<Icon icon="solar:login-2-bold-duotone" size={16} className="mr-2" />
+								Join
+							</>
+						)}
+					</Button>
+				);
+			},
 		},
 	];
 
