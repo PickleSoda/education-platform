@@ -85,7 +85,7 @@ export const navData: NavProps["data"] = [
 			},
 			{
 				title: "sys.nav.myCourses",
-				path: "/enrollments",
+				path: "/my-courses",
 				icon: <Icon icon="solar:clipboard-bold-duotone" size="24" />,
 			},
 			{
@@ -108,6 +108,16 @@ export const navData: NavProps["data"] = [
 						title: "sys.nav.manageCourses",
 						path: "/management/course",
 						icon: <Icon icon="mdi:book-education" size="24" />,
+					},
+					{
+						title: "sys.nav.manageInstances",
+						path: "/management/instance",
+						icon: <Icon icon="solar:clipboard-bold-duotone" size="24" />,
+					},
+					{
+						title: "sys.nav.manageAssignments",
+						path: "/management/assignment",
+						icon: <Icon icon="solar:document-text-bold-duotone" size="24" />,
 					},
 					{
 						title: "sys.nav.system.index",

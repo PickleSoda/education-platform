@@ -165,6 +165,44 @@ export interface PublishedAssignment {
 	};
 }
 
+// Enrollment types
+export type EnrollmentStatus = "enrolled" | "dropped" | "completed";
+
+export interface Enrollment {
+	id: string;
+	instanceId: string;
+	studentId: string;
+	status: EnrollmentStatus;
+	enrolledAt: string;
+	completedAt: string | null;
+	finalGrade: number | null;
+	createdAt: string;
+	updatedAt: string;
+}
+
+export interface EnrollmentWithRelations extends Enrollment {
+	instance?: CourseInstance & {
+		course?: Pick<Course, "id" | "code" | "title" | "description" | "credits">;
+	};
+	student?: {
+		id: string;
+		email: string;
+		firstName: string;
+		lastName: string;
+		studentProfile?: StudentProfile | null;
+	};
+}
+
+export interface EnrollmentStats {
+	instanceId: string;
+	totalEnrolled: number;
+	totalDropped: number;
+	totalCompleted: number;
+	enrollmentLimit: number | null;
+	enrollmentOpen: boolean;
+	availableSpots: number | null;
+}
+
 export interface TeacherProfile {
 	userId: string;
 	department: string | null;
