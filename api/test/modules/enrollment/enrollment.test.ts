@@ -10,6 +10,7 @@ describe('Enrollment Module', () => {
   let teacherToken: string;
   let studentToken: string;
   let student2Token: string;
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   let adminId: string;
   let teacherId: string;
   let studentId: string;
@@ -319,9 +320,7 @@ describe('Enrollment Module', () => {
     });
 
     it('should fail without authentication', async () => {
-      await request(app)
-        .get(`/v1/enrollments/${enrollmentId}`)
-        .expect(httpStatus.UNAUTHORIZED);
+      await request(app).get(`/v1/enrollments/${enrollmentId}`).expect(httpStatus.UNAUTHORIZED);
     });
   });
 
