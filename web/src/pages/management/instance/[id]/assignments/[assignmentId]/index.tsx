@@ -91,7 +91,7 @@ export default function AssignmentGradingPage() {
 			dataIndex: "finalPoints",
 			align: "center",
 			width: 100,
-			render: (points: number | null, record) =>
+			render: (points: number | null) =>
 				points !== null ? (
 					<div>
 						<p className="font-semibold">{points}</p>

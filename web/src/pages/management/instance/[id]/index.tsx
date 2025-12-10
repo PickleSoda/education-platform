@@ -59,7 +59,7 @@ export default function InstanceDetailPage() {
 				<CardContent className="py-12 text-center">
 					<Icon icon="solar:file-corrupted-bold-duotone" size={48} className="mx-auto mb-4 text-gray-400" />
 					<h3 className="text-lg font-medium">Instance not found</h3>
-					<p className="text-text-secondary">The instance you're looking for doesn't exist.</p>
+					<p className="text-text-secondary">The instance you&apos;re looking for doesn&apos;t exist.</p>
 					<Button onClick={() => back()} className="mt-4">
 						Go Back
 					</Button>

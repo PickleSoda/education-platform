@@ -4,7 +4,9 @@ import { Component } from "./utils";
 
 export function getFrontendDashboardRoutes(): RouteObject[] {
 	const frontendDashboardRoutes: RouteObject[] = [
-		{ path: "workbench", element: Component("/pages/dashboard/workbench") },
+		{ index: true, element: Component("/pages/dashboard") },
+		{ path: "dashboard", element: Component("/pages/dashboard") },
+		{ path: "home", element: Component("/pages/dashboard") },
 		{ path: "analysis", element: Component("/pages/dashboard/analysis") },
 		{
 			path: "my-courses",
@@ -156,6 +158,7 @@ export function getFrontendDashboardRoutes(): RouteObject[] {
 				{ path: "page-test", element: Component("/pages/sys/others/permission/page-test") },
 			],
 		},
+		{ path: "workbench", element: Component("/pages/dashboard/workbench") },
 		{ path: "calendar", element: Component("/pages/sys/others/calendar") },
 		{ path: "kanban", element: Component("/pages/sys/others/kanban") },
 		{ path: "blank", element: Component("/pages/sys/others/blank") },

@@ -94,6 +94,7 @@ export function EnrollmentsTab({ instanceId }: EnrollmentsTabProps) {
 		mutationFn: () => enrollmentService.exportRoster(instanceId),
 		onSuccess: (data) => {
 			// Create download link
+			// eslint-disable-next-line no-undef
 			const blob = new Blob([data as unknown as BlobPart], { type: "text/csv" });
 			const url = window.URL.createObjectURL(blob);
 			const a = document.createElement("a");
