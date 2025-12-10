@@ -3,6 +3,7 @@ import express from 'express';
 import authRoute from '../modules/auth/auth.route';
 import assignmentRoute from '../modules/assignment/assignment.route';
 import courseRoute from '../modules/course/course.route';
+import dashboardRoute from '../modules/dashboard/dashboard.route';
 import enrollmentRoute from '../modules/enrollment/enrollment.route';
 import fileRoute from '../modules/file/file.route';
 import healthRoute from '../modules/health/health.route';
@@ -40,6 +41,10 @@ const routes: RouteConfig[] = [
   {
     path: '/courses',
     route: courseRoute,
+  },
+  {
+    path: '/dashboard',
+    route: dashboardRoute,
   },
   {
     path: '/enrollments',
