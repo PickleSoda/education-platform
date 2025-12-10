@@ -38,6 +38,15 @@ const transformSubmission = (submission: any): SubmissionWithRelations => {
 export const saveSubmission = async (
   data: SubmissionCreateInput
 ): Promise<SubmissionWithRelations> => {
+  // Verify assignment exists first
+  const assignment = await prisma.publishedAssignment.findUnique({
+    where: { id: data.assignmentId },
+  });
+
+  if (!assignment) {
+    throw new Error('Assignment not found');
+  }
+
   const result = await prisma.submission.upsert({
     where: {
       publishedAssignmentId_studentId: {

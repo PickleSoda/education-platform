@@ -44,12 +44,8 @@ router.get(
 // List submissions (teacher, admin)
 router.get('/', requireAnyRole(['teacher', 'admin']), submissionController.listSubmissions);
 
-// Get submission details (teacher, admin)
-router.get(
-  '/:submissionId',
-  requireAnyRole(['teacher', 'admin']),
-  submissionController.getSubmission
-);
+// Get submission details (students can view their own, teachers/admins can view all)
+router.get('/:submissionId', submissionController.getSubmission);
 
 // Grade submission with criteria (teacher, admin)
 router.post(

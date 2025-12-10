@@ -123,9 +123,36 @@ export const getMyEnrollments = catchAsync(
 export const updateEnrollmentStatus = catchAsync(
   async (req): Promise<ApiResponse<EnrollmentWithRelations>> => {
     const { params, body } = await zParse(updateEnrollmentStatusSchema, req);
-    const userId = (req.user as ExtendedUser)!.id;
+    const user = req.user as ExtendedUser;
 
-    const enrollment = await enrollmentService.updateStatus(params.id, body.status, userId);
+    // Get the enrollment first to check ownership
+    const existingEnrollment = await enrollmentService.getById(params.id);
+    if (!existingEnrollment) {
+      throw new ApiError(httpStatus.NOT_FOUND, 'Enrollment not found');
+    }
+
+    // Check permissions
+    const userRoles = user.roles?.map((r) => r.role.name) || [];
+    const isTeacherOrAdmin = userRoles.includes('teacher') || userRoles.includes('admin');
+    const isOwnEnrollment = existingEnrollment.studentId === user.id;
+
+    // Students can only drop their own enrollments
+    if (!isTeacherOrAdmin) {
+      if (!isOwnEnrollment) {
+        throw new ApiError(
+          httpStatus.FORBIDDEN,
+          'You can only update your own enrollment status'
+        );
+      }
+      if (body.status !== 'dropped') {
+        throw new ApiError(
+          httpStatus.FORBIDDEN,
+          'Students can only drop their enrollments. Other status changes require teacher or admin permissions.'
+        );
+      }
+    }
+
+    const enrollment = await enrollmentService.updateStatus(params.id, body.status, user.id);
 
     return {
       statusCode: httpStatus.OK,

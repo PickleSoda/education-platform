@@ -362,10 +362,184 @@ const cs301Assignments: SeedAssignmentTemplate[] = [
   },
 ];
 
+// CS-302: Database Systems
+const cs302Assignments: SeedAssignmentTemplate[] = [
+  {
+    title: 'SQL Queries Practice',
+    description: 'Practice writing complex SQL queries',
+    assignmentType: 'homework',
+    gradingMode: 'points',
+    maxPoints: 100,
+    weightPercentage: 8,
+    defaultDurationDays: 7,
+    instructions: 'Complete all SQL exercises. Include query results and explanations.',
+    gradingCriteria: [
+      {
+        name: 'Query Correctness',
+        description: 'Queries produce correct results',
+        maxPoints: 70,
+      },
+      {
+        name: 'Query Optimization',
+        description: 'Efficient query design',
+        maxPoints: 30,
+      },
+    ],
+  },
+  {
+    title: 'Database Design Project',
+    description: 'Design and implement a complete database system',
+    assignmentType: 'project',
+    gradingMode: 'points',
+    maxPoints: 150,
+    weightPercentage: 20,
+    defaultDurationDays: 21,
+    instructions:
+      'Create an ER diagram, normalize tables, implement in PostgreSQL, and write sample queries.',
+    gradingCriteria: [
+      {
+        name: 'ER Diagram',
+        description: 'Complete and accurate entity-relationship diagram',
+        maxPoints: 40,
+      },
+      {
+        name: 'Normalization',
+        description: 'Proper normalization to 3NF',
+        maxPoints: 35,
+      },
+      {
+        name: 'Implementation',
+        description: 'Working database with sample data',
+        maxPoints: 50,
+      },
+      {
+        name: 'Documentation',
+        description: 'Clear documentation and queries',
+        maxPoints: 25,
+      },
+    ],
+  },
+];
+
+// CS-401: Software Engineering Practices
+const cs401Assignments: SeedAssignmentTemplate[] = [
+  {
+    title: 'Agile Sprint 1',
+    description: 'Complete first sprint of team project',
+    assignmentType: 'project',
+    gradingMode: 'points',
+    maxPoints: 100,
+    weightPercentage: 15,
+    defaultDurationDays: 14,
+    instructions:
+      'Work with your team to complete sprint goals. Submit sprint retrospective and demo.',
+    gradingCriteria: [
+      {
+        name: 'Sprint Goals',
+        description: 'Completed planned user stories',
+        maxPoints: 50,
+      },
+      {
+        name: 'Code Quality',
+        description: 'Clean, tested code',
+        maxPoints: 30,
+      },
+      {
+        name: 'Team Collaboration',
+        description: 'Effective team work and communication',
+        maxPoints: 20,
+      },
+    ],
+  },
+  {
+    title: 'Testing Documentation',
+    description: 'Create comprehensive testing strategy and documentation',
+    assignmentType: 'homework',
+    gradingMode: 'points',
+    maxPoints: 100,
+    weightPercentage: 10,
+    defaultDurationDays: 10,
+    instructions: 'Write unit tests, integration tests, and testing documentation.',
+    gradingCriteria: [
+      {
+        name: 'Test Coverage',
+        description: 'Comprehensive test coverage',
+        maxPoints: 50,
+      },
+      {
+        name: 'Documentation',
+        description: 'Clear testing strategy documentation',
+        maxPoints: 50,
+      },
+    ],
+  },
+];
+
+// CS-450: Introduction to Machine Learning
+const cs450Assignments: SeedAssignmentTemplate[] = [
+  {
+    title: 'Linear Regression Analysis',
+    description: 'Implement and analyze linear regression models',
+    assignmentType: 'homework',
+    gradingMode: 'points',
+    maxPoints: 100,
+    weightPercentage: 10,
+    defaultDurationDays: 10,
+    instructions: 'Train models on provided dataset, analyze results, and write report.',
+    gradingCriteria: [
+      {
+        name: 'Implementation',
+        description: 'Correct model implementation',
+        maxPoints: 50,
+      },
+      {
+        name: 'Analysis',
+        description: 'Thorough analysis of results',
+        maxPoints: 50,
+      },
+    ],
+  },
+  {
+    title: 'Neural Network Implementation',
+    description: 'Build and train a neural network from scratch',
+    assignmentType: 'project',
+    gradingMode: 'points',
+    maxPoints: 150,
+    weightPercentage: 20,
+    defaultDurationDays: 21,
+    instructions: 'Implement a neural network, train on dataset, and evaluate performance.',
+    gradingCriteria: [
+      {
+        name: 'Architecture',
+        description: 'Well-designed network architecture',
+        maxPoints: 40,
+      },
+      {
+        name: 'Training',
+        description: 'Proper training and optimization',
+        maxPoints: 50,
+      },
+      {
+        name: 'Evaluation',
+        description: 'Comprehensive evaluation and analysis',
+        maxPoints: 40,
+      },
+      {
+        name: 'Documentation',
+        description: 'Clear documentation',
+        maxPoints: 20,
+      },
+    ],
+  },
+];
+
 export const seedAssignmentsByCourse: CourseAssignments[] = [
   { courseCode: 'CS-101', templates: cs101Assignments },
   { courseCode: 'CS-201', templates: cs201Assignments },
   { courseCode: 'CS-301', templates: cs301Assignments },
+  { courseCode: 'CS-302', templates: cs302Assignments },
+  { courseCode: 'CS-401', templates: cs401Assignments },
+  { courseCode: 'CS-450', templates: cs450Assignments },
 ];
 
 // ============================================================================
