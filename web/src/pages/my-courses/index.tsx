@@ -8,7 +8,7 @@ import enrollmentService from "@/api/services/enrollmentService";
 import type { EnrollmentWithRelations } from "#/entity";
 import { format } from "date-fns";
 import { useNavigate } from "react-router";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/ui/tabs";
+import { Tabs, TabsList, TabsTrigger } from "@/ui/tabs";
 import { useState } from "react";
 
 type FilterStatus = "all" | "enrolled" | "completed" | "dropped";

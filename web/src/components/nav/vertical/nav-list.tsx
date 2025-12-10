@@ -3,6 +3,8 @@ import { useState } from "react";
 import { useLocation } from "react-router";
 import type { NavListProps } from "../types";
 import { NavItem } from "./nav-item";
+import { useUserPermissions, useUserRoles } from "@/store/userStore";
+import { checkAny } from "@/utils";
 
 export function NavList({ data, depth = 1 }: NavListProps) {
 	const location = useLocation();
@@ -10,13 +12,19 @@ export function NavList({ data, depth = 1 }: NavListProps) {
 	const [open, setOpen] = useState(isActive);
 	const hasChild = data.children && data.children.length > 0;
 
+	// Auth guard check
+	const permissions = useUserPermissions();
+	const roles = useUserRoles();
+	const allPermissions = [...permissions, ...roles.map((role) => `role:${role}`)];
+	const hasAuth = data.auth ? checkAny(data.auth, allPermissions) : true;
+
 	const handleClick = () => {
 		if (hasChild) {
 			setOpen(!open);
 		}
 	};
 
-	if (data.hidden) {
+	if (data.hidden || !hasAuth) {
 		return null;
 	}
 

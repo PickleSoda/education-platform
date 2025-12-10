@@ -23,10 +23,11 @@ interface AuthGuardProps {
 	 */
 	checkAll?: string[];
 	/**
-	 * The type of check to perform: 'role' or 'permission'
-	 * @default 'permission'
+	 * The type of check to perform: 'role', 'permission', or 'auto'
+	 * 'auto' mode detects role:xxx prefix pattern automatically
+	 * @default 'auto'
 	 */
-	baseOn?: "role" | "permission";
+	baseOn?: "role" | "permission" | "auto";
 }
 
 /**
@@ -51,6 +52,12 @@ interface AuthGuardProps {
  * </AuthGuard>
  *
  * @example
+ * // Check roles with role:xxx prefix (auto mode)
+ * <AuthGuard checkAny={["role:admin", "role:teacher"]}>
+ *   <AdminPanel />
+ * </AuthGuard>
+ *
+ * @example
  * // With fallback content
  * <AuthGuard check="admin" baseOn="role" fallback={<div>Access Denied</div>}>
  *   <AdminPanel />
@@ -62,7 +69,7 @@ export const AuthGuard = ({
 	check,
 	checkAny,
 	checkAll,
-	baseOn = "permission",
+	baseOn = "auto",
 }: AuthGuardProps) => {
 	const checkFn = useAuthCheck(baseOn);
 

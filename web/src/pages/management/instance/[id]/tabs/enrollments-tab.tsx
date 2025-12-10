@@ -52,9 +52,10 @@ export function EnrollmentsTab({ instanceId }: EnrollmentsTabProps) {
 
 	// Filter enrollments
 	const filteredEnrollments = enrollments.filter((enrollment) => {
+		const studentName = `${enrollment.student?.firstName || ""} ${enrollment.student?.lastName || ""}`.trim();
 		const matchesSearch =
 			searchQuery === "" ||
-			enrollment.student?.name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+			studentName.toLowerCase().includes(searchQuery.toLowerCase()) ||
 			enrollment.student?.email?.toLowerCase().includes(searchQuery.toLowerCase());
 		const matchesStatus = statusFilter === "all" || enrollment.status === statusFilter;
 		return matchesSearch && matchesStatus;
@@ -62,7 +63,7 @@ export function EnrollmentsTab({ instanceId }: EnrollmentsTabProps) {
 
 	// Update status mutation
 	const statusMutation = useMutation({
-		mutationFn: ({ enrollmentId, status }: { enrollmentId: string; status: string }) =>
+		mutationFn: ({ enrollmentId, status }: { enrollmentId: string; status: "enrolled" | "completed" | "dropped" }) =>
 			enrollmentService.updateEnrollmentStatus(enrollmentId, { status }),
 		onSuccess: () => {
 			toast.success("Enrollment status updated");
@@ -90,7 +91,7 @@ export function EnrollmentsTab({ instanceId }: EnrollmentsTabProps) {
 
 	// Export roster mutation
 	const exportMutation = useMutation({
-		mutationFn: () => enrollmentService.exportRoster(instanceId, { format: "csv" }),
+		mutationFn: () => enrollmentService.exportRoster(instanceId),
 		onSuccess: (data) => {
 			// Create download link
 			const blob = new Blob([data as unknown as BlobPart], { type: "text/csv" });
@@ -107,14 +108,20 @@ export function EnrollmentsTab({ instanceId }: EnrollmentsTabProps) {
 		},
 	});
 
-	const getStudentInitials = (name?: string) => {
-		if (!name) return "?";
-		return name
-			.split(" ")
-			.map((n) => n[0])
-			.join("")
-			.toUpperCase()
-			.slice(0, 2);
+	const getStudentName = (record: EnrollmentWithRelations) => {
+		if (record.student?.firstName && record.student?.lastName) {
+			return `${record.student.firstName} ${record.student.lastName}`;
+		}
+		return "Unknown";
+	};
+
+	const getStudentInitials = (record: EnrollmentWithRelations) => {
+		const firstName = record.student?.firstName || "";
+		const lastName = record.student?.lastName || "";
+		if (firstName || lastName) {
+			return `${firstName[0] || ""}${lastName[0] || ""}`.toUpperCase();
+		}
+		return "?";
 	};
 
 	const columns: ColumnsType<EnrollmentWithRelations> = [
@@ -125,10 +132,10 @@ export function EnrollmentsTab({ instanceId }: EnrollmentsTabProps) {
 			render: (_, record) => (
 				<div className="flex items-center gap-3">
 					<div className="flex h-10 w-10 items-center justify-center rounded-full bg-primary/10 text-sm font-medium text-primary">
-						{getStudentInitials(record.student?.name)}
+						{getStudentInitials(record)}
 					</div>
 					<div>
-						<div className="font-medium">{record.student?.name || "Unknown"}</div>
+						<div className="font-medium">{getStudentName(record)}</div>
 						<div className="text-xs text-text-secondary">{record.student?.email}</div>
 					</div>
 				</div>
@@ -330,8 +337,11 @@ export function EnrollmentsTab({ instanceId }: EnrollmentsTabProps) {
 					<AlertDialogHeader>
 						<AlertDialogTitle>Drop Student</AlertDialogTitle>
 						<AlertDialogDescription>
-							Are you sure you want to drop <strong>{dropModal.enrollment?.student?.name}</strong> from this course?
-							They will need to re-enroll to access course materials again.
+							Are you sure you want to drop{" "}
+							<strong>
+								{dropModal.enrollment?.student?.firstName} {dropModal.enrollment?.student?.lastName}
+							</strong>{" "}
+							from this course? They will need to re-enroll to access course materials again.
 						</AlertDialogDescription>
 					</AlertDialogHeader>
 					<AlertDialogFooter>

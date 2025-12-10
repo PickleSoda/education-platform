@@ -53,6 +53,27 @@ export const useUserPermissions = () => useUserStore((state) => state.userInfo.p
 export const useUserRoles = () => useUserStore((state) => state.userInfo.roles?.map((r) => r.role.name) || []);
 export const useUserActions = () => useUserStore((state) => state.actions);
 
+// Role checking utilities
+export const useIsAdmin = () => {
+	const roles = useUserRoles();
+	return roles.includes("admin");
+};
+
+export const useIsTeacher = () => {
+	const roles = useUserRoles();
+	return roles.includes("teacher");
+};
+
+export const useIsStudent = () => {
+	const roles = useUserRoles();
+	return roles.includes("student");
+};
+
+export const useHasManagementAccess = () => {
+	const roles = useUserRoles();
+	return roles.includes("admin") || roles.includes("teacher");
+};
+
 export const useSignIn = () => {
 	const { setUserToken, setUserInfo } = useUserActions();
 

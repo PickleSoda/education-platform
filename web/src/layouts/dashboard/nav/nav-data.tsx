@@ -2,14 +2,14 @@ import { Icon } from "@/components/icon";
 import type { NavProps } from "@/components/nav";
 import { Badge } from "@/ui/badge";
 import type { NavItemDataProps } from "@/components/nav/types";
-import { useUserPermissions } from "@/store/userStore";
+import { useUserPermissions, useUserRoles } from "@/store/userStore";
 import { checkAny } from "@/utils";
 import { useMemo } from "react";
 
 /**
  *Recursively process navigation data, filtering out items without permissions
  * @param items Navigation items array
- * @param permissions Permissions list
+ * @param permissions Permissions list (includes both permissions and role:xxx format)
  * @returns Filtered navigation items array
  */
 const filterItems = (items: NavItemDataProps[], permissions: string[]) => {
@@ -59,13 +59,15 @@ const filterNavData = (permissions: string[]) => {
 };
 
 /**
- * Hook to get filtered navigation data based on user permissions
+ * Hook to get filtered navigation data based on user permissions and roles
  * @returns Filtered navigation data
  */
 export const useFilteredNavData = () => {
 	const permissions = useUserPermissions();
-	const permissionCodes = useMemo(() => permissions, [permissions]);
-	const filteredNavData = useMemo(() => filterNavData(permissionCodes), [permissionCodes]);
+	const roles = useUserRoles();
+	// Combine permissions with role-based permissions (role:xxx format)
+	const allPermissions = useMemo(() => [...permissions, ...roles.map((role) => `role:${role}`)], [permissions, roles]);
+	const filteredNavData = useMemo(() => filterNavData(allPermissions), [allPermissions]);
 	return filteredNavData;
 };
 
@@ -98,46 +100,54 @@ export const navData: NavProps["data"] = [
 	{
 		name: "sys.nav.pages",
 		items: [
-			// management
+			// management - only visible to admin and teacher roles
 			{
 				title: "sys.nav.management",
 				path: "/management",
 				icon: <Icon icon="local:ic-management" size="24" />,
+				auth: ["role:admin", "role:teacher"],
 				children: [
 					{
 						title: "sys.nav.manageCourses",
 						path: "/management/course",
 						icon: <Icon icon="mdi:book-education" size="24" />,
+						auth: ["role:admin", "role:teacher"],
 					},
 					{
 						title: "sys.nav.manageInstances",
 						path: "/management/instance",
 						icon: <Icon icon="solar:clipboard-bold-duotone" size="24" />,
+						auth: ["role:admin", "role:teacher"],
 					},
 					{
 						title: "sys.nav.manageAssignments",
 						path: "/management/assignment",
 						icon: <Icon icon="solar:document-text-bold-duotone" size="24" />,
+						auth: ["role:admin", "role:teacher"],
 					},
 					{
 						title: "sys.nav.system.index",
 						path: "/management/system",
 						icon: <Icon icon="mdi:cog-outline" size="24" />,
+						auth: ["role:admin"],
 						children: [
 							{
 								title: "sys.nav.system.permission",
 								path: "/management/system/permission",
 								icon: <Icon icon="mingcute:safe-lock-fill" size="24" />,
+								auth: ["role:admin"],
 							},
 							{
 								title: "sys.nav.system.role",
 								path: "/management/system/role",
 								icon: <Icon icon="mdi:account-key-outline" size="24" />,
+								auth: ["role:admin"],
 							},
 							{
 								title: "sys.nav.system.user",
 								path: "/management/system/user",
 								icon: <Icon icon="mdi:account-multiple-outline" size="24" />,
+								auth: ["role:admin"],
 							},
 						],
 					},

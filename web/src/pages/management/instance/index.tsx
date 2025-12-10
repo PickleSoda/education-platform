@@ -10,6 +10,7 @@ import type { ColumnsType } from "antd/es/table";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import type { CourseInstance } from "#/entity";
 import courseInstanceService from "@/api/services/courseInstanceService";
+import { useIsAdmin } from "@/store/userStore";
 import { useState } from "react";
 import { format } from "date-fns";
 import { toast } from "sonner";
@@ -24,15 +25,15 @@ import {
 	AlertDialogTitle,
 } from "@/ui/alert-dialog";
 
-type InstanceStatus = "draft" | "enrollment_open" | "in_progress" | "completed" | "archived";
+type InstanceStatus = "draft" | "scheduled" | "active" | "completed" | "archived";
 
 const statusConfig: Record<
 	InstanceStatus,
 	{ label: string; variant: "default" | "success" | "warning" | "error" | "info" }
 > = {
 	draft: { label: "Draft", variant: "default" },
-	enrollment_open: { label: "Enrollment Open", variant: "info" },
-	in_progress: { label: "In Progress", variant: "success" },
+	scheduled: { label: "Scheduled", variant: "info" },
+	active: { label: "Active", variant: "success" },
 	completed: { label: "Completed", variant: "warning" },
 	archived: { label: "Archived", variant: "error" },
 };
@@ -41,7 +42,7 @@ export default function InstanceManagementPage() {
 	const { push } = useRouter();
 	const pathname = usePathname();
 	const queryClient = useQueryClient();
-
+	const isAdmin = useIsAdmin();
 	const [searchQuery, setSearchQuery] = useState("");
 	const [statusFilter, setStatusFilter] = useState<string>("all");
 	const [deleteModal, setDeleteModal] = useState<{
@@ -49,10 +50,10 @@ export default function InstanceManagementPage() {
 		instance: CourseInstance | null;
 	}>({ show: false, instance: null });
 
-	// Fetch my teaching instances
+	// Fetch instances - admin sees all, teachers see only their teaching instances
 	const { data, isLoading } = useQuery({
-		queryKey: ["teaching-instances"],
-		queryFn: () => courseInstanceService.getMyTeachingInstances(),
+		queryKey: ["management-instances", isAdmin],
+		queryFn: () => (isAdmin ? courseInstanceService.getInstances() : courseInstanceService.getMyTeachingInstances()),
 	});
 
 	const instances = data?.data || [];
@@ -83,7 +84,7 @@ export default function InstanceManagementPage() {
 
 	// Status update mutation
 	const statusMutation = useMutation({
-		mutationFn: ({ id, status }: { id: string; status: string }) =>
+		mutationFn: ({ id, status }: { id: string; status: InstanceStatus }) =>
 			courseInstanceService.updateInstanceStatus(id, { status }),
 		onSuccess: () => {
 			toast.success("Instance status updated");
@@ -142,7 +143,7 @@ export default function InstanceManagementPage() {
 				<div className="flex items-center justify-center gap-1">
 					<Icon icon="solar:users-group-rounded-bold-duotone" size={16} className="text-primary" />
 					<span>{record._count?.enrollments || 0}</span>
-					{record.maxStudents && <span className="text-text-secondary">/ {record.maxStudents}</span>}
+					{record.enrollmentLimit && <span className="text-text-secondary">/ {record.enrollmentLimit}</span>}
 				</div>
 			),
 		},
@@ -181,23 +182,23 @@ export default function InstanceManagementPage() {
 						<Button
 							variant="ghost"
 							size="icon"
-							onClick={() => statusMutation.mutate({ id: record.id, status: "enrollment_open" })}
-							title="Open enrollment"
+							onClick={() => statusMutation.mutate({ id: record.id, status: "scheduled" })}
+							title="Schedule instance"
 						>
 							<Icon icon="solar:play-bold-duotone" size={18} className="text-success!" />
 						</Button>
 					)}
-					{record.status === "enrollment_open" && (
+					{record.status === "scheduled" && (
 						<Button
 							variant="ghost"
 							size="icon"
-							onClick={() => statusMutation.mutate({ id: record.id, status: "in_progress" })}
-							title="Start course"
+							onClick={() => statusMutation.mutate({ id: record.id, status: "active" })}
+							title="Activate course"
 						>
 							<Icon icon="solar:play-circle-bold-duotone" size={18} className="text-primary!" />
 						</Button>
 					)}
-					{record.status === "in_progress" && (
+					{record.status === "active" && (
 						<Button
 							variant="ghost"
 							size="icon"
