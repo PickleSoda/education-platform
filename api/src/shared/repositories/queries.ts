@@ -3,7 +3,7 @@
 // User/Auth queries are in: modules/user/user.repository.ts, modules/auth/auth.service.ts
 // Course queries are in: modules/course/course.repository.ts
 // Assignment template queries are in: modules/assignment/assignment.repository.ts
-// Instance queries are in: modules/instance/instance.repository.ts
+// Instance queries are in: modules/courseInstance/instance.repository.ts
 
 import { PrismaClient, EnrollmentStatus, NotificationType } from '@prisma/client';
 

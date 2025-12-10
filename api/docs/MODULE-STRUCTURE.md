@@ -332,6 +332,7 @@ export const createEntityRoute = createRoute({
 **Domain**: Course templates, tags, lecturers, syllabus items
 
 **Files**:
+
 - `course.types.ts` - TypeScript interfaces and types
 - `course.repository.ts` - Database queries (Prisma)
 - `course.service.ts` - Business logic
@@ -393,16 +394,19 @@ export const createEntityRoute = createRoute({
 **Endpoints** (`course.route.ts`):
 
 *Public Routes:*
+
 - `GET /courses/search` - Search courses
 - `GET /courses/tags` - Get all tags
 - `GET /courses` - List courses (paginated)
 - `GET /courses/:id` - Get course by ID
 
 *Protected Routes (Authenticated):*
+
 - `GET /courses/my/created` - Get my created courses
 - `GET /courses/my/teaching` - Get courses I teach
 
 *Teacher/Admin Routes:*
+
 - `POST /courses` - Create course
 - `PATCH /courses/:id` - Update course
 - `POST /courses/:id/archive` - Archive course
@@ -414,12 +418,14 @@ export const createEntityRoute = createRoute({
 - `DELETE /courses/:id/tags/:tagId` - Remove tag from course
 
 *Lecturer Management:*
+
 - `GET /courses/:id/lecturers` - Get lecturers
 - `POST /courses/:id/lecturers` - Add lecturer (teacher/admin)
 - `PATCH /courses/:id/lecturers/:userId` - Update lecturer (teacher/admin)
 - `DELETE /courses/:id/lecturers/:userId` - Remove lecturer (teacher/admin)
 
 *Admin Only:*
+
 - `DELETE /courses/:id` - Delete course
 
 ---
@@ -457,7 +463,7 @@ export const createEntityRoute = createRoute({
 
 ---
 
-### 3. **Instance Module** (`src/modules/instance/`)
+### 3. **Instance Module** (`src/modules/courseInstance/`)
 
 **Domain**: Course instances, published assignments, published resources
 
