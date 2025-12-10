@@ -10,19 +10,14 @@ const router = Router();
 
 /**
  * Create instance
- * POST 
+ * POST
  * Requires: teacher or admin role
  */
-router.post(
-  '',
-  auth(),
-  requireAnyRole(['teacher', 'admin']),
-  instanceController.createInstance
-);
+router.post('', auth(), requireAnyRole(['teacher', 'admin']), instanceController.createInstance);
 
 /**
  * List instances
- * GET 
+ * GET
  * Requires: authenticated
  */
 router.get('', auth(), instanceController.listInstances);
@@ -101,12 +96,7 @@ router.patch(
  * DELETE /:id
  * Requires: admin role
  */
-router.delete(
-  '/:id',
-  auth(),
-  requireAnyRole(['admin']),
-  instanceController.deleteInstance
-);
+router.delete('/:id', auth(), requireAnyRole(['admin']), instanceController.deleteInstance);
 
 /**
  * Clone instance
@@ -160,11 +150,7 @@ router.get('/:id/assignments', auth(), instanceController.getInstanceAssignments
  * GET /:id/assignments/:assignmentId
  * Requires: authenticated
  */
-router.get(
-  '/:id/assignments/:assignmentId',
-  auth(),
-  instanceController.getPublishedAssignment
-);
+router.get('/:id/assignments/:assignmentId', auth(), instanceController.getPublishedAssignment);
 
 /**
  * Toggle assignment publish status

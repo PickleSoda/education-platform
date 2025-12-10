@@ -169,7 +169,8 @@
 			"darkSidebar": "მუქი გვერდითა პანელი",
 			"accordion": "აკორდეონი მენიუ",
 			"fullscreen": "სრული ეკრანი",
-			"exitFullscreen": "სრული ეკრანიდან გასვლა"
+			"exitFullscreen": "სრული ეკრანიდან გასვლა",
+			"theme": "თემა"
 		}
 	}
 }

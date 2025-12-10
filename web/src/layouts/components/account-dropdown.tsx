@@ -12,6 +12,7 @@ import {
 } from "@/ui/dropdown-menu";
 import { useTranslation } from "react-i18next";
 import { NavLink } from "react-router";
+import SettingButton from "./setting-button";
 
 /**
  * Account Dropdown
@@ -54,6 +55,9 @@ export default function AccountDropdown() {
 				</DropdownMenuItem>
 				<DropdownMenuItem asChild>
 					<NavLink to="/management/user/account">{t("sys.nav.user.account")}</NavLink>
+				</DropdownMenuItem>
+				<DropdownMenuItem asChild>
+					<SettingButton />
 				</DropdownMenuItem>
 				<DropdownMenuSeparator />
 				<DropdownMenuItem className="font-bold text-warning" onClick={logout}>
