@@ -5,22 +5,13 @@ import { Button } from "@/ui/button";
 import { Card, CardContent, CardHeader } from "@/ui/card";
 import { Table } from "antd";
 import type { ColumnsType } from "antd/es/table";
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useQuery } from "@tanstack/react-query";
 import type { Course } from "#/entity";
 import courseService from "@/api/services/courseService";
-import { useState } from "react";
-import { ArchiveConfirmModal } from "./archive-confirm-modal";
-import { toast } from "sonner";
 
 export default function CoursePage() {
 	const { push } = useRouter();
 	const pathname = usePathname();
-	const queryClient = useQueryClient();
-
-	const [archiveModal, setArchiveModal] = useState<{
-		show: boolean;
-		course: Course | null;
-	}>({ show: false, course: null });
 
 	const { data, isLoading } = useQuery({
 		queryKey: ["courses"],
@@ -28,35 +19,6 @@ export default function CoursePage() {
 	});
 
 	const courses = data?.data || [];
-
-	// Archive/Unarchive mutation
-	const archiveMutation = useMutation({
-		mutationFn: ({ id, isArchived }: { id: string; isArchived: boolean }) =>
-			isArchived ? courseService.unarchiveCourse(id) : courseService.archiveCourse(id),
-		onSuccess: (_, variables) => {
-			toast.success(`Course ${variables.isArchived ? "unarchived" : "archived"} successfully`);
-			queryClient.invalidateQueries({ queryKey: ["courses"] });
-			setArchiveModal({ show: false, course: null });
-		},
-		onError: () => {
-			toast.error("Failed to update course status");
-		},
-	});
-
-	const handleArchiveClick = (course: Course) => {
-		setArchiveModal({ show: true, course });
-	};
-
-	const handleArchiveConfirm = () => {
-		if (archiveModal.course) {
-			archiveMutation.mutate({
-				id: archiveModal.course.id,
-				isArchived: archiveModal.course.isArchived,
-			});
-		}
-	};
-
-	console.log(courses);
 	const columns: ColumnsType<Course> = [
 		{
 			title: "Code",
@@ -106,44 +68,14 @@ export default function CoursePage() {
 			),
 		},
 		{
-			title: "Action",
-			key: "operation",
+			title: "Instances",
+			key: "instances",
 			align: "center",
-			width: 120,
+			width: 100,
 			render: (_, record) => (
-				<div className="flex w-full justify-center text-gray-500">
-					<Button
-						variant="ghost"
-						size="icon"
-						onClick={() => {
-							push(`${pathname}/${record.id}`);
-						}}
-						title="View details"
-					>
-						<Icon icon="mdi:book-open-page-variant" size={18} />
-					</Button>
-					<Button
-						variant="ghost"
-						size="icon"
-						onClick={() => {
-							push(`${pathname}/edit/${record.id}`);
-						}}
-						title="Edit course"
-					>
-						<Icon icon="solar:pen-bold-duotone" size={18} />
-					</Button>
-					<Button
-						variant="ghost"
-						size="icon"
-						onClick={() => handleArchiveClick(record)}
-						title={record.isArchived ? "Unarchive course" : "Archive course"}
-					>
-						<Icon
-							icon={record.isArchived ? "solar:inbox-unarchive-bold-duotone" : "solar:inbox-archive-bold-duotone"}
-							size={18}
-							className={record.isArchived ? "text-success!" : "text-warning!"}
-						/>
-					</Button>
+				<div className="flex items-center justify-center gap-1">
+					<Icon icon="solar:calendar-bold-duotone" size={16} className="text-primary" />
+					<span>{record._count?.instances || 0}</span>
 				</div>
 			),
 		},
@@ -170,18 +102,13 @@ export default function CoursePage() {
 						columns={columns}
 						dataSource={courses}
 						loading={isLoading}
+						onRow={(record) => ({
+							onClick: () => push(`${pathname}/edit/${record.id}`),
+							style: { cursor: "pointer" },
+						})}
 					/>
 				</CardContent>
 			</Card>
-
-			<ArchiveConfirmModal
-				show={archiveModal.show}
-				courseName={archiveModal.course?.title || ""}
-				isArchived={archiveModal.course?.isArchived || false}
-				onConfirm={handleArchiveConfirm}
-				onCancel={() => setArchiveModal({ show: false, course: null })}
-				loading={archiveMutation.isPending}
-			/>
 		</>
 	);
 }
