@@ -6,12 +6,18 @@ import { Card, CardContent, CardHeader } from "@/ui/card";
 import { Table } from "antd";
 import type { ColumnsType } from "antd/es/table";
 import { useQuery } from "@tanstack/react-query";
+import { useState } from "react";
 import type { UserInfo } from "#/entity";
 import userService from "@/api/services/userService";
+import EditUserModal from "./components/edit-user-modal";
+import ManageRolesModal from "./components/manage-roles-modal";
 
 export default function UserPage() {
 	const { push } = useRouter();
 	const pathname = usePathname();
+	const [editModalOpen, setEditModalOpen] = useState(false);
+	const [rolesModalOpen, setRolesModalOpen] = useState(false);
+	const [selectedUser, setSelectedUser] = useState<UserInfo | null>(null);
 
 	const { data, isLoading } = useQuery({
 		queryKey: ["users"],
@@ -85,14 +91,31 @@ export default function UserPage() {
 						onClick={() => {
 							push(`${pathname}/${record.id}`);
 						}}
+						title="View Details"
 					>
 						<Icon icon="mdi:card-account-details" size={18} />
 					</Button>
-					<Button variant="ghost" size="icon" onClick={() => {}}>
+					<Button
+						variant="ghost"
+						size="icon"
+						onClick={() => {
+							setSelectedUser(record);
+							setEditModalOpen(true);
+						}}
+						title="Edit User"
+					>
 						<Icon icon="solar:pen-bold-duotone" size={18} />
 					</Button>
-					<Button variant="ghost" size="icon">
-						<Icon icon="mingcute:delete-2-fill" size={18} className="text-error!" />
+					<Button
+						variant="ghost"
+						size="icon"
+						onClick={() => {
+							setSelectedUser(record);
+							setRolesModalOpen(true);
+						}}
+						title="Manage Roles"
+					>
+						<Icon icon="mdi:shield-account" size={18} className="text-primary!" />
 					</Button>
 				</div>
 			),
@@ -100,24 +123,30 @@ export default function UserPage() {
 	];
 
 	return (
-		<Card>
-			<CardHeader>
-				<div className="flex items-center justify-between">
-					<div>User List</div>
-					<Button onClick={() => {}}>New</Button>
-				</div>
-			</CardHeader>
-			<CardContent>
-				<Table
-					rowKey="id"
-					size="small"
-					scroll={{ x: "max-content" }}
-					pagination={false}
-					columns={columns}
-					dataSource={users}
-					loading={isLoading}
-				/>
-			</CardContent>
-		</Card>
+		<>
+			<Card>
+				<CardHeader>
+					<div className="flex items-center justify-between">
+						<div>User List</div>
+						<Button onClick={() => {}}>New</Button>
+					</div>
+				</CardHeader>
+				<CardContent>
+					<Table
+						rowKey="id"
+						size="small"
+						scroll={{ x: "max-content" }}
+						pagination={false}
+						columns={columns}
+						dataSource={users}
+						loading={isLoading}
+					/>
+				</CardContent>
+			</Card>
+
+			<EditUserModal open={editModalOpen} onClose={() => setEditModalOpen(false)} user={selectedUser} />
+
+			<ManageRolesModal open={rolesModalOpen} onClose={() => setRolesModalOpen(false)} user={selectedUser} />
+		</>
 	);
 }
