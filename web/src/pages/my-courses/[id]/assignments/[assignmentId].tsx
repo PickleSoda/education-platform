@@ -1,16 +1,15 @@
 import { Card, CardContent, CardHeader } from "@/ui/card";
 import { Badge } from "@/ui/badge";
-import { Button } from "@/ui/button";
 import { Icon } from "@/components/icon";
 import { useParams } from "react-router";
 import { format, isPast } from "date-fns";
 import { useState } from "react";
 import { Tabs, TabsList, TabsTrigger } from "@/ui/tabs";
-import { Textarea } from "@/ui/textarea";
 import type { PublishedAssignment } from "#/entity";
 import submissionService from "@/api/services/submissionService";
 import { useQuery } from "@tanstack/react-query";
 import courseInstanceService from "@/api/services/courseInstanceService";
+import { InstructionsTab, SubmissionTab, FeedbackTab } from "./tabs";
 
 export default function AssignmentSubmissionPage() {
 	const { id: instanceId, assignmentId } = useParams<{
@@ -181,155 +180,21 @@ export default function AssignmentSubmissionPage() {
 					</CardHeader>
 
 					<CardContent className="p-6">
-						{activeTab === "instructions" && (
-							<div className="space-y-6">
-								<div>
-									<h3 className="text-lg font-semibold mb-3">Assignment Instructions</h3>
-									<div className="prose prose-sm max-w-none">
-										<p>
-											In this assignment, you will explore the fundamentals of algorithm design by implementing and
-											analyzing several sorting algorithms. This hands-on experience will help you understand the time
-											and space complexity trade-offs.
-										</p>
-										<h4 className="mt-4 mb-2">Learning Objectives</h4>
-										<ul className="list-disc pl-5 space-y-1">
-											<li>Understand different sorting algorithm approaches</li>
-											<li>Analyze algorithm complexity</li>
-											<li>Implement algorithms efficiently</li>
-											<li>Conduct empirical performance analysis</li>
-										</ul>
-										<h4 className="mt-4 mb-2">Requirements</h4>
-										<ol className="list-decimal pl-5 space-y-1">
-											<li>Implement at least 3 sorting algorithms</li>
-											<li>Provide working code with clear comments</li>
-											<li>Include a complexity analysis document</li>
-											<li>Conduct performance testing and document results</li>
-										</ol>
-									</div>
-								</div>
-
-								<div className="border-t pt-6">
-									<h4 className="font-semibold mb-3">Grading Criteria</h4>
-									<div className="space-y-3">
-										<div className="flex justify-between items-center p-3 bg-secondary/50 rounded-lg">
-											<span>Code Quality & Implementation</span>
-											<Badge>25 points</Badge>
-										</div>
-										<div className="flex justify-between items-center p-3 bg-secondary/50 rounded-lg">
-											<span>Complexity Analysis</span>
-											<Badge>25 points</Badge>
-										</div>
-										<div className="flex justify-between items-center p-3 bg-secondary/50 rounded-lg">
-											<span>Performance Testing & Results</span>
-											<Badge>25 points</Badge>
-										</div>
-										<div className="flex justify-between items-center p-3 bg-secondary/50 rounded-lg">
-											<span>Documentation & Presentation</span>
-											<Badge>25 points</Badge>
-										</div>
-									</div>
-								</div>
-							</div>
-						)}
+						{activeTab === "instructions" && <InstructionsTab assignment={assignment} />}
 
 						{activeTab === "submission" && (
-							<div className="space-y-6">
-								<div>
-									<h3 className="text-lg font-semibold mb-4">Submit Your Work</h3>
-
-									{/* File Upload Section */}
-									<div className="border-2 border-dashed rounded-lg p-6 text-center mb-6 hover:bg-secondary/50 transition-colors cursor-pointer">
-										<Icon
-											icon="solar:upload-square-2-bold-duotone"
-											size={48}
-											className="mx-auto text-text-secondary mb-2 opacity-50"
-										/>
-										<p className="font-medium mb-1">Drop files here or click to upload</p>
-										<p className="text-sm text-text-secondary">Supported: PDF, DOC, DOCX, ZIP (Max 100MB)</p>
-									</div>
-
-									{/* Text Submission Section */}
-									<div className="space-y-3">
-										<label className="text-sm font-semibold">Add Text Content (Optional)</label>
-										<Textarea
-											placeholder="Write your submission text here..."
-											value={content}
-											onChange={(e) => setContent(e.target.value)}
-											className="min-h-64"
-										/>
-									</div>
-
-									{/* Action Buttons */}
-									<div className="flex gap-3 mt-6">
-										<Button variant="outline" onClick={handleSaveDraft} disabled={isSaving || isOverdue}>
-											<Icon icon="solar:floppy-disk-bold-duotone" size={16} className="mr-2" />
-											{isSaving ? "Saving..." : "Save Draft"}
-										</Button>
-										<Button onClick={handleSubmit} disabled={isSubmitting || !content.trim() || isOverdue}>
-											<Icon icon="solar:send-bold-duotone" size={16} className="mr-2" />
-											{isSubmitting ? "Submitting..." : "Submit Assignment"}
-										</Button>
-										{isOverdue && (
-											<div className="ml-auto flex items-center text-error text-sm">
-												<Icon icon="solar:danger-bold-duotone" size={16} className="mr-2" />
-												Submission deadline has passed
-											</div>
-										)}
-									</div>
-								</div>
-							</div>
+							<SubmissionTab
+								content={content}
+								setContent={setContent}
+								handleSaveDraft={handleSaveDraft}
+								handleSubmit={handleSubmit}
+								isSaving={isSaving}
+								isSubmitting={isSubmitting}
+								isOverdue={isOverdue}
+							/>
 						)}
 
-						{activeTab === "feedback" && (
-							<div className="space-y-6">
-								<div>
-									<h3 className="text-lg font-semibold mb-4">Grade Feedback</h3>
-
-									{/* Score Breakdown */}
-									<div className="mb-6 space-y-3">
-										<h4 className="font-semibold">Score Breakdown</h4>
-										<div className="space-y-2">
-											<div className="flex justify-between items-center p-3 bg-success/10 rounded-lg">
-												<span>Code Quality & Implementation</span>
-												<span className="font-semibold">25/25</span>
-											</div>
-											<div className="flex justify-between items-center p-3 bg-success/10 rounded-lg">
-												<span>Complexity Analysis</span>
-												<span className="font-semibold">23/25</span>
-											</div>
-											<div className="flex justify-between items-center p-3 bg-warning/10 rounded-lg">
-												<span>Performance Testing & Results</span>
-												<span className="font-semibold">20/25</span>
-											</div>
-											<div className="flex justify-between items-center p-3 bg-success/10 rounded-lg">
-												<span>Documentation & Presentation</span>
-												<span className="font-semibold">24/25</span>
-											</div>
-										</div>
-									</div>
-
-									<div className="border-t pt-6">
-										<h4 className="font-semibold mb-3">Instructor Feedback</h4>
-										<Card className="p-4 bg-secondary/50">
-											<p className="text-sm leading-relaxed">
-												Excellent work on this assignment! Your implementation of the sorting algorithms is clean and
-												well-documented. One area for improvement: in your performance analysis, consider edge cases
-												with nearly-sorted data, as this can significantly impact algorithm performance in practice.
-												Overall, great job understanding the complexity trade-offs. Keep up the good work!
-											</p>
-										</Card>
-									</div>
-
-									{/* Regrade Request Button */}
-									<div className="flex gap-3 mt-6">
-										<Button variant="outline">
-											<Icon icon="solar:refresh-bold-duotone" size={16} className="mr-2" />
-											Request Regrade
-										</Button>
-									</div>
-								</div>
-							</div>
-						)}
+						{activeTab === "feedback" && <FeedbackTab assignment={assignment} submission={submission} />}
 					</CardContent>
 				</Tabs>
 			</Card>
