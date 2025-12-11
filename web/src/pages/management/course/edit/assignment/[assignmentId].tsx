@@ -87,8 +87,7 @@ export default function AssignmentTemplatePage() {
 				...formData,
 				gradingCriteria: gradingCriteria.length > 0 ? gradingCriteria : undefined,
 			}),
-		// eslint-disable-next-line @typescript-eslint/no-unused-vars
-		onSuccess: (response) => {
+		onSuccess: () => {
 			toast.success("Assignment template created successfully");
 			queryClient.invalidateQueries({ queryKey: ["assignments", courseId] });
 			push(`/management/courses/edit/${courseId}`);

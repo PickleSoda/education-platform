@@ -134,7 +134,6 @@ describe('Resource Module', () => {
     const instance = await prisma.courseInstance.create({
       data: {
         courseId: course.id,
-        year: 2024,
         semester: 'Spring',
         startDate: new Date('2024-01-15'),
         endDate: new Date('2024-05-15'),

@@ -40,7 +40,7 @@ export enum ResourceApi {
 
 // Resource Template endpoints (for course management)
 const getResourceTemplates = (courseId: string) =>
-	apiClient.get<PaginatedResponse<ResourceTemplate[]>>({
+	apiClient.get<PaginatedResponse<ResourceTemplate>>({
 		url: `/courses/${courseId}/resources`,
 	});
 
@@ -68,7 +68,7 @@ const deleteResourceTemplate = (resourceId: string) =>
 
 // Published Resource endpoints (for course instances)
 const getPublishedResources = (instanceId: string) =>
-	apiClient.get<PaginatedResponse<PublishedResource[]>>({
+	apiClient.get<PaginatedResponse<PublishedResource>>({
 		url: `/instances/${instanceId}/resources`,
 	});
 

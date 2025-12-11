@@ -228,6 +228,18 @@ export const listSubmissions = async (
             deadline: true,
             lateDeadline: true,
             latePenaltyPercent: true,
+            instance: {
+              select: {
+                id: true,
+                course: {
+                  select: {
+                    id: true,
+                    code: true,
+                    title: true,
+                  },
+                },
+              },
+            },
           },
         },
         grades: true,
