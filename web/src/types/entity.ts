@@ -62,14 +62,14 @@ export interface CourseStats {
 		lastName: string;
 	} | null;
 }
-
+export type CourseStatus = "draft" | "scheduled" | "active" | "completed" | "archived";
 export interface CourseInstance {
 	id: string;
 	courseId: string;
 	semester: string;
 	startDate: string;
 	endDate: string;
-	status: "draft" | "scheduled" | "active" | "completed" | "archived";
+	status: CourseStatus;
 	enrollmentOpen: boolean;
 	enrollmentLimit: number | null;
 	createdBy: string;
@@ -99,12 +99,13 @@ export interface CourseInstance {
 	};
 }
 
+export type AssignmentType = "homework" | "quiz" | "midterm" | "final" | "project" | "participation";
 export interface AssignmentTemplate {
 	id: string;
 	courseId: string;
 	title: string;
 	description: string | null;
-	assignmentType: "homework" | "quiz" | "midterm" | "final" | "project" | "participation";
+	assignmentType: AssignmentType;
 	gradingMode: "points" | "pass_fail";
 	maxPoints: number | null;
 	weightPercentage: number | null;
@@ -138,7 +139,7 @@ export interface PublishedAssignment {
 	templateId: string;
 	title: string;
 	description: string | null;
-	assignmentType: "homework" | "quiz" | "midterm" | "final" | "project" | "participation";
+	assignmentType: AssignmentType;
 	gradingMode: "points" | "pass_fail";
 	maxPoints: number | null;
 	weightPercentage: number | null;
