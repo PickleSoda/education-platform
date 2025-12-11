@@ -42,6 +42,9 @@ app.use(xss());
 // gzip compression
 app.use(compression());
 
+// serve static files (uploaded resources)
+app.use('/uploads', express.static(process.env.LOCAL_STORAGE_PATH || './uploads'));
+
 // enable cors
 const corsOptions: cors.CorsOptions = {
   origin: (

@@ -5,10 +5,10 @@ import assignmentRoute from '../modules/assignment/assignment.route';
 import courseRoute from '../modules/course/course.route';
 import dashboardRoute from '../modules/dashboard/dashboard.route';
 import enrollmentRoute from '../modules/enrollment/enrollment.route';
-import fileRoute from '../modules/file/file.route';
 import healthRoute from '../modules/health/health.route';
 import instanceRoute from '../modules/courseInstance/instance.route';
 import notificationRoute from '../modules/notification/notification.route';
+import resourceRoute from '../modules/resource/resource.route';
 import userRoute from '../modules/user/user.route';
 import submissionRoute from '../modules/submission/submission.route';
 import docsRoute from './docs.route';
@@ -63,8 +63,8 @@ const routes: RouteConfig[] = [
     route: notificationRoute,
   },
   {
-    path: '/files',
-    route: fileRoute,
+    path: '/',
+    route: resourceRoute,
   },
   {
     path: '/',
