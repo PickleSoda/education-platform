@@ -33,19 +33,19 @@ export default function TeacherDashboard() {
 	const dashboardData = data?.data;
 
 	const handleManageInstance = (instanceId: string) => {
-		push(`/management/instances/${instanceId}`);
+		push(`/management/instance/${instanceId}`);
 	};
 
 	const handleManageCourse = (courseId: string) => {
-		push(`/management/courses/edit/${courseId}`);
+		push(`/management/course/edit/${courseId}`);
 	};
 
 	const handleCreateCourse = () => {
-		push("/management/courses/create");
+		push("/management/course/create");
 	};
 
 	const handleAssignmentClick = (assignmentId: string, instanceId: string) => {
-		push(`/management/instances/${instanceId}/assignments/${assignmentId}/grade`);
+		push(`/management/instance/${instanceId}/assignments/${assignmentId}/grade`);
 	};
 
 	// Transform recent forum posts into activity items
@@ -117,7 +117,7 @@ export default function TeacherDashboard() {
 				<div className="lg:col-span-2 space-y-6">
 					<div className="flex items-center justify-between">
 						<h2 className="text-xl font-semibold">My Teaching Courses</h2>
-						<Button variant="outline" size="sm" onClick={() => push("/management/courses")}>
+						<Button variant="outline" size="sm" onClick={() => push("/management/course")}>
 							View All
 						</Button>
 					</div>
@@ -179,11 +179,11 @@ export default function TeacherDashboard() {
 
 			{/* Quick Actions */}
 			<div className="grid grid-cols-1 md:grid-cols-4 gap-4 p-6 bg-gray-50 rounded-lg">
-				<Button variant="outline" className="w-full" onClick={() => push("/management/courses")}>
+				<Button variant="outline" className="w-full" onClick={() => push("/management/course")}>
 					<Icon icon="solar:book-bookmark-bold-duotone" size={20} className="mr-2" />
 					Manage Courses
 				</Button>
-				<Button variant="outline" className="w-full" onClick={() => push("/management/instances")}>
+				<Button variant="outline" className="w-full" onClick={() => push("/management/instance")}>
 					<Icon icon="solar:settings-bold-duotone" size={20} className="mr-2" />
 					Manage Instances
 				</Button>

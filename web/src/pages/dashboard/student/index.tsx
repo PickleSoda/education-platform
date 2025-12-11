@@ -33,11 +33,11 @@ export default function StudentDashboard() {
 	const dashboardData = data?.data;
 
 	const handleCourseClick = (instanceId: string) => {
-		push(`/instances/${instanceId}`);
+		push(`/my-courses/${instanceId}`);
 	};
 
 	const handleAssignmentClick = (assignmentId: string, instanceId: string) => {
-		push(`/instances/${instanceId}/assignments/${assignmentId}`);
+		push(`/my-courses/${instanceId}/assignments/${assignmentId}`);
 	};
 
 	const handleBrowseCourses = () => {
