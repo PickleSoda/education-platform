@@ -99,9 +99,9 @@ export function AssignmentsTab({ instanceId, courseId }: AssignmentsTabProps) {
 		mutationFn: (data: PublishFormData) =>
 			courseInstanceService.publishAssignment(instanceId, {
 				templateId: data.templateId,
-				publishAt: data.publishAt || undefined,
-				deadline: data.deadline,
-				lateDeadline: data.lateDeadline || undefined,
+				publishAt: data.publishAt ? new Date(data.publishAt).toISOString() : undefined,
+				deadline: new Date(data.deadline).toISOString(),
+				lateDeadline: data.lateDeadline ? new Date(data.lateDeadline).toISOString() : undefined,
 				latePenaltyPercent: data.latePenaltyPercent,
 				autoPublish: data.autoPublish,
 			}),

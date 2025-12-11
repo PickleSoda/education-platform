@@ -1,10 +1,10 @@
 import type { ApiResponse } from "#/api";
 import type { AssignmentTemplate, GradingCriteria } from "#/entity";
 import apiClient from "../apiClient";
-
+import { AssignmentType } from "@/types/entity";
 // Query parameters
 export interface ListAssignmentTemplatesParams {
-	assignmentType?: "homework" | "quiz" | "midterm" | "final" | "project" | "participation";
+	assignmentType?: AssignmentType;
 	syllabusItemId?: string;
 }
 
@@ -24,7 +24,7 @@ export interface ValidationResponse {
 export interface CreateAssignmentTemplateReq {
 	title: string;
 	description?: string;
-	assignmentType: "homework" | "quiz" | "midterm" | "final" | "project" | "participation";
+	assignmentType: AssignmentType;
 	gradingMode: "points" | "pass_fail";
 	maxPoints?: number;
 	weightPercentage?: number;
@@ -41,13 +41,18 @@ export interface CreateAssignmentTemplateReq {
 export interface UpdateAssignmentTemplateReq {
 	title?: string;
 	description?: string;
-	assignmentType?: "homework" | "quiz" | "midterm" | "final" | "project" | "participation";
+	assignmentType?: AssignmentType;
 	gradingMode?: "points" | "pass_fail";
 	maxPoints?: number;
 	weightPercentage?: number;
 	defaultDurationDays?: number;
 	instructions?: string;
 	syllabusItemId?: string;
+	gradingCriteria?: Array<{
+		name: string;
+		description?: string;
+		maxPoints: number;
+	}>;
 }
 
 export interface CopyAssignmentTemplateReq {

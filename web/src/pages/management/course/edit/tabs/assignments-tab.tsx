@@ -6,6 +6,7 @@ import { Icon } from "@/components/icon";
 import { Table } from "antd";
 import type { ColumnsType } from "antd/es/table";
 import { Skeleton } from "@/ui/skeleton";
+import { useRouter } from "@/routes/hooks";
 
 interface AssignmentsTabProps {
 	courseId: string;
@@ -23,10 +24,10 @@ const assignmentTypeColors: Record<string, string> = {
 };
 
 export function AssignmentsTab({ courseId, assignments, isLoading }: AssignmentsTabProps) {
+	const { push } = useRouter();
 	const totalWeight = assignments.reduce((sum, a) => sum + (a.weightPercentage || 0), 0);
 	const totalMaxPoints = assignments.reduce((sum, a) => sum + (a.maxPoints || 0), 0);
 	const isValidWeight = Math.abs(totalWeight - 100) < 0.01;
-	console.log({ courseId, assignments, totalWeight, isValidWeight });
 	const columns: ColumnsType<AssignmentTemplate> = [
 		{
 			title: "Title",
@@ -75,25 +76,6 @@ export function AssignmentsTab({ courseId, assignments, isLoading }: Assignments
 			width: 100,
 			render: (criteria?: AssignmentTemplate["gradingCriteria"]) => (
 				<Badge variant="outline">{criteria?.length || 0}</Badge>
-			),
-		},
-		{
-			title: "Action",
-			key: "operation",
-			align: "center",
-			width: 120,
-			render: (_, _record) => (
-				<div className="flex w-full justify-center">
-					<Button variant="ghost" size="icon" title="Edit assignment">
-						<Icon icon="solar:pen-bold-duotone" size={18} />
-					</Button>
-					<Button variant="ghost" size="icon" title="Copy assignment">
-						<Icon icon="solar:copy-bold-duotone" size={18} />
-					</Button>
-					<Button variant="ghost" size="icon" title="Delete assignment">
-						<Icon icon="solar:trash-bin-trash-bold-duotone" size={18} className="text-error" />
-					</Button>
-				</div>
 			),
 		},
 	];
@@ -154,7 +136,7 @@ export function AssignmentsTab({ courseId, assignments, isLoading }: Assignments
 								Define assignments that can be published in course instances
 							</p>
 						</div>
-						<Button>
+						<Button onClick={() => push(`/management/course/edit/${courseId}/assignment/create`)}>
 							<Icon icon="solar:add-circle-bold-duotone" size={18} className="mr-2" />
 							Create Assignment
 						</Button>
@@ -165,7 +147,7 @@ export function AssignmentsTab({ courseId, assignments, isLoading }: Assignments
 						<div className="text-center py-12 text-text-secondary">
 							<Icon icon="solar:document-text-bold-duotone" size={48} className="mx-auto mb-4 opacity-50" />
 							<p className="mb-4">No assignment templates yet</p>
-							<Button variant="outline">
+							<Button variant="outline" onClick={() => push(`/management/course/edit/${courseId}/assignment/create`)}>
 								<Icon icon="solar:add-circle-bold-duotone" size={18} className="mr-2" />
 								Create Your First Assignment
 							</Button>
@@ -178,6 +160,10 @@ export function AssignmentsTab({ courseId, assignments, isLoading }: Assignments
 							pagination={false}
 							columns={columns}
 							dataSource={assignments}
+							onRow={(record) => ({
+								onClick: () => push(`/management/course/edit/${courseId}/assignment/${record.id}`),
+								style: { cursor: "pointer" },
+							})}
 						/>
 					)}
 				</CardContent>
