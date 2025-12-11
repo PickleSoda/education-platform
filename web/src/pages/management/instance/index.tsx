@@ -74,24 +74,11 @@ export default function InstanceManagementPage() {
 		mutationFn: (id: string) => courseInstanceService.deleteInstance(id),
 		onSuccess: () => {
 			toast.success("Instance deleted successfully");
-			queryClient.invalidateQueries({ queryKey: ["teaching-instances"] });
+			queryClient.invalidateQueries({ queryKey: ["management-instances"] });
 			setDeleteModal({ show: false, instance: null });
 		},
 		onError: () => {
 			toast.error("Failed to delete instance");
-		},
-	});
-
-	// Status update mutation
-	const statusMutation = useMutation({
-		mutationFn: ({ id, status }: { id: string; status: InstanceStatus }) =>
-			courseInstanceService.updateInstanceStatus(id, { status }),
-		onSuccess: () => {
-			toast.success("Instance status updated");
-			queryClient.invalidateQueries({ queryKey: ["teaching-instances"] });
-		},
-		onError: () => {
-			toast.error("Failed to update status");
 		},
 	});
 
@@ -172,52 +159,20 @@ export default function InstanceManagementPage() {
 			title: "Action",
 			key: "operation",
 			align: "center",
-			width: 180,
+			width: 80,
 			render: (_, record) => (
-				<div className="flex w-full justify-center text-gray-500">
-					<Button variant="ghost" size="icon" onClick={() => push(`${pathname}/${record.id}`)} title="Manage instance">
-						<Icon icon="solar:settings-bold-duotone" size={18} />
-					</Button>
-					{record.status === "draft" && (
-						<Button
-							variant="ghost"
-							size="icon"
-							onClick={() => statusMutation.mutate({ id: record.id, status: "scheduled" })}
-							title="Schedule instance"
-						>
-							<Icon icon="solar:play-bold-duotone" size={18} className="text-success!" />
-						</Button>
-					)}
-					{record.status === "scheduled" && (
-						<Button
-							variant="ghost"
-							size="icon"
-							onClick={() => statusMutation.mutate({ id: record.id, status: "active" })}
-							title="Activate course"
-						>
-							<Icon icon="solar:play-circle-bold-duotone" size={18} className="text-primary!" />
-						</Button>
-					)}
-					{record.status === "active" && (
-						<Button
-							variant="ghost"
-							size="icon"
-							onClick={() => statusMutation.mutate({ id: record.id, status: "completed" })}
-							title="Complete course"
-						>
-							<Icon icon="solar:check-circle-bold-duotone" size={18} className="text-warning!" />
-						</Button>
-					)}
-					<Button
-						variant="ghost"
-						size="icon"
-						onClick={() => handleDeleteClick(record)}
-						title="Delete instance"
-						disabled={record.status !== "draft"}
-					>
-						<Icon icon="solar:trash-bin-trash-bold-duotone" size={18} className="text-error!" />
-					</Button>
-				</div>
+				<Button
+					variant="ghost"
+					size="icon"
+					onClick={(e) => {
+						e.stopPropagation();
+						handleDeleteClick(record);
+					}}
+					title="Delete instance"
+					disabled={record.status !== "draft"}
+				>
+					<Icon icon="solar:trash-bin-trash-bold-duotone" size={18} className="text-error!" />
+				</Button>
 			),
 		},
 	];
@@ -260,6 +215,10 @@ export default function InstanceManagementPage() {
 						columns={columns}
 						dataSource={filteredInstances}
 						loading={isLoading}
+						onRow={(record) => ({
+							onClick: () => push(`${pathname}/${record.id}`),
+							style: { cursor: "pointer" },
+						})}
 					/>
 				</CardContent>
 			</Card>

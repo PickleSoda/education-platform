@@ -5,12 +5,24 @@ import { Button } from "@/ui/button";
 import { Card, CardContent, CardHeader } from "@/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/ui/tabs";
 import { Skeleton } from "@/ui/skeleton";
-import { useQuery } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import courseInstanceService from "@/api/services/courseInstanceService";
 import { format } from "date-fns";
 import { AssignmentsTab } from "./tabs/assignments-tab";
 import { EnrollmentsTab } from "./tabs/enrollments-tab";
 import { OverviewTab } from "./tabs/overview-tab";
+import { useState } from "react";
+import { toast } from "sonner";
+import {
+	AlertDialog,
+	AlertDialogAction,
+	AlertDialogCancel,
+	AlertDialogContent,
+	AlertDialogDescription,
+	AlertDialogFooter,
+	AlertDialogHeader,
+	AlertDialogTitle,
+} from "@/ui/alert-dialog";
 
 type InstanceStatus = "draft" | "scheduled" | "active" | "completed" | "archived";
 
@@ -25,9 +37,48 @@ const statusConfig: Record<
 	archived: { label: "Archived", variant: "error" },
 };
 
+// Status transition configuration
+const statusTransitions: Record<InstanceStatus, { next?: InstanceStatus; prev?: InstanceStatus }> = {
+	draft: { next: "scheduled" },
+	scheduled: { next: "active", prev: "draft" },
+	active: { next: "completed", prev: "scheduled" },
+	completed: { next: "archived", prev: "active" },
+	archived: { prev: "completed" },
+};
+
+const statusActions: Record<
+	InstanceStatus,
+	{ next?: { label: string; icon: string; color: string }; prev?: { label: string; icon: string; color: string } }
+> = {
+	draft: {
+		next: { label: "Schedule Instance", icon: "solar:calendar-bold-duotone", color: "text-info" },
+	},
+	scheduled: {
+		next: { label: "Activate Instance", icon: "solar:play-circle-bold-duotone", color: "text-success" },
+		prev: { label: "Back to Draft", icon: "solar:arrow-left-bold-duotone", color: "text-gray-500" },
+	},
+	active: {
+		next: { label: "Mark as Completed", icon: "solar:check-circle-bold-duotone", color: "text-warning" },
+		prev: { label: "Back to Scheduled", icon: "solar:arrow-left-bold-duotone", color: "text-gray-500" },
+	},
+	completed: {
+		next: { label: "Archive Instance", icon: "solar:archive-bold-duotone", color: "text-error" },
+		prev: { label: "Back to Active", icon: "solar:arrow-left-bold-duotone", color: "text-gray-500" },
+	},
+	archived: {
+		prev: { label: "Unarchive", icon: "solar:restart-bold-duotone", color: "text-info" },
+	},
+};
+
 export default function InstanceDetailPage() {
 	const { id } = useParams();
 	const { back } = useRouter();
+	const queryClient = useQueryClient();
+	const [statusModal, setStatusModal] = useState<{
+		show: boolean;
+		targetStatus: InstanceStatus | null;
+		direction: "next" | "prev" | null;
+	}>({ show: false, targetStatus: null, direction: null });
 
 	const { data, isLoading } = useQuery({
 		queryKey: ["instance", id],
@@ -36,6 +87,30 @@ export default function InstanceDetailPage() {
 	});
 
 	const instance = data?.data;
+
+	// Status update mutation
+	const statusMutation = useMutation({
+		mutationFn: (status: InstanceStatus) => courseInstanceService.updateInstanceStatus(id!, { status }),
+		onSuccess: () => {
+			toast.success("Instance status updated successfully");
+			queryClient.invalidateQueries({ queryKey: ["instance", id] });
+			queryClient.invalidateQueries({ queryKey: ["management-instances"] });
+			setStatusModal({ show: false, targetStatus: null, direction: null });
+		},
+		onError: () => {
+			toast.error("Failed to update instance status");
+		},
+	});
+
+	const handleStatusChange = (targetStatus: InstanceStatus, direction: "next" | "prev") => {
+		setStatusModal({ show: true, targetStatus, direction });
+	};
+
+	const handleStatusConfirm = () => {
+		if (statusModal.targetStatus) {
+			statusMutation.mutate(statusModal.targetStatus);
+		}
+	};
 
 	if (isLoading) {
 		return (
@@ -98,6 +173,35 @@ export default function InstanceDetailPage() {
 									</span>
 								</div>
 							</div>
+						</div>
+						<div className="flex items-center gap-2">
+							{statusTransitions[status]?.prev && statusActions[status]?.prev && (
+								<Button
+									variant="outline"
+									onClick={() => handleStatusChange(statusTransitions[status].prev!, "prev")}
+									disabled={statusMutation.isPending}
+								>
+									<Icon
+										icon={statusActions[status].prev!.icon}
+										size={18}
+										className={`mr-2 ${statusActions[status].prev!.color}`}
+									/>
+									{statusActions[status].prev!.label}
+								</Button>
+							)}
+							{statusTransitions[status]?.next && statusActions[status]?.next && (
+								<Button
+									onClick={() => handleStatusChange(statusTransitions[status].next!, "next")}
+									disabled={statusMutation.isPending}
+								>
+									<Icon
+										icon={statusActions[status].next!.icon}
+										size={18}
+										className={`mr-2 ${statusActions[status].next!.color}`}
+									/>
+									{statusActions[status].next!.label}
+								</Button>
+							)}
 						</div>
 					</div>
 				</CardHeader>
@@ -177,6 +281,38 @@ export default function InstanceDetailPage() {
 					<EnrollmentsTab instanceId={instance.id} />
 				</TabsContent>
 			</Tabs>
+
+			{/* Status Change Confirmation Modal */}
+			<AlertDialog
+				open={statusModal.show}
+				onOpenChange={(open) => !open && setStatusModal({ show: false, targetStatus: null, direction: null })}
+			>
+				<AlertDialogContent>
+					<AlertDialogHeader>
+						<AlertDialogTitle>Change Instance Status</AlertDialogTitle>
+						<AlertDialogDescription>
+							{statusModal.direction === "next" && (
+								<>
+									Are you sure you want to change the status from <strong>{statusConfig[status]?.label}</strong> to{" "}
+									<strong>{statusModal.targetStatus && statusConfig[statusModal.targetStatus]?.label}</strong>?
+								</>
+							)}
+							{statusModal.direction === "prev" && (
+								<>
+									Are you sure you want to revert the status from <strong>{statusConfig[status]?.label}</strong> back to{" "}
+									<strong>{statusModal.targetStatus && statusConfig[statusModal.targetStatus]?.label}</strong>?
+								</>
+							)}
+						</AlertDialogDescription>
+					</AlertDialogHeader>
+					<AlertDialogFooter>
+						<AlertDialogCancel>Cancel</AlertDialogCancel>
+						<AlertDialogAction onClick={handleStatusConfirm} disabled={statusMutation.isPending}>
+							{statusMutation.isPending ? "Updating..." : "Confirm"}
+						</AlertDialogAction>
+					</AlertDialogFooter>
+				</AlertDialogContent>
+			</AlertDialog>
 		</div>
 	);
 }

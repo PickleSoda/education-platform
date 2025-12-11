@@ -35,9 +35,11 @@ export default function AssignmentGradingPage() {
 		queryKey: ["submissions", assignmentId],
 		queryFn: () => submissionService.getSubmissions({ assignmentId: assignmentId as string }),
 		enabled: !!assignmentId,
+		refetchOnMount: "always",
+		staleTime: 0,
 	});
 
-	const submissions: SubmissionWithRelations[] = submissionsData?.data || [];
+	const submissions: SubmissionWithRelations[] = Array.isArray(submissionsData?.data) ? submissionsData.data : [];
 
 	const statusColors: Record<string, "default" | "info" | "success" | "warning" | "error"> = {
 		draft: "default",
@@ -65,15 +67,21 @@ export default function AssignmentGradingPage() {
 			title: "Submitted",
 			dataIndex: "submittedAt",
 			width: 150,
-			render: (date: string | null) =>
-				date ? (
+			render: (date: string | null) => {
+				if (!date) {
+					return <span className="text-text-secondary">Not submitted</span>;
+				}
+				const parsedDate = new Date(date);
+				if (isNaN(parsedDate.getTime())) {
+					return <span className="text-text-secondary">Invalid date</span>;
+				}
+				return (
 					<div>
-						<p className="text-sm">{format(new Date(date), "MMM dd, yyyy")}</p>
-						<p className="text-xs text-text-secondary">{format(new Date(date), "h:mm a")}</p>
+						<p className="text-sm">{format(parsedDate, "MMM dd, yyyy")}</p>
+						<p className="text-xs text-text-secondary">{format(parsedDate, "h:mm a")}</p>
 					</div>
-				) : (
-					<span className="text-text-secondary">Not submitted</span>
-				),
+				);
+			},
 		},
 		{
 			title: "Status",

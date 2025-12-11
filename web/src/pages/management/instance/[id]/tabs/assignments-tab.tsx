@@ -26,6 +26,7 @@ import type { PublishedAssignment } from "#/entity";
 import { useState } from "react";
 import { format, addDays } from "date-fns";
 import { toast } from "sonner";
+import { useNavigate } from "react-router";
 
 interface AssignmentsTabProps {
 	instanceId: string;
@@ -59,6 +60,7 @@ interface PublishFormData {
 
 export function AssignmentsTab({ instanceId, courseId }: AssignmentsTabProps) {
 	const queryClient = useQueryClient();
+	const navigate = useNavigate();
 	const [showPublishModal, setShowPublishModal] = useState(false);
 	const [deleteModal, setDeleteModal] = useState<{ show: boolean; assignment: PublishedAssignment | null }>({
 		show: false,
@@ -297,6 +299,10 @@ export function AssignmentsTab({ instanceId, courseId }: AssignmentsTabProps) {
 							columns={columns}
 							dataSource={publishedAssignments}
 							loading={loadingPublished}
+							onRow={(record) => ({
+								onClick: () => navigate(`assignments/${record.id}`),
+								style: { cursor: "pointer" },
+							})}
 						/>
 					)}
 				</CardContent>

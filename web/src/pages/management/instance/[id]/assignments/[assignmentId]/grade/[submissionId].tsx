@@ -6,12 +6,14 @@ import { Input } from "@/ui/input";
 import { Textarea } from "@/ui/textarea";
 import { useParams, useNavigate } from "react-router";
 import { format } from "date-fns";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Tabs, TabsList, TabsTrigger } from "@/ui/tabs";
 import type { PublishedAssignment, SubmissionWithRelations } from "#/entity";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import courseInstanceService from "@/api/services/courseInstanceService";
 import submissionService from "@/api/services/submissionService";
+import { toast } from "sonner";
+import { toNumber } from "lodash-es";
 
 export default function SubmissionGradingPage() {
 	const {
@@ -25,12 +27,11 @@ export default function SubmissionGradingPage() {
 	}>();
 
 	const navigate = useNavigate();
+	const queryClient = useQueryClient();
 	const [activeTab, setActiveTab] = useState<"submission" | "grading">("submission");
 	const [grades, setGrades] = useState<Record<string, number>>({});
 	const [overallFeedback, setOverallFeedback] = useState("");
-	const [isSubmitting, setIsSubmitting] = useState(false);
 
-	// Mock data - replace with API calls
 	const { data: assignmentData } = useQuery({
 		queryKey: ["assignment", assignmentId],
 		queryFn: () => courseInstanceService.getPublishedAssignmentById(instanceId as string, assignmentId as string),
@@ -47,6 +48,39 @@ export default function SubmissionGradingPage() {
 
 	const submission: SubmissionWithRelations | null = submissionData?.data || null;
 
+	// Initialize grades from existing submission data
+	useEffect(() => {
+		if (submission?.grades && submission.grades.length > 0) {
+			const existingGrades: Record<string, number> = {};
+			submission.grades.forEach((grade) => {
+				existingGrades[grade.publishedCriteriaId] = toNumber(grade.pointsAwarded as number);
+			});
+			setGrades(existingGrades);
+		}
+		if (submission?.feedback) {
+			setOverallFeedback(submission.feedback);
+		}
+	}, [submission]);
+
+	const gradeMutation = useMutation({
+		mutationFn: (data: {
+			criteriaGrades: Array<{ criteriaId: string; pointsAwarded: number; feedback?: string }>;
+			overallFeedback?: string;
+		}) => submissionService.gradeSubmission(submissionId as string, data),
+		onSuccess: async () => {
+			toast.success("Grade submitted successfully");
+			// Invalidate the submissions list query
+			await queryClient.invalidateQueries({ queryKey: ["submissions", assignmentId] });
+			// Invalidate the single submission query
+			await queryClient.invalidateQueries({ queryKey: ["submission", submissionId] });
+			navigate(-1);
+		},
+
+		onError: (error: any) => {
+			toast.error(error?.response?.data?.message || "Failed to submit grade");
+		},
+	});
+
 	const handleGradeChange = (criteriaId: string, points: number) => {
 		setGrades((prev) => ({
 			...prev,
@@ -54,27 +88,17 @@ export default function SubmissionGradingPage() {
 		}));
 	};
 
-	const handleSubmitGrade = async () => {
-		setIsSubmitting(true);
-		try {
-			const criteriaGrades = Object.entries(grades).map(([criteriaId, points]) => ({
-				criteriaId,
-				pointsAwarded: points,
-				feedback: "",
-			}));
+	const handleSubmitGrade = () => {
+		const criteriaGrades = Object.entries(grades).map(([criteriaId, points]) => ({
+			criteriaId,
+			pointsAwarded: points as number,
+			feedback: "",
+		}));
 
-			// Call API to submit grades
-			// await gradeSubmission(submissionId, {
-			//   criteriaGrades,
-			//   overallFeedback,
-			// });
-
-			console.log("Grades submitted", { criteriaGrades, overallFeedback });
-			// Navigate back to assignment page
-			navigate(-1);
-		} finally {
-			setIsSubmitting(false);
-		}
+		gradeMutation.mutate({
+			criteriaGrades,
+			overallFeedback,
+		});
 	};
 
 	const totalPoints = Object.values(grades).reduce((sum, val) => sum + val, 0);
@@ -110,8 +134,14 @@ export default function SubmissionGradingPage() {
 						</div>
 						<div>
 							<p className="text-sm text-text-secondary mb-1">Submitted</p>
-							<p className="font-semibold">{format(new Date(submission.submittedAt || ""), "MMM dd, yyyy")}</p>
-							<p className="text-xs text-text-secondary">{format(new Date(submission.submittedAt || ""), "h:mm a")}</p>
+							{submission.submittedAt ? (
+								<>
+									<p className="font-semibold">{format(new Date(submission.submittedAt), "MMM dd, yyyy")}</p>
+									<p className="text-xs text-text-secondary">{format(new Date(submission.submittedAt), "h:mm a")}</p>
+								</>
+							) : (
+								<p className="text-text-secondary">Not submitted</p>
+							)}
 						</div>
 						<div>
 							<p className="text-sm text-text-secondary mb-1">Late Status</p>
@@ -210,13 +240,13 @@ export default function SubmissionGradingPage() {
 									</div>
 
 									<div className="flex gap-3">
-										<Button variant="outline" onClick={() => navigate(-1)}>
+										<Button variant="outline" onClick={() => navigate(-1)} disabled={gradeMutation.isPending}>
 											<Icon icon="solar:close-circle-bold-duotone" size={16} className="mr-2" />
 											Cancel
 										</Button>
-										<Button onClick={handleSubmitGrade} disabled={isSubmitting || totalPoints === 0}>
+										<Button onClick={handleSubmitGrade} disabled={gradeMutation.isPending || totalPoints === 0}>
 											<Icon icon="solar:check-circle-bold-duotone" size={16} className="mr-2" />
-											{isSubmitting ? "Submitting..." : "Submit Grade"}
+											{gradeMutation.isPending ? "Submitting..." : "Submit Grade"}
 										</Button>
 									</div>
 								</div>
