@@ -398,6 +398,27 @@ export interface SubmissionWithRelations extends Submission {
 	} | null;
 }
 
+export interface SubmissionWithCourseRelations extends SubmissionWithRelations {
+	publishedAssignment: {
+		id: string;
+		title: string;
+		deadline: string | null;
+		lateDeadline: string | null;
+		latePenaltyPercent: number | null;
+		maxPoints?: number | null;
+		instance: {
+			id: string;
+			course: {
+				code: string;
+				title: string;
+			};
+			semester: string;
+			year: number;
+		};
+		dueDate?: string | null;
+	};
+}
+
 export interface GradebookEntry {
 	id: string;
 	title: string;

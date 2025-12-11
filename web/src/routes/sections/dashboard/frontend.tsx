@@ -115,6 +115,10 @@ export function getFrontendDashboardRoutes(): RouteObject[] {
 						},
 					],
 				},
+				{
+					path: "assignment",
+					element: Component("/pages/management/assignment"),
+				},
 			],
 		},
 		{

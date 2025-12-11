@@ -1,5 +1,10 @@
 import type { ApiResponse, PaginatedResponse } from "#/api";
-import type { SubmissionWithRelations, StudentGradebook, SubmissionStats } from "#/entity";
+import type {
+	SubmissionWithRelations,
+	SubmissionWithCourseRelations,
+	StudentGradebook,
+	SubmissionStats,
+} from "#/entity";
 import apiClient from "../apiClient";
 
 // Query parameters
@@ -52,7 +57,7 @@ export enum SubmissionApi {
 
 // Submission endpoints
 const getSubmissions = (params?: ListSubmissionsParams) =>
-	apiClient.get<PaginatedResponse<SubmissionWithRelations>>({ url: SubmissionApi.Submissions, params });
+	apiClient.get<PaginatedResponse<SubmissionWithCourseRelations>>({ url: SubmissionApi.Submissions, params });
 
 const getSubmissionById = (id: string) =>
 	apiClient.get<ApiResponse<SubmissionWithRelations>>({ url: `${SubmissionApi.Submissions}/${id}` });

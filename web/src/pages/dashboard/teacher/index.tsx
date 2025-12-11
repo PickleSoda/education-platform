@@ -96,13 +96,15 @@ export default function TeacherDashboard() {
 					value={dashboardData?.quickStats.totalStudents || 0}
 					variant="primary"
 				/>
-				<QuickStatsCard
-					icon="solar:document-text-bold-duotone"
-					title="Pending Grading"
-					value={dashboardData?.quickStats.pendingGrading || 0}
-					variant="warning"
-					description={dashboardData?.quickStats.pendingGrading ? "submissions to grade" : "All caught up!"}
-				/>
+				<div onClick={() => push("/management/assignment?status=submitted")} className="cursor-pointer">
+					<QuickStatsCard
+						icon="solar:document-text-bold-duotone"
+						title="Pending Grading"
+						value={dashboardData?.quickStats.pendingGrading || 0}
+						variant="warning"
+						description={dashboardData?.quickStats.pendingGrading ? "submissions to grade" : "All caught up!"}
+					/>
+				</div>
 				<QuickStatsCard
 					icon="solar:book-bookmark-bold-duotone"
 					title="Active Instances"
@@ -187,9 +189,9 @@ export default function TeacherDashboard() {
 					<Icon icon="solar:settings-bold-duotone" size={20} className="mr-2" />
 					Manage Instances
 				</Button>
-				<Button variant="outline" className="w-full" onClick={() => push("/grading")}>
+				<Button variant="outline" className="w-full" onClick={() => push("/management/assignment")}>
 					<Icon icon="solar:document-text-bold-duotone" size={20} className="mr-2" />
-					Grading Queue
+					Assignments
 				</Button>
 				<Button variant="outline" className="w-full" onClick={() => push("/analysis")}>
 					<Icon icon="solar:chart-bold-duotone" size={20} className="mr-2" />
