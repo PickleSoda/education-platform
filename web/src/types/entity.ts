@@ -133,6 +133,41 @@ export interface GradingCriteria {
 	sortOrder: number;
 }
 
+export type ResourceType = "document" | "video" | "link" | "slide" | "code" | "other";
+
+export interface ResourceTemplate {
+	id: string;
+	courseId: string;
+	title: string;
+	description: string | null;
+	resourceType: ResourceType | null;
+	url: string | null;
+	filePath: string | null;
+	syllabusItemId: string | null;
+	sortOrder: number | null;
+	createdAt: string;
+	syllabusItem?: {
+		id: string;
+		title: string;
+		weekNumber: number | null;
+	} | null;
+}
+
+export interface PublishedResource {
+	id: string;
+	instanceId: string;
+	templateId: string | null;
+	title: string;
+	description: string | null;
+	resourceType: ResourceType | null;
+	url: string | null;
+	filePath: string | null;
+	isPublished: boolean;
+	publishedAt: string | null;
+	sortOrder: number | null;
+	createdAt: string;
+}
+
 export interface PublishedAssignment {
 	id: string;
 	instanceId: string;

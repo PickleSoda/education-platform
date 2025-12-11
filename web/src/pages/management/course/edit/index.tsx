@@ -25,8 +25,10 @@ import { BasicInfoTab } from "./tabs/basic-info-tab";
 import { TagsTab } from "./tabs/tags-tab";
 import { LecturersTab } from "./tabs/lecturers-tab";
 import { AssignmentsTab } from "./tabs/assignments-tab";
+import { ResourcesTab } from "./tabs/resources-tab";
 import { InstancesTab } from "./tabs/instances-tab";
 import { StatisticsTab } from "./tabs/statistics-tab";
+import resourceService from "@/api/services/resourceService";
 
 export default function CourseManagementDetails() {
 	const { id } = useParams();
@@ -56,6 +58,13 @@ export default function CourseManagementDetails() {
 		enabled: !isCreateMode && !!id,
 	});
 
+	// Fetch resources
+	const { data: resourcesData, isLoading: resourcesLoading } = useQuery({
+		queryKey: ["resources", id],
+		queryFn: () => resourceService.getResourceTemplates(id as string),
+		enabled: !isCreateMode && !!id,
+	});
+
 	// Fetch course stats
 	const { data: statsData, isLoading: statsLoading } = useQuery({
 		queryKey: ["courseStats", id],
@@ -65,6 +74,7 @@ export default function CourseManagementDetails() {
 
 	const course = courseData?.data;
 	const assignments = assignmentsData?.data || [];
+	const resources = resourcesData?.data || [];
 	const instances = instancesData?.data || [];
 	const stats = statsData?.data;
 
@@ -181,6 +191,15 @@ export default function CourseManagementDetails() {
 										</Badge>
 									)}
 								</TabsTrigger>
+								<TabsTrigger value="resources">
+									<Icon icon="solar:folder-bold-duotone" size={18} className="mr-2" />
+									Resources
+									{resources.length > 0 && (
+										<Badge variant="outline" className="ml-2">
+											{resources.length}
+										</Badge>
+									)}
+								</TabsTrigger>
 								<TabsTrigger value="instances">
 									<Icon icon="solar:calendar-bold-duotone" size={18} className="mr-2" />
 									Instances
@@ -213,6 +232,9 @@ export default function CourseManagementDetails() {
 						</TabsContent>
 						<TabsContent value="assignments">
 							<AssignmentsTab courseId={id as string} assignments={assignments} isLoading={assignmentsLoading} />
+						</TabsContent>
+						<TabsContent value="resources">
+							<ResourcesTab courseId={id as string} resources={resources} isLoading={resourcesLoading} />
 						</TabsContent>
 						<TabsContent value="instances">
 							<InstancesTab

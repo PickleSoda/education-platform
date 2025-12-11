@@ -85,6 +85,10 @@ export function getFrontendDashboardRoutes(): RouteObject[] {
 							path: "edit/:id/assignment/:assignmentId",
 							element: Component("/pages/management/course/edit/assignment/[assignmentId]"),
 						},
+						{
+							path: "edit/:id/resource/:resourceId",
+							element: Component("/pages/management/course/edit/resource/[resourceId]"),
+						},
 					],
 				},
 				{
