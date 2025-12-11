@@ -24,6 +24,8 @@ import {
 	AlertDialogHeader,
 	AlertDialogTitle,
 } from "@/ui/alert-dialog";
+import { CreateInstanceModal } from "./create-instance-modal";
+import type { CreateInstanceReq } from "@/api/services/courseInstanceService";
 
 type InstanceStatus = "draft" | "scheduled" | "active" | "completed" | "archived";
 
@@ -49,6 +51,7 @@ export default function InstanceManagementPage() {
 		show: boolean;
 		instance: CourseInstance | null;
 	}>({ show: false, instance: null });
+	const [showCreateModal, setShowCreateModal] = useState(false);
 
 	// Fetch instances - admin sees all, teachers see only their teaching instances
 	const { data, isLoading } = useQuery({
@@ -79,6 +82,19 @@ export default function InstanceManagementPage() {
 		},
 		onError: () => {
 			toast.error("Failed to delete instance");
+		},
+	});
+
+	// Create instance mutation
+	const createMutation = useMutation({
+		mutationFn: (data: CreateInstanceReq) => courseInstanceService.createInstance(data),
+		onSuccess: () => {
+			toast.success("Instance created successfully");
+			queryClient.invalidateQueries({ queryKey: ["management-instances"] });
+			setShowCreateModal(false);
+		},
+		onError: (error: any) => {
+			toast.error(error?.response?.data?.message || "Failed to create instance");
 		},
 	});
 
@@ -184,6 +200,10 @@ export default function InstanceManagementPage() {
 					<div className="flex items-center justify-between">
 						<div className="text-lg font-semibold">Instance Management</div>
 						<div className="flex items-center gap-3">
+							<Button onClick={() => setShowCreateModal(true)}>
+								<Icon icon="solar:add-circle-bold-duotone" size={18} className="mr-2" />
+								Create Instance
+							</Button>
 							<Input
 								placeholder="Search courses..."
 								className="w-64"
@@ -243,6 +263,13 @@ export default function InstanceManagementPage() {
 					</AlertDialogFooter>
 				</AlertDialogContent>
 			</AlertDialog>
+
+			<CreateInstanceModal
+				show={showCreateModal}
+				onClose={() => setShowCreateModal(false)}
+				onSubmit={(data) => createMutation.mutate(data)}
+				isSubmitting={createMutation.isPending}
+			/>
 		</>
 	);
 }

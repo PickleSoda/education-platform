@@ -1,7 +1,7 @@
 import { useParams, useRouter } from "@/routes/hooks";
 import { Card } from "@/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/ui/tabs";
-import { useQuery } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import courseService from "@/api/services/courseService";
 import assignmentService from "@/api/services/assignmentService";
 import courseInstanceService from "@/api/services/courseInstanceService";
@@ -9,6 +9,18 @@ import { Button } from "@/ui/button";
 import { Icon } from "@/components/icon";
 import { Badge } from "@/ui/badge";
 import { Skeleton } from "@/ui/skeleton";
+import { useState } from "react";
+import { toast } from "sonner";
+import {
+	AlertDialog,
+	AlertDialogAction,
+	AlertDialogCancel,
+	AlertDialogContent,
+	AlertDialogDescription,
+	AlertDialogFooter,
+	AlertDialogHeader,
+	AlertDialogTitle,
+} from "@/ui/alert-dialog";
 import { BasicInfoTab } from "./tabs/basic-info-tab";
 import { TagsTab } from "./tabs/tags-tab";
 import { LecturersTab } from "./tabs/lecturers-tab";
@@ -19,7 +31,9 @@ import { StatisticsTab } from "./tabs/statistics-tab";
 export default function CourseManagementDetails() {
 	const { id } = useParams();
 	const { push } = useRouter();
+	const queryClient = useQueryClient();
 	const isCreateMode = id === "create";
+	const [archiveModal, setArchiveModal] = useState(false);
 
 	// Fetch course data
 	const { data: courseData, isLoading: courseLoading } = useQuery({
@@ -54,6 +68,21 @@ export default function CourseManagementDetails() {
 	const instances = instancesData?.data || [];
 	const stats = statsData?.data;
 
+	// Archive/Unarchive mutation
+	const archiveMutation = useMutation({
+		mutationFn: () =>
+			course?.isArchived ? courseService.unarchiveCourse(id as string) : courseService.archiveCourse(id as string),
+		onSuccess: () => {
+			toast.success(`Course ${course?.isArchived ? "unarchived" : "archived"} successfully`);
+			queryClient.invalidateQueries({ queryKey: ["course", id] });
+			queryClient.invalidateQueries({ queryKey: ["courses"] });
+			setArchiveModal(false);
+		},
+		onError: () => {
+			toast.error("Failed to update course status");
+		},
+	});
+
 	if (courseLoading && !isCreateMode) {
 		return (
 			<Card className="p-6">
@@ -85,7 +114,7 @@ export default function CourseManagementDetails() {
 			<Card className="p-6">
 				<div className="flex items-center justify-between">
 					<div className="flex items-center gap-4">
-						<Button variant="ghost" size="icon" onClick={() => push("/management/courses")}>
+						<Button variant="ghost" size="icon" onClick={() => push("/management/course")}>
 							<Icon icon="solar:arrow-left-line-duotone" size={20} />
 						</Button>
 						<div>
@@ -107,7 +136,11 @@ export default function CourseManagementDetails() {
 									<Icon icon="solar:eye-bold-duotone" size={18} className="mr-2" />
 									View Public Page
 								</Button>
-								<Button variant={course.isArchived ? "default" : "outline"}>
+								<Button
+									variant={course.isArchived ? "default" : "outline"}
+									onClick={() => setArchiveModal(true)}
+									disabled={archiveMutation.isPending}
+								>
 									<Icon
 										icon={course.isArchived ? "solar:inbox-unarchive-bold-duotone" : "solar:inbox-archive-bold-duotone"}
 										size={18}
@@ -175,25 +208,55 @@ export default function CourseManagementDetails() {
 						<TabsContent value="tags">
 							<TagsTab courseId={id as string} currentTags={course?.tags || []} />
 						</TabsContent>
-
 						<TabsContent value="lecturers">
 							<LecturersTab courseId={id as string} lecturers={course?.lecturers || []} />
 						</TabsContent>
-
 						<TabsContent value="assignments">
 							<AssignmentsTab courseId={id as string} assignments={assignments} isLoading={assignmentsLoading} />
 						</TabsContent>
-
 						<TabsContent value="instances">
-							<InstancesTab courseId={id as string} instances={instances} isLoading={instancesLoading} />
-						</TabsContent>
-
+							<InstancesTab
+								courseId={id as string}
+								courseName={course?.title}
+								courseCode={course?.code}
+								instances={instances}
+								isLoading={instancesLoading}
+							/>
+						</TabsContent>{" "}
 						<TabsContent value="statistics">
 							<StatisticsTab courseId={id as string} stats={stats} isLoading={statsLoading} />
 						</TabsContent>
 					</>
 				)}
 			</Tabs>
+
+			{/* Archive Confirmation Modal */}
+			<AlertDialog open={archiveModal} onOpenChange={setArchiveModal}>
+				<AlertDialogContent>
+					<AlertDialogHeader>
+						<AlertDialogTitle>{course?.isArchived ? "Unarchive" : "Archive"} Course</AlertDialogTitle>
+						<AlertDialogDescription>
+							{course?.isArchived ? (
+								<>
+									Are you sure you want to unarchive <strong>{course?.title}</strong>? This will make the course visible
+									and active again.
+								</>
+							) : (
+								<>
+									Are you sure you want to archive <strong>{course?.title}</strong>? Archived courses are hidden from
+									public view but can be unarchived later.
+								</>
+							)}
+						</AlertDialogDescription>
+					</AlertDialogHeader>
+					<AlertDialogFooter>
+						<AlertDialogCancel>Cancel</AlertDialogCancel>
+						<AlertDialogAction onClick={() => archiveMutation.mutate()} disabled={archiveMutation.isPending}>
+							{archiveMutation.isPending ? "Processing..." : "Confirm"}
+						</AlertDialogAction>
+					</AlertDialogFooter>
+				</AlertDialogContent>
+			</AlertDialog>
 		</div>
 	);
 }

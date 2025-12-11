@@ -7,9 +7,17 @@ import { Table } from "antd";
 import type { ColumnsType } from "antd/es/table";
 import { Skeleton } from "@/ui/skeleton";
 import { format } from "date-fns";
+import { useState } from "react";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { toast } from "sonner";
+import courseInstanceService, { type CreateInstanceReq } from "@/api/services/courseInstanceService";
+import { CreateInstanceModal } from "@/pages/management/instance/create-instance-modal";
+import { useRouter } from "@/routes/hooks";
 
 interface InstancesTabProps {
 	courseId: string;
+	courseName?: string;
+	courseCode?: string;
 	instances: CourseInstance[];
 	isLoading: boolean;
 }
@@ -22,8 +30,24 @@ const statusColors: Record<string, string> = {
 	archived: "error",
 };
 
-export function InstancesTab({ courseId, instances, isLoading }: InstancesTabProps) {
-	console.log("InstancesTab props:", { courseId, instances, isLoading });
+export function InstancesTab({ courseId, courseName, courseCode, instances, isLoading }: InstancesTabProps) {
+	const { push } = useRouter();
+	const queryClient = useQueryClient();
+	const [showCreateModal, setShowCreateModal] = useState(false);
+
+	// Create instance mutation
+	const createMutation = useMutation({
+		mutationFn: (data: CreateInstanceReq) => courseInstanceService.createInstance(data),
+		onSuccess: () => {
+			toast.success("Instance created successfully");
+			queryClient.invalidateQueries({ queryKey: ["instances", courseId] });
+			queryClient.invalidateQueries({ queryKey: ["management-instances"] });
+			setShowCreateModal(false);
+		},
+		onError: (error: any) => {
+			toast.error(error?.response?.data?.message || "Failed to create instance");
+		},
+	});
 
 	const columns: ColumnsType<CourseInstance> = [
 		{
@@ -92,28 +116,6 @@ export function InstancesTab({ courseId, instances, isLoading }: InstancesTabPro
 			width: 100,
 			render: (count) => <Badge variant="outline">{count || 0}</Badge>,
 		},
-		{
-			title: "Action",
-			key: "operation",
-			align: "center",
-			width: 180,
-			render: (_, _record) => (
-				<div className="flex w-full justify-center">
-					<Button variant="ghost" size="icon" title="View instance">
-						<Icon icon="solar:eye-bold-duotone" size={18} />
-					</Button>
-					<Button variant="ghost" size="icon" title="Edit instance">
-						<Icon icon="solar:pen-bold-duotone" size={18} />
-					</Button>
-					<Button variant="ghost" size="icon" title="Clone instance">
-						<Icon icon="solar:copy-bold-duotone" size={18} />
-					</Button>
-					<Button variant="ghost" size="icon" title="Publish assignment">
-						<Icon icon="solar:document-add-bold-duotone" size={18} className="text-success" />
-					</Button>
-				</div>
-			),
-		},
 	];
 
 	if (isLoading) {
@@ -173,7 +175,7 @@ export function InstancesTab({ courseId, instances, isLoading }: InstancesTabPro
 								<Icon icon="solar:copy-bold-duotone" size={18} className="mr-2" />
 								Clone Latest
 							</Button>
-							<Button>
+							<Button onClick={() => setShowCreateModal(true)}>
 								<Icon icon="solar:add-circle-bold-duotone" size={18} className="mr-2" />
 								Create Instance
 							</Button>
@@ -185,7 +187,7 @@ export function InstancesTab({ courseId, instances, isLoading }: InstancesTabPro
 						<div className="text-center py-12 text-text-secondary">
 							<Icon icon="solar:calendar-bold-duotone" size={48} className="mx-auto mb-4 opacity-50" />
 							<p className="mb-4">No course instances yet</p>
-							<Button variant="outline">
+							<Button variant="outline" onClick={() => setShowCreateModal(true)}>
 								<Icon icon="solar:add-circle-bold-duotone" size={18} className="mr-2" />
 								Create Your First Instance
 							</Button>
@@ -202,10 +204,23 @@ export function InstancesTab({ courseId, instances, isLoading }: InstancesTabPro
 							}}
 							columns={columns}
 							dataSource={instances}
+							onRow={(record) => ({
+								onClick: () => push(`/management/instance/${record.id}`),
+								style: { cursor: "pointer" },
+							})}
 						/>
 					)}
 				</CardContent>
 			</Card>
+
+			<CreateInstanceModal
+				show={showCreateModal}
+				courseId={courseId}
+				courseName={courseName ? `${courseCode} - ${courseName}` : undefined}
+				onClose={() => setShowCreateModal(false)}
+				onSubmit={(data) => createMutation.mutate(data)}
+				isSubmitting={createMutation.isPending}
+			/>
 		</div>
 	);
 }
