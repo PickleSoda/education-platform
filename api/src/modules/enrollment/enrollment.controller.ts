@@ -139,10 +139,7 @@ export const updateEnrollmentStatus = catchAsync(
     // Students can only drop their own enrollments
     if (!isTeacherOrAdmin) {
       if (!isOwnEnrollment) {
-        throw new ApiError(
-          httpStatus.FORBIDDEN,
-          'You can only update your own enrollment status'
-        );
+        throw new ApiError(httpStatus.FORBIDDEN, 'You can only update your own enrollment status');
       }
       if (body.status !== 'dropped') {
         throw new ApiError(

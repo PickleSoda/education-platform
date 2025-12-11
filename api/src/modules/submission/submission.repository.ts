@@ -145,14 +145,21 @@ export const submitAssignment = async (
     throw new Error('Late submission deadline has passed');
   }
 
-  const result = await prisma.submission.update({
+  const result = await prisma.submission.upsert({
     where: {
       publishedAssignmentId_studentId: {
         publishedAssignmentId: assignmentId,
         studentId,
       },
     },
-    data: {
+    create: {
+      publishedAssignmentId: assignmentId,
+      studentId,
+      status: isLate ? 'late' : 'submitted',
+      submittedAt: now,
+      isLate,
+    },
+    update: {
       status: isLate ? 'late' : 'submitted',
       submittedAt: now,
       isLate,
