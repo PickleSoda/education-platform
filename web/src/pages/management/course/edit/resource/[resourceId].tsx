@@ -68,7 +68,7 @@ export default function ResourceTemplatePage() {
 		onSuccess: () => {
 			toast.success("Resource template created successfully");
 			queryClient.invalidateQueries({ queryKey: ["resources", courseId] });
-			push(`/management/courses/edit/${courseId}`);
+			push(`/management/course/edit/${courseId}`);
 		},
 		onError: (error: any) => {
 			toast.error(error?.response?.data?.message || "Failed to create resource template");
@@ -94,7 +94,7 @@ export default function ResourceTemplatePage() {
 		onSuccess: () => {
 			toast.success("Resource template deleted successfully");
 			queryClient.invalidateQueries({ queryKey: ["resources", courseId] });
-			push(`/management/courses/edit/${courseId}`);
+			push(`/management/course/edit/${courseId}`);
 		},
 		onError: (error: any) => {
 			toast.error(error?.response?.data?.message || "Failed to delete resource template");
@@ -134,7 +134,7 @@ export default function ResourceTemplatePage() {
 			<Card className="p-6">
 				<div className="flex items-center justify-between">
 					<div className="flex items-center gap-4">
-						<Button variant="ghost" size="icon" onClick={() => push(`/management/courses/edit/${courseId}`)}>
+						<Button variant="ghost" size="icon" onClick={() => push(`/management/course/edit/${courseId}`)}>
 							<Icon icon="solar:arrow-left-line-duotone" size={20} />
 						</Button>
 						<div>
@@ -298,7 +298,7 @@ export default function ResourceTemplatePage() {
 				{/* Actions */}
 				<Card className="p-6">
 					<div className="flex items-center justify-between">
-						<Button type="button" variant="outline" onClick={() => push(`/management/courses/edit/${courseId}`)}>
+						<Button type="button" variant="outline" onClick={() => push(`/management/course/edit/${courseId}`)}>
 							Cancel
 						</Button>
 						<Button

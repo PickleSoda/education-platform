@@ -112,7 +112,7 @@ export default function CourseManagementDetails() {
 					<Icon icon="solar:file-remove-bold-duotone" size={48} className="mx-auto text-text-secondary mb-4" />
 					<h3 className="text-lg font-semibold mb-2">Course Not Found</h3>
 					<p className="text-text-secondary mb-4">{"The course you're looking for doesn't exist."}</p>
-					<Button onClick={() => push("/management/courses")}>Back to Courses</Button>
+					<Button onClick={() => push("/management/course")}>Back to Courses</Button>
 				</div>
 			</Card>
 		);

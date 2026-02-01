@@ -17,6 +17,7 @@
     "db:migrate": "pnpm --filter @edu-platform/api db:migrate",
     "db:studio": "pnpm --filter @edu-platform/api db:studio",
     "db:seed": "pnpm --filter @edu-platform/api db:seed",
+    "db:reset": "pnpm --filter @edu-platform/api db:reset",
     "docker:dev": "docker compose -f docker-compose.dev.yml up --build",
     "docker:dev:down": "docker compose -f docker-compose.dev.yml down -v",
     "docker:dev:logs": "docker compose -f docker-compose.dev.yml logs -f",

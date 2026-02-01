@@ -323,7 +323,7 @@ copyAssignmentTemplate(id, data)    // Copy template to another course
 ### Routes
 
 - Uses existing React Router setup
-- Follows `/management/courses/:id` pattern
+- Follows `/management/course/:id` pattern
 - Supports both `create` and edit modes
 
 ### API Client

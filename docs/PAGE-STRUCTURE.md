@@ -94,7 +94,7 @@ This document outlines the visual structure and user flows for course management
 
 ### 3. Manage Courses (Admin/Teacher View)
 
-**Route:** `/management/courses`
+**Route:** `/management/course`
 
 **Purpose:** CRUD operations for course management
 
@@ -137,7 +137,7 @@ This document outlines the visual structure and user flows for course management
 
 ### 4. Manage Course Details (Admin/Teacher View)
 
-**Route:** `/management/courses/edit/:courseId` or `/management/courses/create`
+**Route:** `/management/course/edit/:courseId` or `/management/course/create`
 
 **Purpose:** Comprehensive course management interface
 
@@ -151,6 +151,7 @@ This document outlines the visual structure and user flows for course management
 - **Tabbed Management Interface**
 
   #### **Basic Info Tab**
+
   - Editable form fields:
     - Course code
     - Title
@@ -160,6 +161,7 @@ This document outlines the visual structure and user flows for course management
   - "Save" and "Cancel" buttons
 
   #### **Tags Tab**
+
   - **Current Tags Section**
     - List of assigned tags (removable chips)
     - Color-coded tags
@@ -170,6 +172,7 @@ This document outlines the visual structure and user flows for course management
     - Recently used tags
 
   #### **Lecturers Tab**
+
   - **Current Lecturers List**
     - Each lecturer card shows:
       - Name and email
@@ -182,6 +185,7 @@ This document outlines the visual structure and user flows for course management
     - "Add Lecturer" button
 
   #### **Assignment Templates Tab**
+
   - **Grading Structure Overview**
     - Visual weight distribution chart
     - Total weight indicator (should equal 100%)
@@ -211,6 +215,7 @@ This document outlines the visual structure and user flows for course management
       - "Add Criterion" button
 
   #### **Instances Tab**
+
   - **Quick Actions**
     - "Create New Instance" button
     - Filter by semester/status
@@ -232,6 +237,7 @@ This document outlines the visual structure and user flows for course management
     - "Create" button
 
   #### **Statistics Tab**
+
   - Dashboard-style layout:
     - Total instances chart
     - Enrollment trends graph
@@ -490,6 +496,7 @@ This document outlines the visual structure and user flows for course management
 - **Management Tabs**
 
   #### **Dashboard Tab**
+
   - **Quick Stats Cards**
     - Total enrollments
     - Pending submissions
@@ -505,6 +512,7 @@ This document outlines the visual structure and user flows for course management
     - System notifications
 
   #### **Enrollments Tab**
+
   - **Enrollment Controls**
     - Toggle enrollment open/closed
     - Set enrollment limit
@@ -523,6 +531,7 @@ This document outlines the visual structure and user flows for course management
     - Bulk actions
 
   #### **Assignments Tab**
+
   - **Published Assignments List**
     - Each assignment card:
       - Title and template indicator
@@ -541,6 +550,7 @@ This document outlines the visual structure and user flows for course management
     - Quick access to manage course-level templates
 
   #### **Resources Tab**
+
   - **Resource Library**
     - Folder tree structure
     - Upload area (drag & drop)
@@ -552,6 +562,7 @@ This document outlines the visual structure and user flows for course management
       - Actions (Edit, Download, Delete, Move)
 
   #### **Forums Tab**
+
   - **Forum Management**
     - List of forums
     - Create new forum button
@@ -566,6 +577,7 @@ This document outlines the visual structure and user flows for course management
     - Lock/unlock threads
 
   #### **Grades Tab**
+
   - **Gradebook Interface**
     - Spreadsheet-style layout
     - Rows: Students
@@ -581,6 +593,7 @@ This document outlines the visual structure and user flows for course management
     - Grade statistics view
 
   #### **Settings Tab**
+
   - Instance-specific settings:
     - Semester and dates
     - Enrollment settings

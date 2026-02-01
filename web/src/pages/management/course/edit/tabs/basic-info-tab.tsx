@@ -38,7 +38,7 @@ export function BasicInfoTab({ course, isCreateMode }: BasicInfoTabProps) {
 		onSuccess: (response) => {
 			toast.success("Course created successfully");
 			queryClient.invalidateQueries({ queryKey: ["courses"] });
-			push(`/management/courses/edit/${response.data?.id}`);
+			push(`/management/course/edit/${response.data?.id}`);
 		},
 		onError: () => {
 			toast.error("Failed to create course");
@@ -135,7 +135,7 @@ export function BasicInfoTab({ course, isCreateMode }: BasicInfoTabProps) {
 						<Button type="submit" disabled={!isDirty || isLoading}>
 							{isLoading ? "Saving..." : isCreateMode ? "Create Course" : "Save Changes"}
 						</Button>
-						<Button type="button" variant="outline" onClick={() => push("/management/courses")}>
+						<Button type="button" variant="outline" onClick={() => push("/management/course")}>
 							Cancel
 						</Button>
 					</div>

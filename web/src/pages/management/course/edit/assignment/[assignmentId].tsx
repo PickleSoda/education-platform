@@ -90,7 +90,7 @@ export default function AssignmentTemplatePage() {
 		onSuccess: () => {
 			toast.success("Assignment template created successfully");
 			queryClient.invalidateQueries({ queryKey: ["assignments", courseId] });
-			push(`/management/courses/edit/${courseId}`);
+			push(`/management/course/edit/${courseId}`);
 		},
 		onError: (error: any) => {
 			toast.error(error?.response?.data?.message || "Failed to create assignment template");
@@ -120,7 +120,7 @@ export default function AssignmentTemplatePage() {
 		onSuccess: () => {
 			toast.success("Assignment template deleted successfully");
 			queryClient.invalidateQueries({ queryKey: ["assignments", courseId] });
-			push(`/management/courses/edit/${courseId}`);
+			push(`/management/course/edit/${courseId}`);
 		},
 		onError: (error: any) => {
 			toast.error(error?.response?.data?.message || "Failed to delete assignment template");
@@ -188,7 +188,7 @@ export default function AssignmentTemplatePage() {
 			<Card className="p-6">
 				<div className="flex items-center justify-between">
 					<div className="flex items-center gap-4">
-						<Button variant="ghost" size="icon" onClick={() => push(`/management/courses/edit/${courseId}`)}>
+						<Button variant="ghost" size="icon" onClick={() => push(`/management/course/edit/${courseId}`)}>
 							<Icon icon="solar:arrow-left-line-duotone" size={20} />
 						</Button>
 						<div>
@@ -448,7 +448,7 @@ export default function AssignmentTemplatePage() {
 				{/* Actions */}
 				<Card className="p-6">
 					<div className="flex items-center justify-between">
-						<Button type="button" variant="outline" onClick={() => push(`/management/courses/edit/${courseId}`)}>
+						<Button type="button" variant="outline" onClick={() => push(`/management/course/edit/${courseId}`)}>
 							Cancel
 						</Button>
 						<Button

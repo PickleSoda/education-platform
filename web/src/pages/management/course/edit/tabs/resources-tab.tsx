@@ -139,7 +139,7 @@ export function ResourcesTab({ courseId, resources, isLoading }: ResourcesTabPro
 								Manage resource templates that can be published to course instances
 							</p>
 						</div>
-						<Button onClick={() => push(`/management/courses/edit/${courseId}/resource/create`)}>
+						<Button onClick={() => push(`/management/course/edit/${courseId}/resource/create`)}>
 							<Icon icon="solar:add-circle-bold-duotone" size={18} className="mr-2" />
 							Create Resource
 						</Button>
@@ -186,7 +186,7 @@ export function ResourcesTab({ courseId, resources, isLoading }: ResourcesTabPro
 							<Icon icon="solar:folder-open-bold-duotone" size={64} className="opacity-50 mb-4" />
 							<p className="text-lg font-medium mb-2">No resources yet</p>
 							<p className="text-sm mb-6">Create resource templates to share with your course instances</p>
-							<Button onClick={() => push(`/management/courses/edit/${courseId}/resource/create`)}>
+							<Button onClick={() => push(`/management/course/edit/${courseId}/resource/create`)}>
 								<Icon icon="solar:add-circle-bold-duotone" size={18} className="mr-2" />
 								Create Your First Resource
 							</Button>
@@ -201,7 +201,7 @@ export function ResourcesTab({ courseId, resources, isLoading }: ResourcesTabPro
 								showTotal: (total) => `Total ${total} resources`,
 							}}
 							onRow={(record) => ({
-								onClick: () => push(`/management/courses/edit/${courseId}/resource/${record.id}`),
+								onClick: () => push(`/management/course/edit/${courseId}/resource/${record.id}`),
 								className: "cursor-pointer hover:bg-hover",
 							})}
 						/>
