@@ -135,6 +135,21 @@ export interface GradingCriteria {
 
 export type ResourceType = "document" | "video" | "link" | "slide" | "code" | "other";
 
+export interface SyllabusItem {
+	id: string;
+	courseId: string;
+	weekNumber: number | null;
+	title: string;
+	description: string | null;
+	learningObjectives: string[];
+	sortOrder: number;
+	createdAt: string;
+	_count?: {
+		assignmentTemplates: number;
+		resourceTemplates: number;
+	};
+}
+
 export interface ResourceTemplate {
 	id: string;
 	courseId: string;

@@ -13,6 +13,7 @@ import AssignmentsTab from "./tabs/assignments-tab";
 import GradesTab from "./tabs/grades-tab";
 import ResourcesTab from "./tabs/resources-tab";
 import PeopleTab from "./tabs/people-tab";
+import SyllabusTab from "./tabs/syllabus-tab";
 import {
 	AlertDialog,
 	AlertDialogAction,
@@ -227,6 +228,10 @@ export default function InstanceDetailPage() {
 							<Icon icon="solar:home-2-bold-duotone" size={18} className="mr-2" />
 							Home
 						</TabsTrigger>
+						<TabsTrigger value="syllabus">
+							<Icon icon="solar:book-bold-duotone" size={18} className="mr-2" />
+							Syllabus
+						</TabsTrigger>
 						<TabsTrigger value="assignments">
 							<Icon icon="solar:document-text-bold-duotone" size={18} className="mr-2" />
 							Assignments
@@ -253,6 +258,10 @@ export default function InstanceDetailPage() {
 
 				<TabsContent value="home">
 					<HomeTab instance={instance} assignments={assignments} enrollment={myEnrollment} />
+				</TabsContent>
+
+				<TabsContent value="syllabus">
+					<SyllabusTab courseId={course?.id || ""} isLoading={instanceLoading} />
 				</TabsContent>
 
 				<TabsContent value="assignments">

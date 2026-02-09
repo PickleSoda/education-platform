@@ -214,6 +214,19 @@ export const deletePublishedResource = async (id: string): Promise<void> => {
 export const createSyllabusItem = async (
   data: CreateSyllabusItemData
 ): Promise<SyllabusItemWithRelations> => {
+  // Auto-generate sortOrder if not provided
+  let sortOrder = data.sortOrder ?? 0;
+
+  // If sortOrder is not explicitly provided, get the max sortOrder and increment
+  if (!data.sortOrder) {
+    const maxItem = await prisma.syllabusItem.findFirst({
+      where: { courseId: data.courseId },
+      orderBy: { sortOrder: 'desc' },
+      select: { sortOrder: true },
+    });
+    sortOrder = (maxItem?.sortOrder ?? -1) + 1;
+  }
+
   return prisma.syllabusItem.create({
     data: {
       courseId: data.courseId,
@@ -221,7 +234,7 @@ export const createSyllabusItem = async (
       title: data.title,
       description: data.description,
       learningObjectives: data.learningObjectives || [],
-      sortOrder: data.sortOrder,
+      sortOrder,
     },
     include: {
       _count: {

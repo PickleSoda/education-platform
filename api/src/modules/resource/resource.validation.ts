@@ -141,7 +141,7 @@ export const createSyllabusItemSchema = z.object({
     title: z.string().min(1).max(255),
     description: z.string().optional(),
     learningObjectives: z.array(z.string()).optional().default([]),
-    sortOrder: z.number().int().min(0),
+    sortOrder: z.number().int().min(0).optional(),
   }),
 });
 
