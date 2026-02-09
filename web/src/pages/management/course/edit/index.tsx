@@ -25,6 +25,7 @@ import { BasicInfoTab } from "./tabs/basic-info-tab";
 import { TagsTab } from "./tabs/tags-tab";
 import { LecturersTab } from "./tabs/lecturers-tab";
 import { AssignmentsTab } from "./tabs/assignments-tab";
+import { SyllabusTab } from "./tabs/syllabus-tab";
 import { ResourcesTab } from "./tabs/resources-tab";
 import { InstancesTab } from "./tabs/instances-tab";
 import { StatisticsTab } from "./tabs/statistics-tab";
@@ -191,6 +192,10 @@ export default function CourseManagementDetails() {
 										</Badge>
 									)}
 								</TabsTrigger>
+								<TabsTrigger value="syllabus">
+									<Icon icon="solar:book-bold-duotone" size={18} className="mr-2" />
+									Syllabus
+								</TabsTrigger>
 								<TabsTrigger value="resources">
 									<Icon icon="solar:folder-bold-duotone" size={18} className="mr-2" />
 									Resources
@@ -232,6 +237,9 @@ export default function CourseManagementDetails() {
 						</TabsContent>
 						<TabsContent value="assignments">
 							<AssignmentsTab courseId={id as string} assignments={assignments} isLoading={assignmentsLoading} />
+						</TabsContent>
+						<TabsContent value="syllabus">
+							<SyllabusTab courseId={id as string} isLoading={false} />
 						</TabsContent>
 						<TabsContent value="resources">
 							<ResourcesTab courseId={id as string} resources={resources} isLoading={resourcesLoading} />
