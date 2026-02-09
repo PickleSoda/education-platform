@@ -15,6 +15,32 @@ import submissionService from "@/api/services/submissionService";
 import { toast } from "sonner";
 import { toNumber } from "lodash-es";
 
+// Helper functions for file handling
+const getFileIcon = (typeOrName: string): string => {
+	const type = typeOrName?.toLowerCase() || "";
+	
+	if (type.includes("pdf")) return "solar:file-text-bold-duotone";
+	if (type.includes("doc") || type.includes("docx")) return "solar:document-text-bold-duotone";
+	if (type.includes("xls") || type.includes("xlsx")) return "solar:chart-square-bold-duotone";
+	if (type.includes("ppt") || type.includes("pptx")) return "solar:presentation-graph-bold-duotone";
+	if (type.includes("zip") || type.includes("rar") || type.includes("7z")) return "solar:archive-bold-duotone";
+	if (type.includes("image") || type.includes("jpg") || type.includes("png") || type.includes("gif")) return "solar:gallery-bold-duotone";
+	if (type.includes("video") || type.includes("mp4") || type.includes("avi")) return "solar:video-frame-play-vertical-bold-duotone";
+	if (type.includes("audio") || type.includes("mp3") || type.includes("wav")) return "solar:music-note-4-bold-duotone";
+	if (type.includes("text") || type.includes("txt")) return "solar:document-text-bold-duotone";
+	if (type.includes("java") || type.includes("js") || type.includes("ts") || type.includes("py") || type.includes("cpp") || type.includes("c")) return "solar:code-bold-duotone";
+	
+	return "solar:file-bold-duotone";
+};
+
+const formatFileSize = (bytes: number): string => {
+	if (bytes === 0) return "0 B";
+	const k = 1024;
+	const sizes = ["B", "KB", "MB", "GB"];
+	const i = Math.floor(Math.log(bytes) / Math.log(k));
+	return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + " " + sizes[i];
+};
+
 export default function SubmissionGradingPage() {
 	const {
 		id: instanceId,
@@ -167,11 +193,55 @@ export default function SubmissionGradingPage() {
 
 					<CardContent className="p-6">
 						{activeTab === "submission" && (
-							<div className="space-y-4">
-								<h3 className="text-lg font-semibold">Student Submission</h3>
-								<div className="bg-secondary/50 rounded-lg p-4 min-h-96 prose prose-sm max-w-none whitespace-pre-wrap">
-									{submission.content || "No content submitted"}
+							<div className="space-y-6">
+								<div>
+									<h3 className="text-lg font-semibold">Student Submission</h3>
+									<div className="bg-secondary/50 rounded-lg p-4 min-h-32 prose prose-sm max-w-none whitespace-pre-wrap">
+										{submission.content || "No content submitted"}
+									</div>
 								</div>
+
+								{/* Submitted Files Section */}
+								{submission.attachments && Array.isArray(submission.attachments) && submission.attachments.length > 0 && (
+									<div>
+										<h3 className="text-lg font-semibold mb-4">Submitted Files</h3>
+										<div className="space-y-3">
+											{submission.attachments.map((file: any, index: number) => (
+												<div key={index} className="flex items-center justify-between p-4 border rounded-lg bg-background">
+													<div className="flex items-center gap-3">
+														<Icon 
+															icon={getFileIcon(file.type || file.name)} 
+															size={24} 
+															className="text-primary" 
+														/>
+														<div>
+															<p className="font-medium">{file.name || `File ${index + 1}`}</p>
+															<div className="flex items-center gap-4 text-sm text-text-secondary">
+																{file.size && (
+																	<span>{formatFileSize(file.size)}</span>
+																)}
+																{file.type && (
+																	<span>{file.type}</span>
+																)}
+															</div>
+														</div>
+													</div>
+													<div className="flex gap-2">
+														{/* Note: Download functionality would need backend endpoint */}
+														<Button variant="outline" size="sm" disabled>
+															<Icon icon="solar:download-linear" size={16} className="mr-2" />
+															Download
+														</Button>
+														<Button variant="outline" size="sm" disabled>
+															<Icon icon="solar:eye-linear" size={16} className="mr-2" />
+															Preview
+														</Button>
+													</div>
+												</div>
+											))}
+										</div>
+									</div>
+								)}
 							</div>
 						)}
 

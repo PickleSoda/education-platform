@@ -3,11 +3,12 @@ import { Icon } from "@/components/icon";
 import { Textarea } from "@/ui/textarea";
 import { Upload } from "@/components/upload";
 import type { UploadFile } from "antd";
-import { useState } from "react";
 
 interface SubmissionTabProps {
 	content: string;
 	setContent: (content: string) => void;
+	fileList: UploadFile[];
+	setFileList: (files: UploadFile[]) => void;
 	handleSaveDraft: () => void;
 	handleSubmit: () => void;
 	isSaving: boolean;
@@ -18,14 +19,14 @@ interface SubmissionTabProps {
 export function SubmissionTab({
 	content,
 	setContent,
+	fileList,
+	setFileList,
 	handleSaveDraft,
 	handleSubmit,
 	isSaving,
 	isSubmitting,
 	isOverdue,
 }: SubmissionTabProps) {
-	const [fileList, setFileList] = useState<UploadFile[]>([]);
-
 	const handleUploadChange = ({ fileList: newFileList }: { fileList: UploadFile[] }) => {
 		setFileList(newFileList);
 	};

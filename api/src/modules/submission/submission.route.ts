@@ -41,8 +41,8 @@ router.get(
 // TEACHER/ADMIN ROUTES (Grading & Management)
 // ============================================================================
 
-// List submissions (teacher, admin)
-router.get('/', requireAnyRole(['teacher', 'admin']), submissionController.listSubmissions);
+// List submissions (students can view their own, teachers/admins can view all)
+router.get('/', submissionController.listSubmissions);
 
 // Get submission details (students can view their own, teachers/admins can view all)
 router.get('/:submissionId', submissionController.getSubmission);

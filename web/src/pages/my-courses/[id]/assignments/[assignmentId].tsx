@@ -3,13 +3,15 @@ import { Badge } from "@/ui/badge";
 import { Icon } from "@/components/icon";
 import { useParams } from "react-router";
 import { format, isPast } from "date-fns";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Tabs, TabsList, TabsTrigger } from "@/ui/tabs";
 import type { PublishedAssignment } from "#/entity";
 import submissionService from "@/api/services/submissionService";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import courseInstanceService from "@/api/services/courseInstanceService";
 import { InstructionsTab, SubmissionTab, FeedbackTab } from "./tabs";
+import type { UploadFile } from "antd";
+import { toast } from "sonner";
 
 export default function AssignmentSubmissionPage() {
 	const { id: instanceId, assignmentId } = useParams<{
@@ -25,15 +27,98 @@ export default function AssignmentSubmissionPage() {
 		feedback?: string;
 	} | null>(null);
 	const [content, setContent] = useState("");
-	const [isSaving, setIsSaving] = useState(false);
-	const [isSubmitting, setIsSubmitting] = useState(false);
+	const [fileList, setFileList] = useState<UploadFile[]>([]);
 	const [activeTab, setActiveTab] = useState<"instructions" | "submission" | "feedback">("instructions");
+
+	const queryClient = useQueryClient();
 
 	const { data: assignmentData } = useQuery({
 		queryKey: ["assignment", assignmentId],
 		queryFn: () => courseInstanceService.getPublishedAssignmentById(instanceId as string, assignmentId as string),
 		enabled: !!instanceId && !!assignmentId,
 	});
+
+	// Fetch existing submission data
+	const { data: submissionData } = useQuery({
+		queryKey: ["submission", assignmentId],
+		queryFn: () => submissionService.getSubmissions({ assignmentId: assignmentId! }),
+		enabled: !!assignmentId,
+	});
+
+	// TanStack Query mutations
+	const saveDraftMutation = useMutation({
+		mutationFn: (data: { content?: string; attachments?: any }) =>
+			submissionService.saveSubmissionDraft(assignmentId!, data),
+		onSuccess: () => {
+			queryClient.invalidateQueries({ queryKey: ["submission", assignmentId] });
+			toast.success("Draft saved successfully");
+		},
+		onError: (error) => {
+			console.error("Failed to save draft:", error);
+			toast.error("Failed to save draft");
+		},
+	});
+
+	const submitAssignmentMutation = useMutation({
+		mutationFn: async () => {
+			// First save draft if there's content or files
+			if (content.trim() || fileList.length > 0) {
+				const submissionData: any = {};
+				if (content.trim()) submissionData.content = content;
+				if (fileList.length > 0) {
+					submissionData.attachments = fileList.map((file) => ({
+						name: file.name,
+						size: file.size,
+						type: file.type,
+					}));
+				}
+				await submissionService.saveSubmissionDraft(assignmentId!, submissionData);
+			}
+			// Then submit the assignment
+			return submissionService.submitAssignment(assignmentId!);
+		},
+		onSuccess: () => {
+			queryClient.invalidateQueries({ queryKey: ["submission", assignmentId] });
+			toast.success("Assignment submitted successfully");
+		},
+		onError: (error) => {
+			console.error("Failed to submit assignment:", error);
+			toast.error("Failed to submit assignment");
+		},
+	});
+
+	// Populate form with existing submission data
+	useEffect(() => {
+		if (submissionData?.data && submissionData.data.length > 0) {
+			const existingSubmission = submissionData.data[0]; // Get the first (and should be only) submission
+
+			// Update submission state
+			setSubmission({
+				status: existingSubmission.status as any,
+				content: existingSubmission.content || undefined,
+				submittedAt: existingSubmission.submittedAt || undefined,
+				totalPoints: existingSubmission.totalPoints || undefined,
+				feedback: existingSubmission.feedback || undefined,
+			});
+
+			// Populate content
+			if (existingSubmission.content) {
+				setContent(existingSubmission.content);
+			}
+
+			// Populate file list from attachments
+			if (existingSubmission.attachments && Array.isArray(existingSubmission.attachments)) {
+				const files: UploadFile[] = existingSubmission.attachments.map((file: any, index: number) => ({
+					uid: `${index}`,
+					name: file.name || `File ${index + 1}`,
+					status: "done",
+					size: file.size || 0,
+					type: file.type || "",
+				}));
+				setFileList(files);
+			}
+		}
+	}, [submissionData]);
 
 	const assignment: PublishedAssignment | null = assignmentData?.data || null;
 
@@ -61,40 +146,25 @@ export default function AssignmentSubmissionPage() {
 		return { label: `Due in ${daysUntil} days`, color: "success" as const };
 	};
 
-	const handleSaveDraft = async () => {
-		if (!assignmentId) return;
-		setIsSaving(true);
-		try {
-			await submissionService.saveSubmissionDraft(assignmentId, { content });
-			setSubmission((prev) => ({
-				...prev!,
-				status: "draft",
-				content,
+	const handleSaveDraft = () => {
+		if (!assignmentId || (!content.trim() && fileList.length === 0)) return;
+
+		const submissionData: any = {};
+		if (content.trim()) submissionData.content = content;
+		if (fileList.length > 0) {
+			submissionData.attachments = fileList.map((file) => ({
+				name: file.name,
+				size: file.size,
+				type: file.type,
 			}));
-		} catch (error) {
-			console.error("Failed to save draft:", error);
-		} finally {
-			setIsSaving(false);
 		}
+
+		saveDraftMutation.mutate(submissionData);
 	};
 
-	const handleSubmit = async () => {
+	const handleSubmit = () => {
 		if (!assignmentId) return;
-		setIsSubmitting(true);
-		try {
-			const result = await submissionService.submitAssignment(assignmentId);
-			setSubmission({
-				status: result.status as any,
-				content: result.content || undefined,
-				submittedAt: result.submittedAt || undefined,
-				totalPoints: result.totalPoints || undefined,
-				feedback: result.feedback || undefined,
-			});
-		} catch (error) {
-			console.error("Failed to submit assignment:", error);
-		} finally {
-			setIsSubmitting(false);
-		}
+		submitAssignmentMutation.mutate();
 	};
 
 	if (!assignment) {
@@ -186,10 +256,12 @@ export default function AssignmentSubmissionPage() {
 							<SubmissionTab
 								content={content}
 								setContent={setContent}
+								fileList={fileList}
+								setFileList={setFileList}
 								handleSaveDraft={handleSaveDraft}
 								handleSubmit={handleSubmit}
-								isSaving={isSaving}
-								isSubmitting={isSubmitting}
+								isSaving={saveDraftMutation.isPending}
+								isSubmitting={submitAssignmentMutation.isPending}
 								isOverdue={isOverdue}
 							/>
 						)}

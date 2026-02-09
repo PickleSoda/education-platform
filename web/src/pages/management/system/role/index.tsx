@@ -1,8 +1,9 @@
 import { Icon } from "@/components/icon";
 import { Button } from "@/ui/button";
 import { Card, CardContent, CardHeader } from "@/ui/card";
+import { Input } from "@/ui/input";
 import Table, { type ColumnsType } from "antd/es/table";
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { message } from "antd";
 import type { Role } from "@/api/services/roleService";
@@ -12,10 +13,24 @@ import roleService from "@/api/services/roleService";
 export default function RolePage() {
 	const queryClient = useQueryClient();
 
+	// Search state
+	const [searchTerm, setSearchTerm] = useState("");
+
 	const { data, isLoading } = useQuery({
 		queryKey: ["roles"],
 		queryFn: () => roleService.getRoles(),
 	});
+
+	// Filter roles based on search term
+	const filteredRoles = useMemo(() => {
+		if (!data?.data || !searchTerm.trim()) return data?.data || [];
+
+		return data.data.filter(
+			(role) =>
+				role.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+				(role.description && role.description.toLowerCase().includes(searchTerm.toLowerCase()))
+		);
+	}, [data?.data, searchTerm]);
 
 	const createRoleMutation = useMutation({
 		mutationFn: (data: RoleFormData) => roleService.createRole(data),
@@ -52,16 +67,14 @@ export default function RolePage() {
 		},
 	});
 
-	const roles = data?.data || [];
-
-	const [roleModalPros, setRoleModalProps] = useState<RoleModalProps>({
+	const [roleModalProps, setRoleModalProps] = useState<RoleModalProps>({
 		formValue: null,
 		title: "New",
 		show: false,
 		onOk: (data: RoleFormData) => {
-			if (roleModalPros.formValue) {
+			if (roleModalProps.formValue) {
 				// Update existing role
-				updateRoleMutation.mutate({ id: roleModalPros.formValue.id, data });
+				updateRoleMutation.mutate({ id: roleModalProps.formValue.id, data });
 			} else {
 				// Create new role
 				createRoleMutation.mutate(data);
@@ -176,7 +189,18 @@ export default function RolePage() {
 			<CardHeader>
 				<div className="flex items-center justify-between">
 					<div>Role List</div>
-					<Button onClick={onCreate}>New</Button>
+					<div className="flex items-center gap-3">
+						<div className="flex items-center gap-2">
+							<Icon icon="solar:magnifer-linear" size={16} className="text-text-secondary" />
+							<Input
+								placeholder="Search roles..."
+								value={searchTerm}
+								onChange={(e) => setSearchTerm(e.target.value)}
+								className="w-64"
+							/>
+						</div>
+						<Button onClick={onCreate}>New</Button>
+					</div>
 				</div>
 			</CardHeader>
 			<CardContent>
@@ -184,13 +208,19 @@ export default function RolePage() {
 					rowKey="id"
 					size="small"
 					scroll={{ x: "max-content" }}
-					pagination={false}
+					pagination={{
+						showSizeChanger: true,
+						showQuickJumper: true,
+						showTotal: (total, range) => `${range[0]}-${range[1]} of ${total} items`,
+						pageSize: 10,
+						pageSizeOptions: ["10", "20", "50", "100"],
+					}}
 					columns={columns}
-					dataSource={roles}
+					dataSource={filteredRoles}
 					loading={isLoading}
 				/>
 			</CardContent>
-			<RoleModal {...roleModalPros} />
+			<RoleModal {...roleModalProps} />
 		</Card>
 	);
 }

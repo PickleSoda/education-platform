@@ -22,7 +22,7 @@ export default function UserPage() {
 	const [editModalOpen, setEditModalOpen] = useState(false);
 	const [rolesModalOpen, setRolesModalOpen] = useState(false);
 	const [selectedUser, setSelectedUser] = useState<UserInfo | null>(null);
-	
+
 	// Search and filter state
 	const [search, setSearch] = useState("");
 	const [filterRole, setFilterRole] = useState<string>("all");
@@ -37,7 +37,7 @@ export default function UserPage() {
 		const statusParam = searchParams.get("status") || "all";
 		const pageParam = searchParams.get("page") || "1";
 		const limitParam = searchParams.get("limit") || "10";
-		
+
 		setSearch(searchParam);
 		setFilterRole(roleParam);
 		setFilterStatus(statusParam);
@@ -53,7 +53,7 @@ export default function UserPage() {
 		if (filterStatus !== "all") params.set("status", filterStatus);
 		if (currentPage > 1) params.set("page", currentPage.toString());
 		if (pageSize !== 10) params.set("limit", pageSize.toString());
-		
+
 		setSearchParams(params);
 	}, [search, filterRole, filterStatus, currentPage, pageSize, setSearchParams]);
 
@@ -77,7 +77,6 @@ export default function UserPage() {
 
 	const users = data?.data || [];
 	const totalUsers = data?.meta?.total || 0;
-	const totalPages = data?.meta?.totalPages || 0;
 
 	const columns: ColumnsType<UserInfo> = [
 		{

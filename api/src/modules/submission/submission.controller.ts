@@ -103,6 +103,17 @@ export const getSubmission = catchAsync(
 export const listSubmissions = catchAsync(
   async (req): Promise<PaginatedResponse<SubmissionWithRelations>> => {
     const { query } = await zParse(listSubmissionsSchema, req);
+    const user = req.user as ExtendedUser;
+
+    // Students can only view their own submissions
+    // Teachers and admins can view all submissions
+    const userRoles = user.roles?.map((r) => r.role.name) || [];
+    const isTeacherOrAdmin = userRoles.includes('teacher') || userRoles.includes('admin');
+
+    // If user is a student, automatically filter by their ID
+    if (!isTeacherOrAdmin) {
+      query.studentId = user.id;
+    }
 
     const result = await submissionService.listSubmissions(query);
 
