@@ -8,32 +8,54 @@ import { Form, FormControl, FormField, FormItem, FormLabel } from "@/ui/form";
 import { Input } from "@/ui/input";
 import { Textarea } from "@/ui/textarea";
 
-import type { Role_Old } from "#/entity";
+import type { Role } from "@/api/services/roleService";
+
+export type RoleFormData = {
+	name: string;
+	description: string;
+};
 
 export type RoleModalProps = {
-	formValue: Role_Old;
+	formValue: Role | null;
 	title: string;
 	show: boolean;
-	onOk: VoidFunction;
+	onOk: (data: RoleFormData) => void;
 	onCancel: VoidFunction;
 };
 
 export function RoleModal({ title, show, formValue, onOk, onCancel }: RoleModalProps) {
-	const form = useForm<Role_Old>({
-		defaultValues: formValue,
+	const form = useForm<RoleFormData>({
+		defaultValues: {
+			name: formValue?.name || "",
+			description: formValue?.description || "",
+		},
 	});
 
 	const [selectedPermissions, setSelectedPermissions] = useState<string[]>([]);
 
 	useEffect(() => {
-		// Get default permissions for the role
-		const rolePermissions = getRolePermissions(formValue.name);
-		setSelectedPermissions(rolePermissions);
-	}, [formValue]);
-
-	useEffect(() => {
-		form.reset(formValue);
+		if (formValue?.name) {
+			// Get default permissions for the role
+			const rolePermissions = getRolePermissions(formValue.name);
+			setSelectedPermissions(rolePermissions);
+			// Update form with current values
+			form.reset({
+				name: formValue.name,
+				description: formValue.description || "",
+			});
+		} else {
+			// New role - clear everything
+			setSelectedPermissions([]);
+			form.reset({
+				name: "",
+				description: "",
+			});
+		}
 	}, [formValue, form]);
+
+	const onSubmit = (data: RoleFormData) => {
+		onOk(data);
+	};
 
 	return (
 		<Dialog open={show} onOpenChange={(open) => !open && onCancel()}>
@@ -51,7 +73,7 @@ export function RoleModal({ title, show, formValue, onOk, onCancel }: RoleModalP
 									<FormLabel className="text-right">Name</FormLabel>
 									<div className="col-span-3">
 										<FormControl>
-											<Input {...field} disabled />
+											<Input {...field} disabled={!!formValue} placeholder="Role name" />
 										</FormControl>
 									</div>
 								</FormItem>
@@ -60,13 +82,13 @@ export function RoleModal({ title, show, formValue, onOk, onCancel }: RoleModalP
 
 						<FormField
 							control={form.control}
-							name="desc"
+							name="description"
 							render={({ field }) => (
 								<FormItem className="grid grid-cols-4 items-center gap-4">
 									<FormLabel className="text-right">Description</FormLabel>
 									<div className="col-span-3">
 										<FormControl>
-											<Textarea {...field} />
+											<Textarea {...field} value={field.value || ""} placeholder="Role description" />
 										</FormControl>
 									</div>
 								</FormItem>
@@ -111,11 +133,7 @@ export function RoleModal({ title, show, formValue, onOk, onCancel }: RoleModalP
 					<Button variant="outline" onClick={onCancel}>
 						Cancel
 					</Button>
-					<Button
-						onClick={() => {
-							form.handleSubmit(onOk)();
-						}}
-					>
+					<Button onClick={form.handleSubmit(onSubmit)}>
 						Save
 					</Button>
 				</DialogFooter>

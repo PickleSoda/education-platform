@@ -7,6 +7,7 @@ import { registerEnrollmentPaths } from '@/modules/enrollment/enrollment.openapi
 import { registerResourcePaths } from '@/modules/resource/resource.openapi';
 import { registerInstancePaths } from '@/modules/courseInstance/instance.openapi';
 import { registerNotificationPaths } from '@/modules/notification/notification.openapi';
+import { registerRolePaths } from '@/modules/role/role.openapi';
 import { registerUserPaths } from '@/modules/user/user.openapi';
 
 import { name, version } from '../../package.json';
@@ -21,6 +22,7 @@ registry.registerComponent('securitySchemes', 'bearerAuth', {
 
 // Register all paths
 registerAuthPaths(registry);
+registerRolePaths(registry);
 registerUserPaths(registry);
 registerCoursePaths(registry);
 registerAssignmentPaths(registry);

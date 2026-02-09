@@ -1,130 +1,153 @@
-import { Icon } from "@/components/icon";
 import { Badge } from "@/ui/badge";
 import { Button } from "@/ui/button";
 import { Card, CardContent, CardHeader } from "@/ui/card";
 import Table, { type ColumnsType } from "antd/es/table";
-import { isNil } from "ramda";
 import { useState } from "react";
-import { useTranslation } from "react-i18next";
-import type { Permission_Old } from "#/entity";
-import { BasicStatus, PermissionType } from "#/enum";
-import PermissionModal, { type PermissionModalProps } from "./permission-modal";
+import { PERMISSION_GROUPS } from "@/config/permissions";
 
-const defaultPermissionValue: Permission_Old = {
-	id: "",
-	parentId: "",
-	name: "",
-	label: "",
-	route: "",
-	component: "",
-	icon: "",
-	hide: false,
-	status: BasicStatus.ENABLE,
-	type: PermissionType.CATALOGUE,
-};
-export default function PermissionPage() {
-	// const permissions = useUserPermission();
-	const { t } = useTranslation();
+// Create a flattened list of permissions with group information
+const getPermissionsData = () => {
+	const permissionsData: Array<{
+		id: string;
+		name: string;
+		group: string;
+		description: string;
+	}> = [];
 
-	const [permissionModalProps, setPermissionModalProps] = useState<PermissionModalProps>({
-		formValue: { ...defaultPermissionValue },
-		title: "New",
-		show: false,
-		onOk: () => {
-			setPermissionModalProps((prev) => ({ ...prev, show: false }));
-		},
-		onCancel: () => {
-			setPermissionModalProps((prev) => ({ ...prev, show: false }));
-		},
+	PERMISSION_GROUPS.forEach((group) => {
+		group.permissions.forEach((permission, index) => {
+			permissionsData.push({
+				id: `${group.label}-${index}`,
+				name: permission,
+				group: group.label,
+				description: getPermissionDescription(permission),
+			});
+		});
 	});
-	const columns: ColumnsType<Permission_Old> = [
+
+	return permissionsData;
+};
+
+const getPermissionDescription = (permission: string): string => {
+	const descriptions: Record<string, string> = {
+		// Profile & Users
+		viewProfile: "View user profile information",
+		updateProfile: "Update user profile information",
+		manageUsers: "Create, update, and delete user accounts",
+		manageRoles: "Manage system roles and permissions",
+		viewAllUsers: "View all users in the system",
+
+		// Courses
+		viewCourses: "View available courses",
+		createCourse: "Create new courses",
+		updateOwnCourse: "Update courses you created",
+		deleteOwnCourse: "Delete courses you created",
+		updateAnyCourse: "Update any course in the system",
+		deleteAnyCourse: "Delete any course in the system",
+		viewAllCourses: "View all courses in the system",
+		manageCourseContent: "Manage course content and materials",
+		viewCourseAnalytics: "View course statistics and analytics",
+
+		// Enrollments
+		enrollCourse: "Enroll in courses",
+		viewEnrollments: "View course enrollment information",
+
+		// Assignments
+		viewAssignments: "View assignment information",
+		createAssignment: "Create new assignments",
+		updateAssignment: "Update existing assignments",
+		deleteAssignment: "Delete assignments",
+		submitAssignment: "Submit assignment solutions",
+		viewSubmissions: "View assignment submissions",
+		viewOwnSubmissions: "View own assignment submissions",
+		gradeSubmissions: "Grade student submissions",
+
+		// Forum
+		viewForum: "View forum discussions",
+		createForumPost: "Create forum posts",
+		updateOwnForumPost: "Update own forum posts",
+		deleteOwnForumPost: "Delete own forum posts",
+		createForumComment: "Create forum comments",
+		manageForum: "Full forum moderation capabilities",
+
+		// Announcements
+		viewAnnouncements: "View course announcements",
+		createAnnouncement: "Create announcements",
+		updateAnnouncement: "Update announcements",
+		deleteAnnouncement: "Delete announcements",
+
+		// Grades
+		viewGrades: "View assignment grades",
+
+		// Notifications
+		viewNotifications: "View system notifications",
+
+		// System Admin
+		viewSystemAnalytics: "View system-wide analytics and reports",
+		viewAuditLogs: "View system audit logs",
+		manageSystemSettings: "Manage global system settings",
+	};
+
+	return descriptions[permission] || "System permission";
+};
+
+export default function PermissionPage() {
+	const [selectedGroup, setSelectedGroup] = useState<string | null>(null);
+
+	const permissionsData = getPermissionsData();
+	const filteredData = selectedGroup ? permissionsData.filter((p) => p.group === selectedGroup) : permissionsData;
+
+	const columns: ColumnsType<(typeof permissionsData)[0]> = [
 		{
-			title: "Name",
+			title: "Permission",
 			dataIndex: "name",
 			width: 300,
-			render: (_, record) => <div>{t(record.label)}</div>,
+			render: (name: string) => <code className="text-sm bg-muted px-2 py-1 rounded">{name}</code>,
 		},
 		{
-			title: "Type",
-			dataIndex: "type",
-			width: 60,
-			render: (_, record) => <Badge variant="info">{PermissionType[record.type]}</Badge>,
+			title: "Group",
+			dataIndex: "group",
+			width: 150,
+			render: (group: string) => <Badge variant="outline">{group}</Badge>,
 		},
 		{
-			title: "Icon",
-			dataIndex: "icon",
-			width: 60,
-			render: (icon: string) => {
-				if (isNil(icon)) return "";
-				if (icon.startsWith("ic")) {
-					return <Icon icon={`local:${icon}`} size={18} className="ant-menu-item-icon" />;
-				}
-				return <Icon icon={icon} size={18} className="ant-menu-item-icon" />;
-			},
-		},
-		{
-			title: "Component",
-			dataIndex: "component",
-		},
-		{
-			title: "Status",
-			dataIndex: "status",
-			align: "center",
-			width: 120,
-			render: (status) => (
-				<Badge variant={status === BasicStatus.DISABLE ? "error" : "success"}>
-					{status === BasicStatus.DISABLE ? "Disable" : "Enable"}
-				</Badge>
-			),
-		},
-		{ title: "Order", dataIndex: "order", width: 60 },
-		{
-			title: "Action",
-			key: "operation",
-			align: "center",
-			width: 100,
-			render: (_, record) => (
-				<div className="flex w-full justify-end text-gray">
-					{record?.type === PermissionType.CATALOGUE && (
-						<Button variant="ghost" size="icon" onClick={() => onCreate(record.id)}>
-							<Icon icon="gridicons:add-outline" size={18} />
-						</Button>
-					)}
-					<Button variant="ghost" size="icon" onClick={() => onEdit(record)}>
-						<Icon icon="solar:pen-bold-duotone" size={18} />
-					</Button>
-					<Button variant="ghost" size="icon">
-						<Icon icon="mingcute:delete-2-fill" size={18} className="text-error!" />
-					</Button>
-				</div>
-			),
+			title: "Description",
+			dataIndex: "description",
+			render: (description: string) => <span className="text-muted-foreground">{description}</span>,
 		},
 	];
 
-	const onCreate = (parentId?: string) => {
-		setPermissionModalProps((prev) => ({
-			...prev,
-			show: true,
-			...defaultPermissionValue,
-			title: "New",
-			formValue: { ...defaultPermissionValue, parentId: parentId ?? "" },
-		}));
-	};
-
-	const onEdit = (formValue: Permission_Old) => {
-		setPermissionModalProps((prev) => ({
-			...prev,
-			show: true,
-			title: "Edit",
-			formValue,
-		}));
-	};
 	return (
 		<Card>
 			<CardHeader>
 				<div className="flex items-center justify-between">
-					<div>Permission List</div>
-					<Button onClick={() => onCreate()}>New</Button>
+					<div>
+						<div className="text-lg font-medium">System Permissions</div>
+						<div className="text-sm text-muted-foreground">
+							Read-only view of all permissions configured in the system
+						</div>
+					</div>
+				</div>
+
+				{/* Group filter buttons */}
+				<div className="flex flex-wrap gap-2 mt-4">
+					<Button
+						variant={selectedGroup === null ? "default" : "outline"}
+						size="sm"
+						onClick={() => setSelectedGroup(null)}
+					>
+						All ({permissionsData.length})
+					</Button>
+					{PERMISSION_GROUPS.map((group) => (
+						<Button
+							key={group.label}
+							variant={selectedGroup === group.label ? "default" : "outline"}
+							size="sm"
+							onClick={() => setSelectedGroup(group.label)}
+						>
+							{group.label} ({group.permissions.length})
+						</Button>
+					))}
 				</div>
 			</CardHeader>
 			<CardContent>
@@ -132,12 +155,15 @@ export default function PermissionPage() {
 					rowKey="id"
 					size="small"
 					scroll={{ x: "max-content" }}
-					pagination={false}
+					pagination={{
+						pageSize: 20,
+						showSizeChanger: true,
+						showTotal: (total, range) => `${range[0]}-${range[1]} of ${total} permissions`,
+					}}
 					columns={columns}
-					dataSource={[]}
+					dataSource={filteredData}
 				/>
 			</CardContent>
-			<PermissionModal {...permissionModalProps} />
 		</Card>
 	);
 }

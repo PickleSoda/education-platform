@@ -9,6 +9,7 @@ import healthRoute from '../modules/health/health.route';
 import instanceRoute from '../modules/courseInstance/instance.route';
 import notificationRoute from '../modules/notification/notification.route';
 import resourceRoute from '../modules/resource/resource.route';
+import roleRoute from '../modules/role/role.route';
 import userRoute from '../modules/user/user.route';
 import submissionRoute from '../modules/submission/submission.route';
 import docsRoute from './docs.route';
@@ -29,6 +30,10 @@ const routes: RouteConfig[] = [
   {
     path: '/auth',
     route: authRoute,
+  },
+  {
+    path: '/roles',
+    route: roleRoute,
   },
   {
     path: '/users',

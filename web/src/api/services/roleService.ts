@@ -5,6 +5,9 @@ export interface Role {
 	id: number;
 	name: string;
 	description: string | null;
+	_count: {
+		users: number;
+	};
 }
 
 export interface CreateRoleReq {

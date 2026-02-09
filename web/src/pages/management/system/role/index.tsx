@@ -3,34 +3,69 @@ import { Button } from "@/ui/button";
 import { Card, CardContent, CardHeader } from "@/ui/card";
 import Table, { type ColumnsType } from "antd/es/table";
 import { useState } from "react";
-import { useQuery } from "@tanstack/react-query";
-import type { Role_Old } from "#/entity";
-import { BasicStatus } from "#/enum";
-import { RoleModal, type RoleModalProps } from "./role-modal";
-import roleService, { type Role } from "@/api/services/roleService";
-
-const DEFAULE_ROLE_VALUE: Role_Old = {
-	id: "",
-	name: "",
-	code: "",
-	status: BasicStatus.ENABLE,
-	permission: [],
-};
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { message } from "antd";
+import type { Role } from "@/api/services/roleService";
+import { RoleModal, type RoleModalProps, type RoleFormData } from "./role-modal";
+import roleService from "@/api/services/roleService";
 
 export default function RolePage() {
+	const queryClient = useQueryClient();
+
 	const { data, isLoading } = useQuery({
 		queryKey: ["roles"],
 		queryFn: () => roleService.getRoles(),
 	});
 
+	const createRoleMutation = useMutation({
+		mutationFn: (data: RoleFormData) => roleService.createRole(data),
+		onSuccess: () => {
+			message.success("Role created successfully");
+			queryClient.invalidateQueries({ queryKey: ["roles"] });
+			setRoleModalProps((prev) => ({ ...prev, show: false }));
+		},
+		onError: (error: any) => {
+			message.error(error.response?.data?.message || "Failed to create role");
+		},
+	});
+
+	const updateRoleMutation = useMutation({
+		mutationFn: ({ id, data }: { id: number; data: RoleFormData }) => roleService.updateRole(id, data),
+		onSuccess: () => {
+			message.success("Role updated successfully");
+			queryClient.invalidateQueries({ queryKey: ["roles"] });
+			setRoleModalProps((prev) => ({ ...prev, show: false }));
+		},
+		onError: (error: any) => {
+			message.error(error.response?.data?.message || "Failed to update role");
+		},
+	});
+
+	const deleteRoleMutation = useMutation({
+		mutationFn: (id: number) => roleService.deleteRole(id),
+		onSuccess: () => {
+			message.success("Role deleted successfully");
+			queryClient.invalidateQueries({ queryKey: ["roles"] });
+		},
+		onError: (error: any) => {
+			message.error(error.response?.data?.message || "Failed to delete role");
+		},
+	});
+
 	const roles = data?.data || [];
 
 	const [roleModalPros, setRoleModalProps] = useState<RoleModalProps>({
-		formValue: { ...DEFAULE_ROLE_VALUE },
+		formValue: null,
 		title: "New",
 		show: false,
-		onOk: () => {
-			setRoleModalProps((prev) => ({ ...prev, show: false }));
+		onOk: (data: RoleFormData) => {
+			if (roleModalPros.formValue) {
+				// Update existing role
+				updateRoleMutation.mutate({ id: roleModalPros.formValue.id, data });
+			} else {
+				// Create new role
+				createRoleMutation.mutate(data);
+			}
 		},
 		onCancel: () => {
 			setRoleModalProps((prev) => ({ ...prev, show: false }));
@@ -55,20 +90,48 @@ export default function RolePage() {
 			render: (description) => description || <span className="text-text-secondary">No description</span>,
 		},
 		{
+			title: "Users",
+			dataIndex: ["_count", "users"],
+			width: 100,
+			render: (count) => count || 0,
+		},
+		{
 			title: "Action",
 			key: "operation",
 			align: "center",
 			width: 100,
-			render: (_, record) => (
-				<div className="flex w-full justify-center text-gray">
-					<Button variant="ghost" size="icon" onClick={() => onEdit(record)}>
-						<Icon icon="solar:pen-bold-duotone" size={18} />
-					</Button>
-					<Button variant="ghost" size="icon">
-						<Icon icon="mingcute:delete-2-fill" size={18} className="text-error!" />
-					</Button>
-				</div>
-			),
+			render: (_, record) => {
+				const protectedRoles = ["student", "teacher", "admin"];
+				const isProtected = protectedRoles.includes(record.name.toLowerCase());
+				const hasUsers = record._count?.users > 0;
+
+				return (
+					<div className="flex w-full justify-center text-gray">
+						<Button variant="ghost" size="icon" onClick={() => onEdit(record)}>
+							<Icon icon="solar:pen-bold-duotone" size={18} />
+						</Button>
+						<Button
+							variant="ghost"
+							size="icon"
+							onClick={() => onDelete(record)}
+							disabled={isProtected || hasUsers}
+							title={
+								isProtected
+									? "Cannot delete core system roles"
+									: hasUsers
+										? `Cannot delete: ${record._count?.users} users assigned`
+										: "Delete role"
+							}
+						>
+							<Icon
+								icon="mingcute:delete-2-fill"
+								size={18}
+								className={isProtected || hasUsers ? "text-muted!" : "text-error!"}
+							/>
+						</Button>
+					</div>
+				);
+			},
 		},
 	];
 
@@ -76,28 +139,36 @@ export default function RolePage() {
 		setRoleModalProps((prev) => ({
 			...prev,
 			show: true,
-			title: "Create New",
-			formValue: {
-				...prev.formValue,
-				...DEFAULE_ROLE_VALUE,
-			},
+			title: "Create New Role",
+			formValue: null,
 		}));
 	};
 
 	const onEdit = (formValue: Role) => {
-		// Convert Role to Role_Old format for the modal
 		setRoleModalProps((prev) => ({
 			...prev,
 			show: true,
-			title: "Edit",
-			formValue: {
-				id: String(formValue.id),
-				name: formValue.name,
-				code: formValue.name,
-				status: BasicStatus.ENABLE,
-				permission: [],
-			},
+			title: "Edit Role",
+			formValue,
 		}));
+	};
+
+	const onDelete = (role: Role) => {
+		// Protect core system roles from deletion
+		const protectedRoles = ["student", "teacher", "admin"];
+		if (protectedRoles.includes(role.name.toLowerCase())) {
+			message.warning(`Cannot delete protected role '${role.name}'. This is a core system role.`);
+			return;
+		}
+
+		if (role._count?.users && role._count.users > 0) {
+			message.warning(`Cannot delete role '${role.name}' because ${role._count.users} users are assigned to it.`);
+			return;
+		}
+
+		if (window.confirm(`Are you sure you want to delete the role '${role.name}'? This action cannot be undone.`)) {
+			deleteRoleMutation.mutate(role.id);
+		}
 	};
 
 	return (
