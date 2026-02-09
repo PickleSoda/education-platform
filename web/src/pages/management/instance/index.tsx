@@ -217,8 +217,8 @@ export default function InstanceManagementPage() {
 								<SelectContent>
 									<SelectItem value="all">All Status</SelectItem>
 									<SelectItem value="draft">Draft</SelectItem>
-									<SelectItem value="enrollment_open">Enrollment Open</SelectItem>
-									<SelectItem value="in_progress">In Progress</SelectItem>
+									<SelectItem value="scheduled">Scheduled</SelectItem>
+									<SelectItem value="active">Active</SelectItem>
 									<SelectItem value="completed">Completed</SelectItem>
 									<SelectItem value="archived">Archived</SelectItem>
 								</SelectContent>
