@@ -49,7 +49,8 @@ const cs101Syllabus: SeedSyllabusItem[] = [
   {
     weekNumber: 3,
     title: 'Control Structures: Conditionals',
-    description: 'Decision making with if, elif, and else statements. Boolean logic and conditional flow.',
+    description:
+      'Decision making with if, elif, and else statements. Boolean logic and conditional flow.',
     learningObjectives: [
       'Use if/elif/else statements',
       'Understand boolean logic and operators',
@@ -61,8 +62,7 @@ const cs101Syllabus: SeedSyllabusItem[] = [
   {
     weekNumber: 4,
     title: 'Control Structures: Loops',
-    description:
-      'Repetition with while and for loops. Loop control statements and nested loops.',
+    description: 'Repetition with while and for loops. Loop control statements and nested loops.',
     learningObjectives: [
       'Use while and for loops effectively',
       'Understand loop iteration and counters',
@@ -159,7 +159,8 @@ const cs101Syllabus: SeedSyllabusItem[] = [
   {
     weekNumber: 12,
     title: 'OOP: Inheritance and Polymorphism',
-    description: 'Advanced OOP concepts including inheritance, method overriding, and polymorphism.',
+    description:
+      'Advanced OOP concepts including inheritance, method overriding, and polymorphism.',
     learningObjectives: [
       'Implement class inheritance',
       'Override parent class methods',
@@ -171,7 +172,8 @@ const cs101Syllabus: SeedSyllabusItem[] = [
   {
     weekNumber: 13,
     title: 'Project Development & Best Practices',
-    description: 'Putting it all together: writing complete programs, code organization, and best practices.',
+    description:
+      'Putting it all together: writing complete programs, code organization, and best practices.',
     learningObjectives: [
       'Develop complete programs from scratch',
       'Follow Python coding conventions (PEP 8)',
@@ -337,8 +339,7 @@ const cs201Syllabus: SeedSyllabusItem[] = [
   {
     weekNumber: 12,
     title: 'Graph Algorithms: Shortest Path and Minimum Spanning Tree',
-    description:
-      'Dijkstra, Bellman-Ford, Floyd-Warshall algorithms; Kruskal and Prim for MST.',
+    description: 'Dijkstra, Bellman-Ford, Floyd-Warshall algorithms; Kruskal and Prim for MST.',
     learningObjectives: [
       'Implement shortest path algorithms',
       'Implement minimum spanning tree algorithms',
@@ -441,7 +442,8 @@ const cs301Syllabus: SeedSyllabusItem[] = [
   {
     weekNumber: 6,
     title: 'JavaScript Fundamentals',
-    description: 'Variables, data types, operators, control structures, and functions in JavaScript.',
+    description:
+      'Variables, data types, operators, control structures, and functions in JavaScript.',
     learningObjectives: [
       'Write JavaScript fundamentally',
       'Understand scoping and hoisting',
@@ -557,8 +559,7 @@ const cs302Syllabus: SeedSyllabusItem[] = [
   {
     weekNumber: 1,
     title: 'Database Fundamentals & Relational Model',
-    description:
-      'Database concepts, relational model, tables, tuples, attributes, and keys.',
+    description: 'Database concepts, relational model, tables, tuples, attributes, and keys.',
     learningObjectives: [
       'Understand database fundamentals',
       'Grasp relational model concepts',
@@ -594,8 +595,7 @@ const cs302Syllabus: SeedSyllabusItem[] = [
   {
     weekNumber: 4,
     title: 'SQL: Querying with SELECT',
-    description:
-      'SELECT queries, WHERE clauses, filtering, and basic query operations.',
+    description: 'SELECT queries, WHERE clauses, filtering, and basic query operations.',
     learningObjectives: [
       'Write SELECT queries',
       'Filter data with WHERE',
@@ -607,8 +607,7 @@ const cs302Syllabus: SeedSyllabusItem[] = [
   {
     weekNumber: 5,
     title: 'Advanced SQL: Joins and Relationships',
-    description:
-      'INNER JOIN, LEFT JOIN, RIGHT JOIN, FULL JOIN, and self-joins.',
+    description: 'INNER JOIN, LEFT JOIN, RIGHT JOIN, FULL JOIN, and self-joins.',
     learningObjectives: [
       'Understand join types',
       'Combine data from multiple tables',
@@ -657,8 +656,7 @@ const cs302Syllabus: SeedSyllabusItem[] = [
   {
     weekNumber: 9,
     title: 'Advanced SQL: Aggregation and Grouping',
-    description:
-      'GROUP BY, HAVING, aggregate functions (COUNT, SUM, AVG, MAX, MIN).',
+    description: 'GROUP BY, HAVING, aggregate functions (COUNT, SUM, AVG, MAX, MIN).',
     learningObjectives: [
       'Use aggregate functions',
       'Group and filter with GROUP BY/HAVING',
@@ -682,8 +680,7 @@ const cs302Syllabus: SeedSyllabusItem[] = [
   {
     weekNumber: 11,
     title: 'NoSQL Databases Introduction',
-    description:
-      'Introduction to document databases, key-value stores, and MongoDB basics.',
+    description: 'Introduction to document databases, key-value stores, and MongoDB basics.',
     learningObjectives: [
       'Understand NoSQL concepts',
       'Learn MongoDB fundamentals',
@@ -738,8 +735,7 @@ const cs401Syllabus: SeedSyllabusItem[] = [
   {
     weekNumber: 1,
     title: 'Software Development Lifecycle and Methodologies',
-    description:
-      'SDLC phases, Waterfall, Agile, Scrum, and Kanban methodologies.',
+    description: 'SDLC phases, Waterfall, Agile, Scrum, and Kanban methodologies.',
     learningObjectives: [
       'Understand SDLC phases',
       'Compare development methodologies',
@@ -764,8 +760,7 @@ const cs401Syllabus: SeedSyllabusItem[] = [
   {
     weekNumber: 3,
     title: 'Software Design Principles and Patterns',
-    description:
-      'SOLID principles, design patterns, UML diagrams, and architectural design.',
+    description: 'SOLID principles, design patterns, UML diagrams, and architectural design.',
     learningObjectives: [
       'Apply SOLID principles',
       'Use common design patterns',
@@ -803,8 +798,7 @@ const cs401Syllabus: SeedSyllabusItem[] = [
   {
     weekNumber: 6,
     title: 'Testing Strategies and Test-Driven Development',
-    description:
-      'Unit testing, integration testing, TDD, test coverage, and quality metrics.',
+    description: 'Unit testing, integration testing, TDD, test coverage, and quality metrics.',
     learningObjectives: [
       'Write unit tests',
       'Understand TDD process',
@@ -816,8 +810,7 @@ const cs401Syllabus: SeedSyllabusItem[] = [
   {
     weekNumber: 7,
     title: 'Continuous Integration and Continuous Deployment',
-    description:
-      'CI/CD pipelines, automation, build systems, and deployment strategies.',
+    description: 'CI/CD pipelines, automation, build systems, and deployment strategies.',
     learningObjectives: [
       'Set up CI/CD pipelines',
       'Automate testing and builds',
@@ -867,8 +860,7 @@ const cs401Syllabus: SeedSyllabusItem[] = [
   {
     weekNumber: 11,
     title: 'Debugging, Profiling, and Performance Optimization',
-    description:
-      'Debugging techniques, profiling tools, performance analysis, and optimization.',
+    description: 'Debugging techniques, profiling tools, performance analysis, and optimization.',
     learningObjectives: [
       'Debug efficiently',
       'Profile applications',
@@ -893,8 +885,7 @@ const cs401Syllabus: SeedSyllabusItem[] = [
   {
     weekNumber: 13,
     title: 'Software Maintenance and Legacy Systems',
-    description:
-      'Maintenance strategies, handling legacy code, refactoring, and system evolution.',
+    description: 'Maintenance strategies, handling legacy code, refactoring, and system evolution.',
     learningObjectives: [
       'Maintain software systems',
       'Work with legacy code',
@@ -949,8 +940,7 @@ const cs450Syllabus: SeedSyllabusItem[] = [
   {
     weekNumber: 3,
     title: 'Linear Regression',
-    description:
-      'Simple and multiple linear regression, least squares, and evaluation metrics.',
+    description: 'Simple and multiple linear regression, least squares, and evaluation metrics.',
     learningObjectives: [
       'Implement linear regression',
       'Understand mathematical concepts',
@@ -975,8 +965,7 @@ const cs450Syllabus: SeedSyllabusItem[] = [
   {
     weekNumber: 5,
     title: 'Decision Trees and Random Forests',
-    description:
-      'Decision tree construction, pruning, ensemble methods, and random forests.',
+    description: 'Decision tree construction, pruning, ensemble methods, and random forests.',
     learningObjectives: [
       'Build decision trees',
       'Understand tree-based models',
@@ -1000,8 +989,7 @@ const cs450Syllabus: SeedSyllabusItem[] = [
   {
     weekNumber: 7,
     title: 'Neural Networks Basics',
-    description:
-      'Perceptron, multi-layer networks, activation functions, and backpropagation.',
+    description: 'Perceptron, multi-layer networks, activation functions, and backpropagation.',
     learningObjectives: [
       'Understand neural network architecture',
       'Learn activation functions',
@@ -1013,8 +1001,7 @@ const cs450Syllabus: SeedSyllabusItem[] = [
   {
     weekNumber: 8,
     title: 'Midterm Exam and Project',
-    description:
-      'Assessment and start supervised learning project.',
+    description: 'Assessment and start supervised learning project.',
     learningObjectives: [
       'Demonstrate ML fundamentals',
       'Build supervised learning models',
@@ -1050,8 +1037,7 @@ const cs450Syllabus: SeedSyllabusItem[] = [
   {
     weekNumber: 11,
     title: 'Model Validation and Hyperparameter Tuning',
-    description:
-      'Cross-validation, overfitting, underfitting, grid search, and random search.',
+    description: 'Cross-validation, overfitting, underfitting, grid search, and random search.',
     learningObjectives: [
       'Use cross-validation',
       'Detect and address overfitting',
@@ -1076,8 +1062,7 @@ const cs450Syllabus: SeedSyllabusItem[] = [
   {
     weekNumber: 13,
     title: 'Advanced Topics and Real-World Applications',
-    description:
-      'Ensemble methods, deep learning overview, and production ML systems.',
+    description: 'Ensemble methods, deep learning overview, and production ML systems.',
     learningObjectives: [
       'Use ensemble techniques',
       'Understand deep learning basics',
