@@ -3,6 +3,7 @@ import bcrypt from 'bcryptjs';
 import { faker } from '@faker-js/faker';
 import { seedTags, seedCourses } from '../src/modules/course/course.seed';
 import { seedAssignmentsByCourse } from '../src/modules/assignment/assignment.seed';
+import { seedSyllabuses } from '../src/modules/course/syllabus.seed';
 import {
   seedInstances,
   seedPublishedAssignments,
@@ -25,6 +26,7 @@ async function main() {
   await prisma.courseInstance.deleteMany();
   await prisma.gradingCriteria.deleteMany();
   await prisma.assignmentTemplate.deleteMany();
+  await prisma.syllabusItem.deleteMany();
   await prisma.courseLecturer.deleteMany();
   await prisma.courseTag.deleteMany();
   await prisma.course.deleteMany();
@@ -257,7 +259,34 @@ async function main() {
     }))
   );
 
-  // 7. Create Assignment Templates
+  // 7. Create Syllabus Items
+  console.log('Creating syllabus items...');
+  let totalSyllabusItems = 0;
+
+  for (const courseSyllabus of seedSyllabuses) {
+    const course = createdCourses.find((c) => c.code === courseSyllabus.courseCode);
+    if (!course) continue;
+
+    for (const itemData of courseSyllabus.items) {
+      await prisma.syllabusItem.create({
+        data: {
+          courseId: course.id,
+          weekNumber: itemData.weekNumber,
+          title: itemData.title,
+          description: itemData.description,
+          learningObjectives: itemData.learningObjectives || [],
+          sortOrder: itemData.sortOrder,
+        },
+      });
+      totalSyllabusItems++;
+    }
+  }
+
+  console.log(
+    `✓ Syllabus items created: ${totalSyllabusItems} items across ${createdCourses.length} courses`
+  );
+
+  // 8. Create Assignment Templates
   console.log('Creating assignment templates...');
   const createdTemplates = new Map<string, any>();
 
@@ -308,7 +337,7 @@ async function main() {
     }))
   );
 
-  // 8. Create Course Instances
+  // 9. Create Course Instances
   console.log('Creating course instances...');
   const createdInstances = new Map<string, any>();
 
@@ -377,7 +406,7 @@ async function main() {
     }))
   );
 
-  // 9. Publish Assignments to Instances
+  // 10. Publish Assignments to Instances
   console.log('Publishing assignments to instances...');
   const createdPublishedAssignments = [];
 
@@ -438,7 +467,7 @@ async function main() {
     })
   );
 
-  // 10. Enroll Students in Active Instances
+  // 11. Enroll Students in Active Instances
   console.log('Enrolling students in active instances...');
   const activeInstances = Array.from(createdInstances.values()).filter(
     (i) => i.status === 'active'
@@ -466,7 +495,7 @@ async function main() {
 
   console.log(`✓ Enrolled students in ${activeInstances.length} active instances`);
 
-  // 11. Create Submissions for Published Assignments
+  // 12. Create Submissions for Published Assignments
   console.log('Creating assignment submissions...');
   let submissionCount = 0;
 
