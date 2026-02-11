@@ -1,6 +1,20 @@
 import { z } from 'zod';
 
 // ============================================================================
+// FORM SUBMISSION SCHEMAS
+// ============================================================================
+
+export const questionAnswerSchema = z.object({
+  questionId: z.string().min(1),
+  answer: z.array(z.string()),
+});
+
+export const formSubmissionSchema = z.object({
+  formId: z.string().min(1),
+  answers: z.array(questionAnswerSchema),
+});
+
+// ============================================================================
 // SUBMISSION SCHEMAS
 // ============================================================================
 
@@ -11,6 +25,7 @@ export const saveSubmissionSchema = z.object({
   body: z.object({
     content: z.string().max(10000, 'Content must not exceed 10000 characters').optional(),
     attachments: z.any().optional(),
+    formSubmission: formSubmissionSchema.optional(),
   }),
 });
 
@@ -21,6 +36,7 @@ export const updateSubmissionSchema = z.object({
   body: z.object({
     content: z.string().max(10000, 'Content must not exceed 10000 characters').optional(),
     attachments: z.any().optional(),
+    formSubmission: formSubmissionSchema.optional(),
   }),
 });
 

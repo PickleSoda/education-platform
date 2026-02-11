@@ -1,6 +1,41 @@
 import { z } from 'zod';
 
 // ============================================================================
+// ATTACHMENT VALIDATION SCHEMAS
+// ============================================================================
+
+const optionSchema = z.object({
+  id: z.string().min(1),
+  text: z.string().min(1),
+});
+
+const questionSchema = z.object({
+  id: z.string().min(1),
+  type: z.enum(['multiple_choice', 'checkbox', 'short_answer', 'paragraph']),
+  text: z.string().min(1),
+  points: z.number().min(1).max(100),
+  options: z.array(optionSchema).optional(),
+  correctAnswer: z.array(z.string()).optional(),
+});
+
+const fileAttachmentSchema = z.object({
+  type: z.literal('file'),
+  id: z.string().min(1),
+  name: z.string().min(1),
+  url: z.string().url(),
+  mimeType: z.string().optional(),
+});
+
+const formAttachmentSchema = z.object({
+  type: z.literal('form'),
+  id: z.string().min(1),
+  title: z.string().optional(),
+  questions: z.array(questionSchema).min(1),
+});
+
+const attachmentSchema = z.discriminatedUnion('type', [fileAttachmentSchema, formAttachmentSchema]);
+
+// ============================================================================
 // ASSIGNMENT TEMPLATE VALIDATION SCHEMAS
 // ============================================================================
 
@@ -32,7 +67,7 @@ export const createAssignmentTemplateSchema = z.object({
     weightPercentage: z.number().min(0).max(100).optional().nullable(),
     defaultDurationDays: z.number().int().min(1).max(365).optional().nullable(),
     instructions: z.string().max(10000).optional().nullable(),
-    attachments: z.any().optional(),
+    attachments: z.array(attachmentSchema).optional(),
     syllabusItemId: z.string().uuid().optional().nullable(),
     sortOrder: z.number().int().min(0).optional(),
     gradingCriteria: z.array(gradingCriteriaSchema).optional(),
@@ -52,7 +87,7 @@ export const updateAssignmentTemplateSchema = z.object({
     weightPercentage: z.number().min(0).max(100).optional().nullable(),
     defaultDurationDays: z.number().int().min(1).max(365).optional().nullable(),
     instructions: z.string().max(10000).optional().nullable(),
-    attachments: z.any().optional(),
+    attachments: z.array(attachmentSchema).optional(),
     syllabusItemId: z.string().uuid().optional().nullable(),
     sortOrder: z.number().int().min(0).optional(),
   }),
