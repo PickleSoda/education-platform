@@ -100,6 +100,38 @@ export interface CourseInstance {
 }
 
 export type AssignmentType = "homework" | "quiz" | "midterm" | "final" | "project" | "participation";
+// Assignment Form Types
+export interface Option {
+	id: string;
+	text: string;
+}
+
+export interface Question {
+	id: string;
+	type: "multiple_choice" | "checkbox" | "short_answer" | "paragraph";
+	text: string;
+	points: number;
+	options?: Option[];
+	correctAnswer?: string[];
+}
+
+export interface FormAttachment {
+	type: "form";
+	id: string;
+	title?: string;
+	questions: Question[];
+}
+
+export interface FileAttachment {
+	type: "file";
+	id: string;
+	name: string;
+	url: string;
+	mimeType?: string;
+}
+
+export type Attachment = FileAttachment | FormAttachment;
+
 export interface AssignmentTemplate {
 	id: string;
 	courseId: string;
@@ -111,7 +143,7 @@ export interface AssignmentTemplate {
 	weightPercentage: number | null;
 	defaultDurationDays: number | null;
 	instructions: string | null;
-	attachments: any | null;
+	attachments: Attachment[] | null;
 	syllabusItemId: string | null;
 	sortOrder: number;
 	createdAt: string;
@@ -199,6 +231,7 @@ export interface PublishedAssignment {
 	lateDeadline: string | null;
 	latePenaltyPercent: number | null;
 	status: "draft" | "scheduled" | "published" | "closed";
+	attachments: Attachment[] | null;
 	autoPublish: boolean;
 	publishedBy: string;
 	createdAt: string;
@@ -365,12 +398,24 @@ export interface Menu extends CommonOptions, MenuMetaInfo {
 // Submission types
 export type SubmissionStatus = "draft" | "submitted" | "late" | "graded" | "returned";
 
+// Form submission types
+export interface QuestionAnswer {
+	questionId: string;
+	answer: string[];
+}
+
+export interface FormSubmission {
+	formId: string;
+	answers: QuestionAnswer[];
+}
+
 export interface Submission {
 	id: string;
 	publishedAssignmentId: string;
 	studentId: string;
 	content: string | null;
 	attachments: any | null;
+	formSubmission: FormSubmission | null;
 	status: SubmissionStatus;
 	submittedAt: string | null;
 	totalPoints: number | null;
