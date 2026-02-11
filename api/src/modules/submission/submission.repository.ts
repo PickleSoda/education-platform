@@ -59,11 +59,13 @@ export const saveSubmission = async (
       studentId: data.studentId,
       content: data.content,
       attachments: data.attachments,
+      formSubmission: data.formSubmission,
       status: 'draft',
     },
     update: {
       content: data.content,
       attachments: data.attachments,
+      formSubmission: data.formSubmission,
     },
     include: {
       student: {
@@ -113,6 +115,13 @@ export const getSubmissionById = async (
           deadline: true,
           lateDeadline: true,
           latePenaltyPercent: true,
+          template: {
+            select: {
+              id: true,
+              title: true,
+              attachments: true,
+            },
+          },
         },
       },
       grades: true,
@@ -491,6 +500,11 @@ export const updateSubmission = async (
     data: {
       content: data.content,
       attachments: data.attachments,
+      formSubmission: data.formSubmission,
+      finalPoints: data.finalPoints,
+      status: data.status as any,
+      feedback: data.feedback,
+      gradedAt: data.gradedAt ? new Date(data.gradedAt) : undefined,
     },
     include: {
       student: {

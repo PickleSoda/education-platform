@@ -1,13 +1,74 @@
 import { submissionRepository } from './submission.repository';
 import { ListSubmissionsQuery } from './submission.validation';
 import { PaginationOptions } from '@/shared/repositories/base.repository';
+import { assignmentRepository } from '../assignment/assignment.repository';
 import ApiError from '@/shared/utils/api-error';
 import httpStatus from 'http-status';
 import { notificationQueries } from '@/shared/repositories/queries';
 
-// ============================================================================
-// SUBMISSION SERVICE
-// ============================================================================
+/**
+ * Auto-grade form submission
+ */
+const autoGradeFormSubmission = async (submission: any, assignmentTemplate: any) => {
+  // Find form attachment in assignment template
+  const formAttachment = assignmentTemplate.attachments?.find((att: any) => att.type === 'form');
+
+  if (!formAttachment || !submission.formSubmission) {
+    return { totalPoints: 0, questionGrades: [] };
+  }
+
+  const questionGrades: any[] = [];
+  let totalPoints = 0;
+
+  for (const question of formAttachment.questions) {
+    const studentAnswer = submission.formSubmission.answers.find(
+      (ans: any) => ans.questionId === question.id
+    );
+
+    let pointsAwarded = 0;
+    let isCorrect = false;
+
+    if (studentAnswer && question.correctAnswer) {
+      if (question.type === 'multiple_choice') {
+        // Single correct answer
+        isCorrect =
+          studentAnswer.answer.length === 1 &&
+          question.correctAnswer.includes(studentAnswer.answer[0]);
+      } else if (question.type === 'checkbox') {
+        // Multiple correct answers - must match exactly
+        const studentAnswers = [...studentAnswer.answer].sort();
+        const correctAnswers = [...question.correctAnswer].sort();
+        isCorrect = JSON.stringify(studentAnswers) === JSON.stringify(correctAnswers);
+      } else if (question.type === 'short_answer' || question.type === 'paragraph') {
+        // Text questions - basic keyword matching (can be improved)
+        const studentText = studentAnswer.answer[0]?.toLowerCase() || '';
+        const correctText = question.correctAnswer[0]?.toLowerCase() || '';
+
+        // Simple contains check - in production, you might want more sophisticated matching
+        isCorrect =
+          studentText.includes(correctText) ||
+          correctText
+            .split(' ')
+            .some((keyword: string) => keyword.length > 2 && studentText.includes(keyword));
+      }
+
+      if (isCorrect) {
+        pointsAwarded = question.points;
+      }
+    }
+
+    questionGrades.push({
+      questionId: question.id,
+      pointsAwarded,
+      maxPoints: question.points,
+      isCorrect,
+    });
+
+    totalPoints += pointsAwarded;
+  }
+
+  return { totalPoints, questionGrades };
+};
 
 /**
  * Save submission draft
@@ -15,7 +76,7 @@ import { notificationQueries } from '@/shared/repositories/queries';
 export const saveSubmissionDraft = async (
   assignmentId: string,
   studentId: string,
-  data: { content?: string; attachments?: any }
+  data: { content?: string; attachments?: any; formSubmission?: any }
 ) => {
   try {
     return await submissionRepository.saveSubmission({
@@ -31,11 +92,56 @@ export const saveSubmissionDraft = async (
   }
 };
 
+// ============================================================================
+// SUBMISSION SERVICE
+// ============================================================================
+
 /**
  * Submit an assignment
  */
 export const submitAssignmentService = async (assignmentId: string, studentId: string) => {
-  return submissionRepository.submitAssignment(assignmentId, studentId);
+  const submission = await submissionRepository.submitAssignment(assignmentId, studentId);
+
+  // Get assignment template for auto-grading
+  const assignment = await submissionRepository.getSubmissionById(submission.id);
+  if (assignment?.publishedAssignment?.template) {
+    const template = assignment.publishedAssignment.template;
+
+    // Auto-grade if there's a form submission
+    if (submission.formSubmission && template.attachments) {
+      const autoGradeResults = await autoGradeFormSubmission(submission, template);
+
+      if (autoGradeResults.totalPoints > 0) {
+        // Update submission with auto-graded results
+        await submissionRepository.updateSubmission(submission.id, {
+          finalPoints: autoGradeResults.totalPoints,
+          status: 'graded',
+          feedback: `Auto-graded: ${autoGradeResults.totalPoints} points earned from quiz/survey responses.`,
+          gradedAt: new Date().toISOString(),
+        });
+
+        // Create notification
+        try {
+          await notificationQueries.createNotification({
+            userId: studentId,
+            type: 'assignment_graded',
+            title: 'Assignment Auto-Graded',
+            message: `Your quiz submission has been automatically graded: ${autoGradeResults.totalPoints} points`,
+            data: {
+              submissionId: submission.id,
+              assignmentId,
+              finalPoints: autoGradeResults.totalPoints,
+              autoGraded: true,
+            },
+          });
+        } catch (error) {
+          console.error('Failed to send auto-grading notification:', error);
+        }
+      }
+    }
+  }
+
+  return submission;
 };
 
 /**

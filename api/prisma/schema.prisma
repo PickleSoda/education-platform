@@ -463,6 +463,7 @@ model Submission {
   status                SubmissionStatus @default(draft)
   content               String?
   attachments           Json?
+  formSubmission        Json?            @map("form_submission")
   submittedAt           DateTime?        @map("submitted_at")
   isLate                Boolean          @default(false) @map("is_late")
   totalPoints           Decimal?         @map("total_points") @db.Decimal(5, 2)

@@ -9,11 +9,17 @@ export interface SubmissionCreateInput {
   studentId: string;
   content?: string;
   attachments?: any;
+  formSubmission?: any;
 }
 
 export interface SubmissionUpdateInput {
   content?: string;
   attachments?: any;
+  formSubmission?: any;
+  finalPoints?: number;
+  status?: string;
+  feedback?: string;
+  gradedAt?: string;
 }
 
 export interface SubmissionGradeInput {
@@ -54,6 +60,11 @@ export type SubmissionWithRelations = Submission & {
     deadline: Date | null;
     lateDeadline: Date | null;
     latePenaltyPercent: any;
+    template?: {
+      id: string;
+      title: string;
+      attachments: any;
+    };
   } | null;
   grades?: SubmissionGrade[];
   gradedBy?: {

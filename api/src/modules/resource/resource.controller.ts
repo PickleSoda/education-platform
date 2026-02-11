@@ -323,6 +323,7 @@ export const createSyllabusItem = catchAsync(
     const item = await resourceService.createSyllabusItem({
       ...body,
       courseId: params.courseId,
+      sortOrder: body.sortOrder ?? 0,
     });
 
     return {
