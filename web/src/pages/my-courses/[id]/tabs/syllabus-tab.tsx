@@ -1,6 +1,5 @@
 import { Card, CardContent, CardHeader } from "@/ui/card";
 import { Badge } from "@/ui/badge";
-import type { SyllabusItem } from "#/entity";
 import { Icon } from "@/components/icon";
 import { Skeleton } from "@/ui/skeleton";
 import { useQuery } from "@tanstack/react-query";

@@ -1,5 +1,5 @@
 import type { ApiResponse } from "#/api";
-import type { AssignmentTemplate, GradingCriteria } from "#/entity";
+import type { AssignmentTemplate, GradingCriteria, Attachment } from "#/entity";
 import apiClient from "../apiClient";
 import { AssignmentType } from "@/types/entity";
 // Query parameters
@@ -30,6 +30,7 @@ export interface CreateAssignmentTemplateReq {
 	weightPercentage?: number;
 	defaultDurationDays?: number;
 	instructions?: string;
+	attachments?: Attachment[];
 	syllabusItemId?: string;
 	gradingCriteria?: Array<{
 		name: string;
@@ -47,6 +48,7 @@ export interface UpdateAssignmentTemplateReq {
 	weightPercentage?: number;
 	defaultDurationDays?: number;
 	instructions?: string;
+	attachments?: Attachment[];
 	syllabusItemId?: string;
 	gradingCriteria?: Array<{
 		name: string;

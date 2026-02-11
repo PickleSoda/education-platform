@@ -65,14 +65,41 @@ export default function AssignmentManagementPage() {
 			title: "Assignment",
 			dataIndex: "publishedAssignment",
 			width: 250,
-			render: (assignment) => (
-				<div>
-					<p className="font-medium">{assignment.title}</p>
-					<p className="text-xs text-text-secondary">
-						{assignment.instance.course.code} - {assignment.instance.semester} {assignment.instance.year}
-					</p>
-				</div>
-			),
+			render: (assignment, record) => {
+				const hasForm = assignment.attachments?.some((att: any) => att.type === "form");
+				const hasFiles = record.attachments && Array.isArray(record.attachments) && record.attachments.length > 0;
+				const hasText = record.content && record.content.trim().length > 0;
+				const hasFormSubmission = record.formSubmission;
+
+				return (
+					<div>
+						<p className="font-medium">{assignment.title}</p>
+						<p className="text-xs text-text-secondary mb-1">
+							{assignment.instance.course.code} - {assignment.instance.semester} {assignment.instance.year}
+						</p>
+						<div className="flex gap-1 flex-wrap">
+							{hasForm && (
+								<Badge variant={hasFormSubmission ? "success" : "secondary"} className="text-xs">
+									<Icon icon="solar:document-text-bold-duotone" size={10} className="mr-1" />
+									Quiz
+								</Badge>
+							)}
+							{hasFiles && (
+								<Badge variant="info" className="text-xs">
+									<Icon icon="solar:file-bold-duotone" size={10} className="mr-1" />
+									Files
+								</Badge>
+							)}
+							{hasText && (
+								<Badge variant="default" className="text-xs">
+									<Icon icon="solar:text-bold-duotone" size={10} className="mr-1" />
+									Text
+								</Badge>
+							)}
+						</div>
+					</div>
+				);
+			},
 		},
 		{
 			title: "Course",

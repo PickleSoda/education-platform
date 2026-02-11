@@ -26,11 +26,13 @@ export interface GetSubmissionStatsParams {
 export interface SaveSubmissionDraftReq {
 	content?: string;
 	attachments?: any;
+	formSubmission?: any;
 }
 
 export interface UpdateSubmissionDraftReq {
 	content?: string;
 	attachments?: any;
+	formSubmission?: any;
 }
 
 export interface GradeSubmissionReq {

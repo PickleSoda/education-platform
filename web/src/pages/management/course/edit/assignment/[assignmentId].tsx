@@ -4,7 +4,7 @@ import { Button } from "@/ui/button";
 import { Input } from "@/ui/input";
 import { Textarea } from "@/ui/textarea";
 import { Label } from "@/ui/label";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/ui/select";
+
 import { Icon } from "@/components/icon";
 import { Switch } from "@/ui/switch";
 import {
@@ -22,6 +22,9 @@ import assignmentService, { type CreateAssignmentTemplateReq } from "@/api/servi
 import { toast } from "sonner";
 import { useState, useEffect } from "react";
 import { AssignmentType } from "@/types/entity";
+import { FormBuilder } from "@/components/form-builder";
+import type { Attachment, FormAttachment } from "#/entity";
+import { Modal } from "antd";
 
 export default function AssignmentTemplatePage() {
 	const { id: courseId, assignmentId } = useParams();
@@ -38,6 +41,7 @@ export default function AssignmentTemplatePage() {
 		weightPercentage: 0,
 		defaultDurationDays: 7,
 		instructions: "",
+		attachments: [],
 	});
 
 	const [gradingCriteria, setGradingCriteria] = useState<
@@ -45,6 +49,8 @@ export default function AssignmentTemplatePage() {
 	>([]);
 
 	const [deleteModal, setDeleteModal] = useState(false);
+	const [formBuilderModal, setFormBuilderModal] = useState(false);
+	const [editingForm, setEditingForm] = useState<FormAttachment | null>(null);
 
 	// Fetch assignment template data if editing
 	const { data: templateData, isLoading } = useQuery({
@@ -61,12 +67,13 @@ export default function AssignmentTemplatePage() {
 			setFormData({
 				title: template.title,
 				description: template.description || "",
-				assignmentType: template.assignmentType,
+				assignmentType: template.assignmentType as AssignmentType,
 				gradingMode: template.gradingMode,
 				maxPoints: template.maxPoints || 100,
 				weightPercentage: template.weightPercentage || 0,
 				defaultDurationDays: template.defaultDurationDays || 7,
 				instructions: template.instructions || "",
+				attachments: template.attachments || [],
 			});
 			setGradingCriteria(
 				template.gradingCriteria?.map((c, idx) => ({
@@ -168,6 +175,43 @@ export default function AssignmentTemplatePage() {
 		setGradingCriteria(gradingCriteria.filter((_, i) => i !== index));
 	};
 
+	// Attachment handlers
+	const handleAddForm = () => {
+		setEditingForm(null);
+		setFormBuilderModal(true);
+	};
+
+	const handleEditForm = (form: FormAttachment) => {
+		setEditingForm(form);
+		setFormBuilderModal(true);
+	};
+
+	const handleSaveForm = (form: FormAttachment) => {
+		const currentAttachments = formData.attachments || [];
+		let updatedAttachments: Attachment[];
+
+		if (editingForm) {
+			// Update existing form
+			updatedAttachments = currentAttachments.map((att) =>
+				att.type === "form" && att.id === editingForm.id ? form : att
+			);
+		} else {
+			// Add new form
+			updatedAttachments = [...currentAttachments, form];
+		}
+
+		setFormData({ ...formData, attachments: updatedAttachments });
+		setFormBuilderModal(false);
+		setEditingForm(null);
+	};
+
+	const handleDeleteForm = (formId: string) => {
+		const updatedAttachments = (formData.attachments || []).filter(
+			(att) => !(att.type === "form" && att.id === formId)
+		);
+		setFormData({ ...formData, attachments: updatedAttachments });
+	};
+
 	const criteriaSum = gradingCriteria.reduce((sum, c) => sum + (c.maxPoints || 0), 0);
 	const isValidCriteria = formData.gradingMode === "pass_fail" || criteriaSum === formData.maxPoints;
 
@@ -243,24 +287,20 @@ export default function AssignmentTemplatePage() {
 						<div className="grid grid-cols-2 gap-4">
 							<div className="space-y-2">
 								<Label htmlFor="assignmentType">Assignment Type</Label>
-								<Select
-									value={formData.assignmentType}
-									onValueChange={(value) => setFormData({ ...formData, assignmentType: value as AssignmentType })}
+								<select
+									id="assignmentType"
+									value={formData.assignmentType || "homework"}
+									onChange={(e) => setFormData({ ...formData, assignmentType: e.target.value as AssignmentType })}
+									className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-0 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
 								>
-									<SelectTrigger>
-										<SelectValue />
-									</SelectTrigger>
-									<SelectContent>
-										<SelectItem value="homework">Homework</SelectItem>
-										<SelectItem value="quiz">Quiz</SelectItem>
-										<SelectItem value="midterm">Midterm</SelectItem>
-										<SelectItem value="final">Final</SelectItem>
-										<SelectItem value="project">Project</SelectItem>
-										<SelectItem value="participation">Participation</SelectItem>
-									</SelectContent>
-								</Select>
+									<option value="homework">Homework</option>
+									<option value="quiz">Quiz</option>
+									<option value="midterm">Midterm</option>
+									<option value="final">Final</option>
+									<option value="project">Project</option>
+									<option value="participation">Participation</option>
+								</select>
 							</div>
-
 							<div className="space-y-2">
 								<Label htmlFor="defaultDurationDays">Default Duration (days)</Label>
 								<Input
@@ -344,6 +384,116 @@ export default function AssignmentTemplatePage() {
 							value={formData.instructions}
 							onChange={(e) => setFormData({ ...formData, instructions: e.target.value })}
 						/>
+					</CardContent>
+				</Card>
+
+				{/* Attachments */}
+				<Card>
+					<CardHeader>
+						<div className="flex items-center justify-between">
+							<div>
+								<h3 className="text-lg font-semibold">Attachments</h3>
+								<p className="text-sm text-text-secondary mt-1">
+									Add files or create quizzes/surveys for this assignment
+								</p>
+							</div>
+							<div className="flex gap-2">
+								<Button type="button" variant="outline" onClick={handleAddForm}>
+									<Icon icon="solar:document-add-bold-duotone" size={16} className="mr-2" />
+									Add Quiz/Survey
+								</Button>
+							</div>
+						</div>
+					</CardHeader>
+					<CardContent>
+						{!formData.attachments || formData.attachments.length === 0 ? (
+							<div className="text-center py-8 text-text-secondary">
+								<Icon icon="solar:folder-open-bold-duotone" size={48} className="mx-auto mb-4 opacity-50" />
+								<p className="mb-4">No attachments yet</p>
+								<p className="text-xs">Add files or create interactive quizzes for your assignment</p>
+							</div>
+						) : (
+							<div className="space-y-3">
+								{formData.attachments.map((attachment) => {
+									if (attachment.type === "form") {
+										return (
+											<div key={attachment.id} className="flex items-center justify-between p-4 border rounded-lg">
+												<div className="flex items-center gap-3">
+													<Icon icon="solar:document-text-bold-duotone" size={24} className="text-primary" />
+													<div>
+														<p className="font-medium">{attachment.title || "Untitled Quiz"}</p>
+														<p className="text-sm text-text-secondary">
+															{attachment.questions?.length || 0} question
+															{(attachment.questions?.length || 0) !== 1 ? "s" : ""}
+															{attachment.questions && (
+																<> • {attachment.questions.reduce((sum, q) => sum + q.points, 0)} points</>
+															)}
+														</p>
+													</div>
+												</div>
+												<div className="flex items-center gap-2">
+													<Button type="button" variant="outline" size="sm" onClick={() => handleEditForm(attachment)}>
+														<Icon icon="solar:pen-bold-duotone" size={14} className="mr-1" />
+														Edit
+													</Button>
+													<Button
+														type="button"
+														variant="ghost"
+														size="sm"
+														onClick={() => handleDeleteForm(attachment.id)}
+														className="text-error hover:text-error"
+													>
+														<Icon icon="solar:trash-bin-minimalistic-bold-duotone" size={14} />
+													</Button>
+												</div>
+											</div>
+										);
+									}
+
+									// File attachments (if you want to support them later)
+									if (attachment.type === "file") {
+										return (
+											<div key={attachment.id} className="flex items-center justify-between p-4 border rounded-lg">
+												<div className="flex items-center gap-3">
+													<Icon icon="solar:file-bold-duotone" size={24} className="text-text-secondary" />
+													<div>
+														<p className="font-medium">{attachment.name}</p>
+														<p className="text-sm text-text-secondary">{attachment.mimeType}</p>
+													</div>
+												</div>
+												<div className="flex items-center gap-2">
+													<Button
+														type="button"
+														variant="outline"
+														size="sm"
+														onClick={() => window.open(attachment.url, "_blank")}
+													>
+														<Icon icon="solar:eye-bold-duotone" size={14} className="mr-1" />
+														View
+													</Button>
+													<Button
+														type="button"
+														variant="ghost"
+														size="sm"
+														onClick={() => {
+															const updatedAttachments = (formData.attachments || []).filter(
+																(att) => att.id !== attachment.id
+															);
+															setFormData({ ...formData, attachments: updatedAttachments });
+														}}
+														className="text-error hover:text-error"
+													>
+														<Icon icon="solar:trash-bin-minimalistic-bold-duotone" size={14} />
+													</Button>
+												</div>
+											</div>
+										);
+									}
+
+									return null;
+								})}
+							</div>
+						)}
 					</CardContent>
 				</Card>
 
@@ -499,6 +649,30 @@ export default function AssignmentTemplatePage() {
 					</AlertDialogFooter>
 				</AlertDialogContent>
 			</AlertDialog>
+
+			{/* Form Builder Modal */}
+			<Modal
+				title={editingForm ? "Edit Quiz/Survey" : "Create Quiz/Survey"}
+				open={formBuilderModal}
+				onCancel={() => {
+					setFormBuilderModal(false);
+					setEditingForm(null);
+				}}
+				footer={null}
+				width={1200}
+				style={{ top: 20 }}
+				className="form-builder-modal"
+			>
+				<FormBuilder
+					assignmentId={assignmentId === "create" ? undefined : assignmentId}
+					initialForm={editingForm ?? undefined}
+					onSave={handleSaveForm}
+					onCancel={() => {
+						setFormBuilderModal(false);
+						setEditingForm(null);
+					}}
+				/>
+			</Modal>
 		</div>
 	);
 }

@@ -4,7 +4,7 @@ import { Badge } from "@/ui/badge";
 import type { SyllabusItem } from "#/entity";
 import { Icon } from "@/components/icon";
 import { Skeleton } from "@/ui/skeleton";
-import { useRouter } from "@/routes/hooks";
+
 import { useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import syllabusService from "@/api/services/syllabusService";
@@ -150,7 +150,6 @@ function SortableItem({
 }
 
 export function SyllabusTab({ courseId, isLoading: initialLoading }: SyllabusTabProps) {
-	const { push } = useRouter();
 	const queryClient = useQueryClient();
 	const [editingItem, setEditingItem] = useState<SyllabusItem | null>(null);
 	const [deleteItem, setDeleteItem] = useState<SyllabusItem | null>(null);
@@ -164,9 +163,7 @@ export function SyllabusTab({ courseId, isLoading: initialLoading }: SyllabusTab
 	});
 
 	const sensors = useSensors(
-		useSensor(PointerSensor, {
-			distance: 8,
-		}),
+		useSensor(PointerSensor),
 		useSensor(KeyboardSensor, {
 			coordinateGetter: sortableKeyboardCoordinates,
 		})
