@@ -44,7 +44,7 @@ export function LecturersTab({ courseId, lecturers }: LecturersTabProps) {
 						<div className="space-y-3">
 							{lecturers.map((lecturer) => (
 								<div key={lecturer.userId} className="flex items-center gap-3 p-3 border rounded-lg">
-									<div className="h-12 w-12 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
+									<div className="h-12 w-12 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
 										<span className="text-sm font-medium">
 											{lecturer.user.firstName[0]}
 											{lecturer.user.lastName[0]}
