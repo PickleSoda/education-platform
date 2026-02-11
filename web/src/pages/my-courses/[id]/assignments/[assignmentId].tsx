@@ -5,8 +5,8 @@ import { useParams } from "react-router";
 import { format, isPast } from "date-fns";
 import { useState, useEffect } from "react";
 import { Tabs, TabsList, TabsTrigger } from "@/ui/tabs";
-import type { PublishedAssignment } from "#/entity";
-import submissionService from "@/api/services/submissionService";
+import type { PublishedAssignment, FormSubmission } from "#/entity";
+import submissionService, { type SaveSubmissionDraftReq } from "@/api/services/submissionService";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import courseInstanceService from "@/api/services/courseInstanceService";
 import { InstructionsTab, SubmissionTab, FeedbackTab } from "./tabs";
@@ -25,9 +25,11 @@ export default function AssignmentSubmissionPage() {
 		submittedAt?: string;
 		totalPoints?: number;
 		feedback?: string;
+		formSubmission?: FormSubmission;
 	} | null>(null);
 	const [content, setContent] = useState("");
 	const [fileList, setFileList] = useState<UploadFile[]>([]);
+	const [formSubmission, setFormSubmission] = useState<FormSubmission | null>(null);
 	const [activeTab, setActiveTab] = useState<"instructions" | "submission" | "feedback">("instructions");
 
 	const queryClient = useQueryClient();
@@ -47,7 +49,7 @@ export default function AssignmentSubmissionPage() {
 
 	// TanStack Query mutations
 	const saveDraftMutation = useMutation({
-		mutationFn: (data: { content?: string; attachments?: any }) =>
+		mutationFn: (data: { content?: string; attachments?: any; formSubmission?: FormSubmission }) =>
 			submissionService.saveSubmissionDraft(assignmentId!, data),
 		onSuccess: () => {
 			queryClient.invalidateQueries({ queryKey: ["submission", assignmentId] });
@@ -61,8 +63,8 @@ export default function AssignmentSubmissionPage() {
 
 	const submitAssignmentMutation = useMutation({
 		mutationFn: async () => {
-			// First save draft if there's content or files
-			if (content.trim() || fileList.length > 0) {
+			// First save draft if there's content, files, or form submission
+			if (content.trim() || fileList.length > 0 || formSubmission) {
 				const submissionData: any = {};
 				if (content.trim()) submissionData.content = content;
 				if (fileList.length > 0) {
@@ -72,6 +74,7 @@ export default function AssignmentSubmissionPage() {
 						type: file.type,
 					}));
 				}
+				if (formSubmission) submissionData.formSubmission = formSubmission;
 				await submissionService.saveSubmissionDraft(assignmentId!, submissionData);
 			}
 			// Then submit the assignment
@@ -99,11 +102,17 @@ export default function AssignmentSubmissionPage() {
 				submittedAt: existingSubmission.submittedAt || undefined,
 				totalPoints: existingSubmission.totalPoints || undefined,
 				feedback: existingSubmission.feedback || undefined,
+				formSubmission: existingSubmission.formSubmission || undefined,
 			});
 
 			// Populate content
 			if (existingSubmission.content) {
 				setContent(existingSubmission.content);
+			}
+
+			// Populate form submission
+			if (existingSubmission.formSubmission) {
+				setFormSubmission(existingSubmission.formSubmission);
 			}
 
 			// Populate file list from attachments
@@ -147,9 +156,9 @@ export default function AssignmentSubmissionPage() {
 	};
 
 	const handleSaveDraft = () => {
-		if (!assignmentId || (!content.trim() && fileList.length === 0)) return;
+		if (!assignmentId || (!content.trim() && fileList.length === 0 && !formSubmission)) return;
 
-		const submissionData: any = {};
+		const submissionData: SaveSubmissionDraftReq = {};
 		if (content.trim()) submissionData.content = content;
 		if (fileList.length > 0) {
 			submissionData.attachments = fileList.map((file) => ({
@@ -158,6 +167,7 @@ export default function AssignmentSubmissionPage() {
 				type: file.type,
 			}));
 		}
+		if (formSubmission) submissionData.formSubmission = formSubmission;
 
 		saveDraftMutation.mutate(submissionData);
 	};
@@ -254,10 +264,13 @@ export default function AssignmentSubmissionPage() {
 
 						{activeTab === "submission" && (
 							<SubmissionTab
+								assignment={assignment}
 								content={content}
 								setContent={setContent}
 								fileList={fileList}
 								setFileList={setFileList}
+								formSubmission={formSubmission ?? undefined}
+								setFormSubmission={setFormSubmission}
 								handleSaveDraft={handleSaveDraft}
 								handleSubmit={handleSubmit}
 								isSaving={saveDraftMutation.isPending}

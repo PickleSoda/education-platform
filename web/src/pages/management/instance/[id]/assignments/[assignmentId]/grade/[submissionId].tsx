@@ -8,28 +8,39 @@ import { useParams, useNavigate } from "react-router";
 import { format } from "date-fns";
 import { useState, useEffect } from "react";
 import { Tabs, TabsList, TabsTrigger } from "@/ui/tabs";
-import type { PublishedAssignment, SubmissionWithRelations } from "#/entity";
+import type { PublishedAssignment, SubmissionWithRelations, FormAttachment } from "#/entity";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import courseInstanceService from "@/api/services/courseInstanceService";
 import submissionService from "@/api/services/submissionService";
+import { FormRenderer } from "@/components/form-builder";
 import { toast } from "sonner";
 import { toNumber } from "lodash-es";
 
 // Helper functions for file handling
 const getFileIcon = (typeOrName: string): string => {
 	const type = typeOrName?.toLowerCase() || "";
-	
+
 	if (type.includes("pdf")) return "solar:file-text-bold-duotone";
 	if (type.includes("doc") || type.includes("docx")) return "solar:document-text-bold-duotone";
 	if (type.includes("xls") || type.includes("xlsx")) return "solar:chart-square-bold-duotone";
 	if (type.includes("ppt") || type.includes("pptx")) return "solar:presentation-graph-bold-duotone";
 	if (type.includes("zip") || type.includes("rar") || type.includes("7z")) return "solar:archive-bold-duotone";
-	if (type.includes("image") || type.includes("jpg") || type.includes("png") || type.includes("gif")) return "solar:gallery-bold-duotone";
-	if (type.includes("video") || type.includes("mp4") || type.includes("avi")) return "solar:video-frame-play-vertical-bold-duotone";
+	if (type.includes("image") || type.includes("jpg") || type.includes("png") || type.includes("gif"))
+		return "solar:gallery-bold-duotone";
+	if (type.includes("video") || type.includes("mp4") || type.includes("avi"))
+		return "solar:video-frame-play-vertical-bold-duotone";
 	if (type.includes("audio") || type.includes("mp3") || type.includes("wav")) return "solar:music-note-4-bold-duotone";
 	if (type.includes("text") || type.includes("txt")) return "solar:document-text-bold-duotone";
-	if (type.includes("java") || type.includes("js") || type.includes("ts") || type.includes("py") || type.includes("cpp") || type.includes("c")) return "solar:code-bold-duotone";
-	
+	if (
+		type.includes("java") ||
+		type.includes("js") ||
+		type.includes("ts") ||
+		type.includes("py") ||
+		type.includes("cpp") ||
+		type.includes("c")
+	)
+		return "solar:code-bold-duotone";
+
 	return "solar:file-bold-duotone";
 };
 
@@ -194,54 +205,91 @@ export default function SubmissionGradingPage() {
 					<CardContent className="p-6">
 						{activeTab === "submission" && (
 							<div className="space-y-6">
-								<div>
-									<h3 className="text-lg font-semibold">Student Submission</h3>
-									<div className="bg-secondary/50 rounded-lg p-4 min-h-32 prose prose-sm max-w-none whitespace-pre-wrap">
-										{submission.content || "No content submitted"}
-									</div>
-								</div>
-
-								{/* Submitted Files Section */}
-								{submission.attachments && Array.isArray(submission.attachments) && submission.attachments.length > 0 && (
+								{/* Text Submission */}
+								{submission.content && (
 									<div>
-										<h3 className="text-lg font-semibold mb-4">Submitted Files</h3>
-										<div className="space-y-3">
-											{submission.attachments.map((file: any, index: number) => (
-												<div key={index} className="flex items-center justify-between p-4 border rounded-lg bg-background">
-													<div className="flex items-center gap-3">
-														<Icon 
-															icon={getFileIcon(file.type || file.name)} 
-															size={24} 
-															className="text-primary" 
-														/>
-														<div>
-															<p className="font-medium">{file.name || `File ${index + 1}`}</p>
-															<div className="flex items-center gap-4 text-sm text-text-secondary">
-																{file.size && (
-																	<span>{formatFileSize(file.size)}</span>
-																)}
-																{file.type && (
-																	<span>{file.type}</span>
-																)}
-															</div>
-														</div>
-													</div>
-													<div className="flex gap-2">
-														{/* Note: Download functionality would need backend endpoint */}
-														<Button variant="outline" size="sm" disabled>
-															<Icon icon="solar:download-linear" size={16} className="mr-2" />
-															Download
-														</Button>
-														<Button variant="outline" size="sm" disabled>
-															<Icon icon="solar:eye-linear" size={16} className="mr-2" />
-															Preview
-														</Button>
-													</div>
-												</div>
-											))}
+										<h3 className="text-lg font-semibold">Text Submission</h3>
+										<div className="bg-secondary/50 rounded-lg p-4 min-h-32 prose prose-sm max-w-none whitespace-pre-wrap">
+											{submission.content}
 										</div>
 									</div>
 								)}
+
+								{/* Form/Quiz Submission */}
+								{submission.formSubmission && assignment?.attachments && (
+									<div>
+										<h3 className="text-lg font-semibold mb-4">Quiz/Survey Submission</h3>
+										{(() => {
+											const formAttachment = assignment.attachments.find(
+												(att) => att.type === "form" && att.id === submission.formSubmission?.formId
+											) as FormAttachment | undefined;
+
+											if (!formAttachment) {
+												return <p className="text-text-secondary">Form template not found</p>;
+											}
+
+											return (
+												<FormRenderer
+													form={formAttachment}
+													assignmentId={assignment.id}
+													initialSubmission={submission.formSubmission}
+													onSubmit={() => {}} // Read-only for grading
+													readonly={true}
+													showCorrectAnswers={true}
+												/>
+											);
+										})()}
+									</div>
+								)}
+
+								{/* Submitted Files Section */}
+								{submission.attachments &&
+									Array.isArray(submission.attachments) &&
+									submission.attachments.length > 0 && (
+										<div>
+											<h3 className="text-lg font-semibold mb-4">Submitted Files</h3>
+											<div className="space-y-3">
+												{submission.attachments.map((file: any, index: number) => (
+													<div
+														key={index}
+														className="flex items-center justify-between p-4 border rounded-lg bg-background"
+													>
+														<div className="flex items-center gap-3">
+															<Icon icon={getFileIcon(file.type || file.name)} size={24} className="text-primary" />
+															<div>
+																<p className="font-medium">{file.name || `File ${index + 1}`}</p>
+																<div className="flex items-center gap-4 text-sm text-text-secondary">
+																	{file.size && <span>{formatFileSize(file.size)}</span>}
+																	{file.type && <span>{file.type}</span>}
+																</div>
+															</div>
+														</div>
+														<div className="flex gap-2">
+															{/* Note: Download functionality would need backend endpoint */}
+															<Button variant="outline" size="sm" disabled>
+																<Icon icon="solar:download-linear" size={16} className="mr-2" />
+																Download
+															</Button>
+															<Button variant="outline" size="sm" disabled>
+																<Icon icon="solar:eye-linear" size={16} className="mr-2" />
+																Preview
+															</Button>
+														</div>
+													</div>
+												))}
+											</div>
+										</div>
+									)}
+
+								{/* No submission message */}
+								{!submission.content &&
+									!submission.formSubmission &&
+									(!submission.attachments || submission.attachments.length === 0) && (
+										<div className="text-center py-12 text-text-secondary">
+											<Icon icon="solar:file-text-bold-duotone" size={48} className="mx-auto mb-4 opacity-50" />
+											<p>No content submitted</p>
+										</div>
+									)}
 							</div>
 						)}
 
