@@ -98,7 +98,7 @@ export default function CourseDetail() {
 
 							{primaryLecturer && (
 								<div className="flex items-center gap-3 pt-2">
-									<div className="h-12 w-12 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
+									<div className="h-12 w-12 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
 										<span className="text-sm font-medium">
 											{primaryLecturer.user.firstName[0]}
 											{primaryLecturer.user.lastName[0]}
