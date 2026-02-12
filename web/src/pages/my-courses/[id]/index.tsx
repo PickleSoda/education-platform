@@ -10,7 +10,6 @@ import courseInstanceService from "@/api/services/courseInstanceService";
 import enrollmentService from "@/api/services/enrollmentService";
 import HomeTab from "./tabs/home-tab";
 import AssignmentsTab from "./tabs/assignments-tab";
-import GradesTab from "./tabs/grades-tab";
 import ResourcesTab from "./tabs/resources-tab";
 import PeopleTab from "./tabs/people-tab";
 import SyllabusTab from "./tabs/syllabus-tab";
@@ -241,10 +240,6 @@ export default function InstanceDetailPage() {
 								</Badge>
 							)}
 						</TabsTrigger>
-						<TabsTrigger value="grades">
-							<Icon icon="solar:chart-bold-duotone" size={18} className="mr-2" />
-							Grades
-						</TabsTrigger>
 						<TabsTrigger value="resources">
 							<Icon icon="solar:folder-bold-duotone" size={18} className="mr-2" />
 							Resources
@@ -265,11 +260,12 @@ export default function InstanceDetailPage() {
 				</TabsContent>
 
 				<TabsContent value="assignments">
-					<AssignmentsTab instanceId={id as string} assignments={assignments} isLoading={assignmentsLoading} />
-				</TabsContent>
-
-				<TabsContent value="grades">
-					<GradesTab instanceId={id as string} assignments={assignments} enrollment={myEnrollment} />
+					<AssignmentsTab
+						instanceId={id as string}
+						assignments={assignments}
+						isLoading={assignmentsLoading}
+						enrollment={myEnrollment}
+					/>
 				</TabsContent>
 
 				<TabsContent value="resources">

@@ -5,6 +5,10 @@ import { Table } from "antd";
 import type { ColumnsType } from "antd/es/table";
 import type { PublishedAssignment, EnrollmentWithRelations } from "#/entity";
 import { Progress } from "@/ui/progress";
+import { useQuery } from "@tanstack/react-query";
+import { useUserInfo } from "@/store/userStore";
+import submissionService from "@/api/services/submissionService";
+import { Skeleton } from "@/ui/skeleton";
 
 interface GradesTabProps {
 	instanceId: string;
@@ -22,19 +26,60 @@ interface GradeRow {
 	status: "graded" | "submitted" | "pending" | "not_submitted";
 }
 
-export default function GradesTab({ assignments }: GradesTabProps) {
-	// Transform assignments to grade rows (would need real submission data)
-	const gradeRows: GradeRow[] = assignments
-		.filter((a) => a.status === "published" || a.status === "closed")
-		.map((a) => ({
-			id: a.id,
-			title: a.title,
-			type: a.assignmentType,
-			maxPoints: a.maxPoints,
-			weight: a.weightPercentage,
-			score: null, // Would come from submissions
-			status: "not_submitted" as const,
-		}));
+export default function GradesTab({ instanceId, assignments, enrollment }: GradesTabProps) {
+	const userInfo = useUserInfo();
+	const studentId = enrollment?.studentId || userInfo.id;
+
+	const { data: gradebookData, isLoading: gradebookLoading } = useQuery({
+		queryKey: ["student-gradebook", instanceId, studentId],
+		queryFn: () => submissionService.getStudentGradebook(instanceId, studentId as string),
+		enabled: !!instanceId && !!studentId,
+	});
+
+	const gradebook = gradebookData?.data;
+
+	// Build grade rows from gradebook data (real submissions) or fall back to assignment list
+	const gradeRows: GradeRow[] = gradebook
+		? gradebook.assignments.map((entry) => {
+				const submission = entry.submission;
+				let score: number | null = null;
+				let status: GradeRow["status"] = "not_submitted";
+
+				if (submission) {
+					if (submission.status === "graded") {
+						score = submission.finalPoints ?? submission.totalPoints ?? null;
+						status = "graded";
+					} else if (submission.status === "submitted" || submission.status === "late") {
+						status = "submitted";
+					} else if (submission.status === "returned") {
+						score = submission.finalPoints ?? submission.totalPoints ?? null;
+						status = "graded";
+					} else {
+						status = "pending";
+					}
+				}
+
+				return {
+					id: entry.id,
+					title: entry.title,
+					type: entry.type,
+					maxPoints: entry.maxPoints,
+					weight: entry.weightPercentage,
+					score,
+					status,
+				};
+			})
+		: assignments
+				.filter((a) => a.status === "published" || a.status === "closed")
+				.map((a) => ({
+					id: a.id,
+					title: a.title,
+					type: a.assignmentType,
+					maxPoints: a.maxPoints,
+					weight: a.weightPercentage,
+					score: null,
+					status: "not_submitted" as const,
+				}));
 
 	// Calculate totals
 	const totalWeight = gradeRows.reduce((sum, row) => sum + (row.weight || 0), 0);
@@ -134,6 +179,14 @@ export default function GradesTab({ assignments }: GradesTabProps) {
 
 	return (
 		<div className="space-y-6">
+			{gradebookLoading && (
+				<Card>
+					<CardContent className="p-6">
+						<Skeleton className="h-64 w-full" />
+					</CardContent>
+				</Card>
+			)}
+
 			{/* Grade Summary */}
 			<div className="grid gap-6 md:grid-cols-3">
 				{/* Current Grade Card */}
@@ -142,12 +195,22 @@ export default function GradesTab({ assignments }: GradesTabProps) {
 						<div className="flex items-center gap-4">
 							<div className="h-16 w-16 rounded-full bg-primary/10 flex items-center justify-center">
 								<span className="text-2xl font-bold text-primary">
-									{gradedMaxPoints > 0 ? getLetterGrade(currentPercentage) : "--"}
+									{gradebook?.finalLetter
+										? gradebook.finalLetter
+										: gradedMaxPoints > 0
+											? getLetterGrade(currentPercentage)
+											: "--"}
 								</span>
 							</div>
 							<div>
 								<p className="text-sm text-text-secondary">Current Grade</p>
-								<p className="text-3xl font-bold">{gradedMaxPoints > 0 ? `${currentPercentage.toFixed(1)}%` : "--"}</p>
+								<p className="text-3xl font-bold">
+									{gradebook?.finalGrade != null
+										? `${gradebook.finalGrade.toFixed(1)}%`
+										: gradedMaxPoints > 0
+											? `${currentPercentage.toFixed(1)}%`
+											: "--"}
+								</p>
 							</div>
 						</div>
 					</CardContent>

@@ -72,6 +72,13 @@ router.post(
   submissionController.gradePassFail
 );
 
+// Return submission for resubmission (teacher, admin)
+router.post(
+  '/:submissionId/return',
+  requireAnyRole(['teacher', 'admin']),
+  submissionController.returnSubmission
+);
+
 // Get submission statistics (teacher, admin)
 router.get(
   '/assignments/:assignmentId/stats',

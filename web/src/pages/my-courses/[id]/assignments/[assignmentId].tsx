@@ -5,7 +5,7 @@ import { useParams } from "react-router";
 import { format, isPast } from "date-fns";
 import { useState, useEffect } from "react";
 import { Tabs, TabsList, TabsTrigger } from "@/ui/tabs";
-import type { PublishedAssignment, FormSubmission } from "#/entity";
+import type { PublishedAssignment, FormSubmission, SubmissionWithRelations } from "#/entity";
 import submissionService, { type SaveSubmissionDraftReq } from "@/api/services/submissionService";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import courseInstanceService from "@/api/services/courseInstanceService";
@@ -19,14 +19,6 @@ export default function AssignmentSubmissionPage() {
 		assignmentId: string;
 	}>();
 
-	const [submission, setSubmission] = useState<{
-		status: "not-started" | "draft" | "submitted" | "late" | "graded" | "returned";
-		content?: string;
-		submittedAt?: string;
-		totalPoints?: number;
-		feedback?: string;
-		formSubmission?: FormSubmission;
-	} | null>(null);
 	const [content, setContent] = useState("");
 	const [fileList, setFileList] = useState<UploadFile[]>([]);
 	const [formSubmission, setFormSubmission] = useState<FormSubmission | null>(null);
@@ -46,6 +38,18 @@ export default function AssignmentSubmissionPage() {
 		queryFn: () => submissionService.getSubmissions({ assignmentId: assignmentId! }),
 		enabled: !!assignmentId,
 	});
+
+	// Get the full submission object (with grades, gradedBy, etc.)
+	const existingSubmission: SubmissionWithRelations | null =
+		submissionData?.data && submissionData.data.length > 0 ? submissionData.data[0] : null;
+
+	const submissionStatus = existingSubmission?.status || "not-started";
+
+	// Determine if student can edit/submit
+	const isGraded = submissionStatus === "graded";
+	const isReturned = submissionStatus === "returned";
+	const isSubmitted = submissionStatus === "submitted" || submissionStatus === "late";
+	const canEdit = !isGraded && !isSubmitted; // Can edit if draft, not started, or returned
 
 	// TanStack Query mutations
 	const saveDraftMutation = useMutation({
@@ -106,30 +110,13 @@ export default function AssignmentSubmissionPage() {
 
 	// Populate form with existing submission data
 	useEffect(() => {
-		if (submissionData?.data && submissionData.data.length > 0) {
-			const existingSubmission = submissionData.data[0]; // Get the first (and should be only) submission
-
-			// Update submission state
-			setSubmission({
-				status: existingSubmission.status as any,
-				content: existingSubmission.content || undefined,
-				submittedAt: existingSubmission.submittedAt || undefined,
-				totalPoints: existingSubmission.totalPoints || undefined,
-				feedback: existingSubmission.feedback || undefined,
-				formSubmission: existingSubmission.formSubmission || undefined,
-			});
-
-			// Populate content
+		if (existingSubmission) {
 			if (existingSubmission.content) {
 				setContent(existingSubmission.content);
 			}
-
-			// Populate form submission
 			if (existingSubmission.formSubmission) {
 				setFormSubmission(existingSubmission.formSubmission);
 			}
-
-			// Populate file list from attachments (preserve filePath and url for server-uploaded files)
 			if (existingSubmission.attachments && Array.isArray(existingSubmission.attachments)) {
 				const files: UploadFile[] = existingSubmission.attachments.map(
 					(file: any, index: number) =>
@@ -264,26 +251,63 @@ export default function AssignmentSubmissionPage() {
 
 					<Card className="p-4">
 						<div className="text-sm text-text-secondary mb-1">Status</div>
-						<div className="font-semibold capitalize">{submission?.status || "Not Started"}</div>
-						{submission?.submittedAt && (
+						<div className="font-semibold capitalize">
+							{submissionStatus === "not-started" ? "Not Started" : submissionStatus}
+						</div>
+						{existingSubmission?.submittedAt && (
 							<div className="text-xs text-text-secondary">
-								{format(new Date(submission.submittedAt), "MMM dd, yyyy")}
+								{format(new Date(existingSubmission.submittedAt), "MMM dd, yyyy")}
 							</div>
 						)}
 					</Card>
 
-					{submission?.status === "graded" && (
+					{isGraded && (
 						<Card className="p-4 bg-success/10">
 							<div className="text-sm text-text-secondary mb-1">Your Score</div>
 							<div className="text-2xl font-bold text-success">
-								{submission.totalPoints}/{assignment.maxPoints}
+								{existingSubmission?.finalPoints ?? existingSubmission?.totalPoints ?? 0}/{assignment.maxPoints}
 							</div>
 							<div className="text-xs text-text-secondary mt-1">
-								{Math.round((submission.totalPoints || 0 / assignment.maxPoints!) * 100)}%
+								{Math.round(
+									((existingSubmission?.finalPoints ?? existingSubmission?.totalPoints ?? 0) /
+										(assignment.maxPoints || 1)) *
+										100
+								)}
+								%
+								{existingSubmission?.latePenaltyApplied && (
+									<span className="text-warning ml-1">(late penalty applied)</span>
+								)}
 							</div>
 						</Card>
 					)}
 				</div>
+
+				{/* Returned for resubmission notice */}
+				{isReturned && (
+					<div className="flex items-center gap-3 p-4 rounded-lg bg-warning/10 border border-warning/20">
+						<Icon icon="solar:restart-bold-duotone" size={20} className="text-warning" />
+						<div>
+							<div className="font-medium text-warning">Returned for Resubmission</div>
+							<div className="text-sm text-text-secondary">
+								Your instructor has returned this assignment. You may revise and resubmit your work.
+							</div>
+						</div>
+					</div>
+				)}
+
+				{/* Submitted notice */}
+				{isSubmitted && (
+					<div className="flex items-center gap-3 p-4 rounded-lg bg-info/10 border border-info/20">
+						<Icon icon="solar:check-circle-bold-duotone" size={20} className="text-info" />
+						<div>
+							<div className="font-medium text-info">Submitted</div>
+							<div className="text-sm text-text-secondary">
+								Your assignment has been submitted and is awaiting grading. You cannot make changes until your
+								instructor returns it.
+							</div>
+						</div>
+					</div>
+				)}
 			</div>
 
 			{/* Content Tabs */}
@@ -292,15 +316,15 @@ export default function AssignmentSubmissionPage() {
 					<CardHeader className="border-b">
 						<TabsList className="w-full justify-start">
 							<TabsTrigger value="instructions">Instructions</TabsTrigger>
-							{!isOverdue && <TabsTrigger value="submission">Submission</TabsTrigger>}
-							{submission?.status === "graded" && <TabsTrigger value="feedback">Feedback</TabsTrigger>}
+							{canEdit && <TabsTrigger value="submission">Submission</TabsTrigger>}
+							{(isGraded || isReturned) && <TabsTrigger value="feedback">Feedback</TabsTrigger>}
 						</TabsList>
 					</CardHeader>
 
 					<CardContent className="p-6">
 						{activeTab === "instructions" && <InstructionsTab assignment={assignment} />}
 
-						{activeTab === "submission" && (
+						{activeTab === "submission" && canEdit && (
 							<SubmissionTab
 								assignment={assignment}
 								content={content}
@@ -317,7 +341,9 @@ export default function AssignmentSubmissionPage() {
 							/>
 						)}
 
-						{activeTab === "feedback" && <FeedbackTab assignment={assignment} submission={submission} />}
+						{activeTab === "feedback" && (isGraded || isReturned) && (
+							<FeedbackTab assignment={assignment} submission={existingSubmission} />
+						)}
 					</CardContent>
 				</Tabs>
 			</Card>

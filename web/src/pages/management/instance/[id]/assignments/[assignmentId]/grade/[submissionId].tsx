@@ -107,15 +107,26 @@ export default function SubmissionGradingPage() {
 		}) => submissionService.gradeSubmission(submissionId as string, data),
 		onSuccess: async () => {
 			toast.success("Grade submitted successfully");
-			// Invalidate the submissions list query
 			await queryClient.invalidateQueries({ queryKey: ["submissions", assignmentId] });
-			// Invalidate the single submission query
 			await queryClient.invalidateQueries({ queryKey: ["submission", submissionId] });
 			navigate(-1);
 		},
 
 		onError: (error: any) => {
 			toast.error(error?.response?.data?.message || "Failed to submit grade");
+		},
+	});
+
+	const returnMutation = useMutation({
+		mutationFn: () => submissionService.returnSubmission(submissionId as string),
+		onSuccess: async () => {
+			toast.success("Submission returned for resubmission");
+			await queryClient.invalidateQueries({ queryKey: ["submissions", assignmentId] });
+			await queryClient.invalidateQueries({ queryKey: ["submission", submissionId] });
+			navigate(-1);
+		},
+		onError: (error: any) => {
+			toast.error(error?.response?.data?.message || "Failed to return submission");
 		},
 	});
 
@@ -389,6 +400,19 @@ export default function SubmissionGradingPage() {
 									</div>
 
 									<div className="flex gap-3">
+										{(submission.status === "graded" ||
+											submission.status === "submitted" ||
+											submission.status === "late") && (
+											<Button
+												variant="outline"
+												onClick={() => returnMutation.mutate()}
+												disabled={returnMutation.isPending || gradeMutation.isPending}
+												className="text-warning border-warning/30 hover:bg-warning/10"
+											>
+												<Icon icon="solar:restart-bold-duotone" size={16} className="mr-2" />
+												{returnMutation.isPending ? "Returning..." : "Return for Resubmission"}
+											</Button>
+										)}
 										<Button variant="outline" onClick={() => navigate(-1)} disabled={gradeMutation.isPending}>
 											<Icon icon="solar:close-circle-bold-duotone" size={16} className="mr-2" />
 											Cancel

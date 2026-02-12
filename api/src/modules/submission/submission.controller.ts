@@ -25,6 +25,7 @@ import {
   getGradebookSchema,
   getSubmissionStatsSchema,
   updateSubmissionSchema,
+  returnSubmissionSchema,
 } from './submission.validation';
 
 // Configure multer for submission file uploads
@@ -376,6 +377,24 @@ export const downloadSubmissionFile = catchAsync(async (req, res): Promise<any> 
   res.sendFile(path.resolve(fullPath));
 });
 
+/**
+ * Return submission for resubmission (teacher/admin)
+ * POST /submissions/:submissionId/return
+ */
+export const returnSubmission = catchAsync(
+  async (req): Promise<ApiResponse<SubmissionWithRelations>> => {
+    const { params } = await zParse(returnSubmissionSchema, req);
+
+    const submission = await submissionService.returnSubmissionService(params.submissionId);
+
+    return {
+      statusCode: httpStatus.OK,
+      message: 'Submission returned for resubmission',
+      data: submission,
+    };
+  }
+);
+
 export const submissionController = {
   saveSubmission,
   submitAssignment,
@@ -388,6 +407,7 @@ export const submissionController = {
   updateSubmission,
   uploadSubmissionFiles,
   downloadSubmissionFile,
+  returnSubmission,
 };
 
 export default submissionController;

@@ -41,6 +41,8 @@ export function SubmissionTab({
 
 	const handleFormSubmit = (submission: FormSubmission) => {
 		setFormSubmission(submission);
+		// Auto-save draft when quiz/form is submitted
+		handleSaveDraft();
 	};
 
 	// Check if assignment has form attachments

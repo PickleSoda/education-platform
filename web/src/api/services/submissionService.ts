@@ -130,6 +130,12 @@ const uploadSubmissionFiles = async (assignmentId: string, files: File[]) => {
 const getDownloadUrl = (submissionId: string, filePath: string) =>
 	`${GLOBAL_CONFIG.apiBaseUrl}${SubmissionApi.Submissions}/${submissionId}/download/${filePath}`;
 
+const returnSubmission = (submissionId: string) =>
+	apiClient.post<ApiResponse<SubmissionWithRelations>>({
+		url: `${SubmissionApi.Submissions}/${submissionId}/return`,
+		data: {},
+	});
+
 export default {
 	// Submission CRUD
 	getSubmissions,
@@ -140,6 +146,8 @@ export default {
 	// Grading
 	gradeSubmission,
 	gradePassFail,
+	// Resubmission
+	returnSubmission,
 	// Gradebook
 	getStudentGradebook,
 	getSubmissionStats,

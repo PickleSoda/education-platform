@@ -38,7 +38,7 @@ export default function BannerCard() {
 							<Button
 								variant="outline"
 								className="w-fit bg-white text-black"
-								onClick={() => window.open("https://discord.gg/fXemAXVNDa")}
+								onClick={() => window.open("https://discord.gg/pSaAgHPCZs", "_blank")}
 							>
 								<Icon icon="carbon:logo-discord" size={24} />
 								<span className="ml-2 font-black">Join Discord</span>

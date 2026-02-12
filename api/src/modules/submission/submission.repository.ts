@@ -531,6 +531,41 @@ export const updateSubmission = async (
   return transformSubmission(result) as SubmissionWithRelations;
 };
 
+/**
+ * Return submission for resubmission (teacher/admin)
+ * Sets status back to 'returned' so student can revise and resubmit
+ */
+export const returnSubmission = async (submissionId: string): Promise<SubmissionWithRelations> => {
+  const result = await prisma.submission.update({
+    where: { id: submissionId },
+    data: {
+      status: 'returned',
+    },
+    include: {
+      student: {
+        select: {
+          id: true,
+          email: true,
+          firstName: true,
+          lastName: true,
+        },
+      },
+      publishedAssignment: {
+        select: {
+          id: true,
+          title: true,
+          deadline: true,
+          lateDeadline: true,
+          latePenaltyPercent: true,
+        },
+      },
+      grades: true,
+    },
+  });
+
+  return transformSubmission(result) as SubmissionWithRelations;
+};
+
 export const submissionRepository = {
   saveSubmission,
   getSubmissionById,
@@ -541,6 +576,7 @@ export const submissionRepository = {
   getStudentGradebook,
   getSubmissionStats,
   updateSubmission,
+  returnSubmission,
 };
 
 export default submissionRepository;

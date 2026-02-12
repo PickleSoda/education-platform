@@ -109,6 +109,12 @@ export const getSubmissionStatsSchema = z.object({
   }),
 });
 
+export const returnSubmissionSchema = z.object({
+  params: z.object({
+    submissionId: z.string().uuid('Invalid submission ID'),
+  }),
+});
+
 // Type exports for validation
 export type SaveSubmissionInput = z.infer<typeof saveSubmissionSchema>;
 export type SubmitAssignmentInput = z.infer<typeof submitAssignmentSchema>;
@@ -118,3 +124,4 @@ export type GetSubmissionInput = z.infer<typeof getSubmissionSchema>;
 export type ListSubmissionsQuery = z.infer<typeof listSubmissionsSchema>['query'];
 export type GetGradebookInput = z.infer<typeof getGradebookSchema>;
 export type GetSubmissionStatsInput = z.infer<typeof getSubmissionStatsSchema>;
+export type ReturnSubmissionInput = z.infer<typeof returnSubmissionSchema>;

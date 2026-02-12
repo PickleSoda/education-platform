@@ -294,6 +294,29 @@ export const updateSubmissionDraft = async (
   return submissionRepository.updateSubmission(submissionId, data);
 };
 
+/**
+ * Return submission for resubmission (teacher/admin)
+ */
+export const returnSubmissionService = async (submissionId: string) => {
+  const submission = await submissionRepository.getSubmissionById(submissionId);
+  if (!submission) {
+    throw new ApiError(httpStatus.NOT_FOUND, 'Submission not found');
+  }
+
+  if (
+    submission.status !== 'graded' &&
+    submission.status !== 'submitted' &&
+    submission.status !== 'late'
+  ) {
+    throw new ApiError(
+      httpStatus.BAD_REQUEST,
+      'Only graded or submitted assignments can be returned for resubmission'
+    );
+  }
+
+  return submissionRepository.returnSubmission(submissionId);
+};
+
 export const submissionService = {
   saveSubmissionDraft,
   submitAssignmentService,
@@ -304,6 +327,7 @@ export const submissionService = {
   getStudentGradebookService,
   getSubmissionStatsService,
   updateSubmissionDraft,
+  returnSubmissionService,
 };
 
 export default submissionService;

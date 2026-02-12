@@ -59,10 +59,9 @@ export function InstructionsTab({ assignment }: InstructionsTabProps) {
 									size="sm"
 									onClick={() => {
 										if (file.url) {
-											// If URL starts with /uploads, prepend API base
-											const downloadUrl = file.url.startsWith("/uploads")
-												? `${GLOBAL_CONFIG.apiBaseUrl.replace("/api", "")}${file.url}`
-												: file.url;
+											// If URL starts with /uploads, prepend server base (without /v1 or /api prefix)
+											const serverBase = GLOBAL_CONFIG.apiBaseUrl.replace(/\/v\d+$/, "").replace(/\/api$/, "");
+											const downloadUrl = file.url.startsWith("/uploads") ? `${serverBase}${file.url}` : file.url;
 											window.open(downloadUrl, "_blank");
 										}
 									}}
