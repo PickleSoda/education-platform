@@ -35,8 +35,8 @@ export default function InstanceDetailPage() {
 	const queryClient = useQueryClient();
 
 	const { data: instanceData, isLoading: instanceLoading } = useQuery({
-		queryKey: ["instance-details", id],
-		queryFn: () => courseInstanceService.getInstanceDetails(id as string),
+		queryKey: ["instance", id],
+		queryFn: () => courseInstanceService.getInstanceById(id as string),
 		enabled: !!id,
 	});
 

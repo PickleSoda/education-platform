@@ -15,6 +15,7 @@ import submissionService from "@/api/services/submissionService";
 import { FormRenderer } from "@/components/form-builder";
 import { toast } from "sonner";
 import { toNumber } from "lodash-es";
+import userStore from "@/store/userStore";
 
 // Helper functions for file handling
 const getFileIcon = (typeOrName: string): string => {
@@ -265,14 +266,44 @@ export default function SubmissionGradingPage() {
 															</div>
 														</div>
 														<div className="flex gap-2">
-															{/* Note: Download functionality would need backend endpoint */}
-															<Button variant="outline" size="sm" disabled>
+															<Button
+																variant="outline"
+																size="sm"
+																onClick={() => {
+																	if (file.filePath) {
+																		const downloadUrl = submissionService.getDownloadUrl(
+																			submissionId as string,
+																			file.filePath
+																		);
+																		const token = userStore.getState().userToken.accessToken;
+																		// Use fetch with auth token for download
+																		fetch(downloadUrl, {
+																			headers: { Authorization: `Bearer ${token}` },
+																		})
+																			.then((res) => {
+																				if (!res.ok) throw new Error("Download failed");
+																				return res.blob();
+																			})
+																			.then((blob) => {
+																				const url = window.URL.createObjectURL(blob);
+																				const a = document.createElement("a");
+																				a.href = url;
+																				a.download = file.name || `file-${index + 1}`;
+																				document.body.appendChild(a);
+																				a.click();
+																				window.URL.revokeObjectURL(url);
+																				a.remove();
+																			})
+																			.catch(() => toast.error("Failed to download file"));
+																	} else if (file.url) {
+																		window.open(file.url, "_blank");
+																	} else {
+																		toast.error("File not available for download");
+																	}
+																}}
+															>
 																<Icon icon="solar:download-linear" size={16} className="mr-2" />
 																Download
-															</Button>
-															<Button variant="outline" size="sm" disabled>
-																<Icon icon="solar:eye-linear" size={16} className="mr-2" />
-																Preview
 															</Button>
 														</div>
 													</div>

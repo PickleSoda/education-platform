@@ -1,6 +1,9 @@
 import type { ApiResponse } from "#/api";
-import type { AssignmentTemplate, GradingCriteria, Attachment } from "#/entity";
+import type { AssignmentTemplate, GradingCriteria, Attachment, FileAttachment } from "#/entity";
 import apiClient from "../apiClient";
+import axios from "axios";
+import { GLOBAL_CONFIG } from "@/global-config";
+import userStore from "@/store/userStore";
 import { AssignmentType } from "@/types/entity";
 // Query parameters
 export interface ListAssignmentTemplatesParams {
@@ -110,6 +113,20 @@ const updateGradingCriteria = (assignmentId: string, criteriaId: string, data: U
 const deleteGradingCriteria = (assignmentId: string, criteriaId: string) =>
 	apiClient.delete<ApiResponse<void>>({ url: `/assignments/${assignmentId}/criteria/${criteriaId}` });
 
+const uploadAssignmentFile = async (assignmentId: string, file: File): Promise<ApiResponse<FileAttachment>> => {
+	const formData = new FormData();
+	formData.append("file", file);
+
+	const token = userStore.getState().userToken.accessToken;
+	const response = await axios.post(`${GLOBAL_CONFIG.apiBaseUrl}/assignments/${assignmentId}/upload-file`, formData, {
+		headers: {
+			"Content-Type": "multipart/form-data",
+			Authorization: `Bearer ${token}`,
+		},
+	});
+	return response.data;
+};
+
 export default {
 	// Assignment templates
 	getAssignmentTemplates,
@@ -124,4 +141,6 @@ export default {
 	addGradingCriteria,
 	updateGradingCriteria,
 	deleteGradingCriteria,
+	// File operations
+	uploadAssignmentFile,
 };

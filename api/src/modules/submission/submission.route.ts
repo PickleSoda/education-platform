@@ -1,5 +1,5 @@
 import { Router } from 'express';
-import { submissionController } from './submission.controller';
+import { submissionController, submissionUploadMiddleware } from './submission.controller';
 import auth, { requireAnyRole } from '@/shared/middlewares/auth';
 
 const router = Router();
@@ -19,6 +19,14 @@ router.post(
   '/assignments/:assignmentId/draft',
   requireAnyRole(['student']),
   submissionController.saveSubmission
+);
+
+// Upload submission files (student)
+router.post(
+  '/assignments/:assignmentId/upload',
+  requireAnyRole(['student']),
+  submissionUploadMiddleware,
+  submissionController.uploadSubmissionFiles
 );
 
 // Update submission draft (student)
@@ -46,6 +54,9 @@ router.get('/', submissionController.listSubmissions);
 
 // Get submission details (students can view their own, teachers/admins can view all)
 router.get('/:submissionId', submissionController.getSubmission);
+
+// Download submission file (student who submitted or teacher/admin)
+router.get('/:submissionId/download/*filepath', submissionController.downloadSubmissionFile);
 
 // Grade submission with criteria (teacher, admin)
 router.post(

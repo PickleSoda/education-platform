@@ -17,7 +17,7 @@ interface AssignmentsTabProps {
 	isLoading: boolean;
 }
 
-type FilterType = "all" | "upcoming" | "overdue" | "completed";
+type FilterType = "all" | "upcoming" | "scheduled" | "overdue" | "completed";
 
 export default function AssignmentsTab({ assignments, isLoading }: AssignmentsTabProps) {
 	const [filter, setFilter] = useState<FilterType>("all");
@@ -34,6 +34,7 @@ export default function AssignmentsTab({ assignments, isLoading }: AssignmentsTa
 
 	const getDeadlineStatus = (deadline: string, status: string) => {
 		if (status === "closed") return { label: "Closed", color: "default" as const };
+		if (status === "scheduled") return { label: "Scheduled", color: "info" as const };
 		const deadlineDate = new Date(deadline);
 		if (isPast(deadlineDate)) return { label: "Overdue", color: "error" as const };
 		const daysUntil = Math.ceil((deadlineDate.getTime() - Date.now()) / (1000 * 60 * 60 * 24));
@@ -42,20 +43,26 @@ export default function AssignmentsTab({ assignments, isLoading }: AssignmentsTa
 		return { label: "Open", color: "success" as const };
 	};
 
-	const filteredAssignments = assignments.filter((a) => {
-		if (a.status !== "published" && a.status !== "closed") return false;
+	// Include published, closed, and scheduled assignments
+	const visibleAssignments = assignments.filter(
+		(a) => a.status === "published" || a.status === "closed" || a.status === "scheduled"
+	);
+
+	const filteredAssignments = visibleAssignments.filter((a) => {
 		if (filter === "all") return true;
-		if (filter === "upcoming") return isFuture(new Date(a.deadline));
-		if (filter === "overdue") return isPast(new Date(a.deadline)) && a.status !== "closed";
+		if (filter === "scheduled") return a.status === "scheduled";
+		if (filter === "upcoming") return a.status === "published" && isFuture(new Date(a.deadline));
+		if (filter === "overdue") return a.status === "published" && isPast(new Date(a.deadline));
 		if (filter === "completed") return a.status === "closed";
 		return true;
 	});
 
 	const counts = {
-		all: assignments.filter((a) => a.status === "published" || a.status === "closed").length,
-		upcoming: assignments.filter((a) => a.status === "published" && isFuture(new Date(a.deadline))).length,
-		overdue: assignments.filter((a) => a.status === "published" && isPast(new Date(a.deadline))).length,
-		completed: assignments.filter((a) => a.status === "closed").length,
+		all: visibleAssignments.length,
+		scheduled: visibleAssignments.filter((a) => a.status === "scheduled").length,
+		upcoming: visibleAssignments.filter((a) => a.status === "published" && isFuture(new Date(a.deadline))).length,
+		overdue: visibleAssignments.filter((a) => a.status === "published" && isPast(new Date(a.deadline))).length,
+		completed: visibleAssignments.filter((a) => a.status === "closed").length,
 	};
 
 	const columns: ColumnsType<PublishedAssignment> = [

@@ -1,9 +1,12 @@
 import httpStatus from 'http-status';
+import multer from 'multer';
+import path from 'node:path';
 
 import ApiError from '@/shared/utils/api-error';
 import catchAsync from '@/shared/utils/catch-async';
 import { zParse } from '@/shared/utils/z-parse';
 import type { ApiResponse } from '@/types/response';
+import { storageService } from '@/shared/services/storage.service';
 
 import { assignmentService } from './assignment.service';
 import type {
@@ -280,6 +283,91 @@ export const reorderGradingCriteria = catchAsync(async (req): Promise<ApiRespons
 });
 
 // ============================================================================
+// FILE UPLOAD FOR ASSIGNMENT TEMPLATES
+// ============================================================================
+
+// Configure multer for assignment file uploads
+const upload = multer({
+  storage: multer.memoryStorage(),
+  limits: {
+    fileSize: 50 * 1024 * 1024, // 50MB limit
+  },
+  fileFilter: (_req, file, cb) => {
+    const allowedMimes = [
+      'application/pdf',
+      'application/msword',
+      'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+      'application/vnd.ms-powerpoint',
+      'application/vnd.openxmlformats-officedocument.presentationml.presentation',
+      'application/vnd.ms-excel',
+      'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+      'text/plain',
+      'text/csv',
+      'image/jpeg',
+      'image/png',
+      'image/gif',
+      'video/mp4',
+      'video/mpeg',
+      'application/zip',
+      'application/x-zip-compressed',
+      'application/octet-stream',
+    ];
+
+    const ext = path.extname(file.originalname).toLowerCase();
+    const codeExtensions = [
+      '.py',
+      '.java',
+      '.js',
+      '.ts',
+      '.jsx',
+      '.tsx',
+      '.c',
+      '.cpp',
+      '.h',
+      '.cs',
+      '.rb',
+      '.go',
+      '.rs',
+      '.php',
+    ];
+
+    if (allowedMimes.includes(file.mimetype) || codeExtensions.includes(ext)) {
+      cb(null, true);
+    } else {
+      cb(new Error('Invalid file type'));
+    }
+  },
+});
+
+export const assignmentUploadMiddleware = upload.single('file');
+
+/**
+ * Upload a file attachment for an assignment template
+ * POST /assignments/:id/upload-file
+ */
+export const uploadAssignmentFile = catchAsync(async (req): Promise<ApiResponse<any>> => {
+  if (!req.file) {
+    throw new ApiError(httpStatus.BAD_REQUEST, 'No file uploaded');
+  }
+
+  const uploadResult = await storageService.uploadFile(req.file, 'assignments');
+
+  const fileAttachment = {
+    type: 'file',
+    id: uploadResult.filePath, // Use filePath as ID for uniqueness
+    name: req.file.originalname,
+    url: uploadResult.url,
+    mimeType: req.file.mimetype,
+  };
+
+  return {
+    statusCode: httpStatus.OK,
+    message: 'File uploaded successfully',
+    data: fileAttachment,
+  };
+});
+
+// ============================================================================
 // CONTROLLER EXPORT
 // ============================================================================
 
@@ -301,4 +389,7 @@ export const assignmentController = {
   updateCriteria: updateGradingCriteria,
   deleteCriteria: deleteGradingCriteria,
   reorderCriteria: reorderGradingCriteria,
+
+  // File upload
+  uploadFile: uploadAssignmentFile,
 };

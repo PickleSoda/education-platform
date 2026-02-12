@@ -68,11 +68,25 @@ export default function AssignmentSubmissionPage() {
 				const submissionData: any = {};
 				if (content.trim()) submissionData.content = content;
 				if (fileList.length > 0) {
-					submissionData.attachments = fileList.map((file) => ({
-						name: file.name,
-						size: file.size,
-						type: file.type,
-					}));
+					// Upload new files to server first
+					const newFiles = fileList.filter((f) => f.originFileObj).map((f) => f.originFileObj as File);
+					const existingAttachments = fileList
+						.filter((f) => !f.originFileObj && (f as any).filePath)
+						.map((f) => ({
+							name: f.name,
+							size: f.size || 0,
+							type: f.type || "",
+							filePath: (f as any).filePath,
+							url: (f as any).url,
+						}));
+
+					let uploadedFiles: any[] = [];
+					if (newFiles.length > 0) {
+						const uploadResult = await submissionService.uploadSubmissionFiles(assignmentId!, newFiles);
+						uploadedFiles = uploadResult.data || [];
+					}
+
+					submissionData.attachments = [...existingAttachments, ...uploadedFiles];
 				}
 				if (formSubmission) submissionData.formSubmission = formSubmission;
 				await submissionService.saveSubmissionDraft(assignmentId!, submissionData);
@@ -115,15 +129,20 @@ export default function AssignmentSubmissionPage() {
 				setFormSubmission(existingSubmission.formSubmission);
 			}
 
-			// Populate file list from attachments
+			// Populate file list from attachments (preserve filePath and url for server-uploaded files)
 			if (existingSubmission.attachments && Array.isArray(existingSubmission.attachments)) {
-				const files: UploadFile[] = existingSubmission.attachments.map((file: any, index: number) => ({
-					uid: `${index}`,
-					name: file.name || `File ${index + 1}`,
-					status: "done",
-					size: file.size || 0,
-					type: file.type || "",
-				}));
+				const files: UploadFile[] = existingSubmission.attachments.map(
+					(file: any, index: number) =>
+						({
+							uid: `${index}`,
+							name: file.name || `File ${index + 1}`,
+							status: "done" as const,
+							size: file.size || 0,
+							type: file.type || "",
+							filePath: file.filePath,
+							url: file.url,
+						}) as any
+				);
 				setFileList(files);
 			}
 		}
@@ -155,17 +174,36 @@ export default function AssignmentSubmissionPage() {
 		return { label: `Due in ${daysUntil} days`, color: "success" as const };
 	};
 
-	const handleSaveDraft = () => {
+	const handleSaveDraft = async () => {
 		if (!assignmentId || (!content.trim() && fileList.length === 0 && !formSubmission)) return;
 
 		const submissionData: SaveSubmissionDraftReq = {};
 		if (content.trim()) submissionData.content = content;
 		if (fileList.length > 0) {
-			submissionData.attachments = fileList.map((file) => ({
-				name: file.name,
-				size: file.size,
-				type: file.type,
-			}));
+			// Upload new files to server first
+			const newFiles = fileList.filter((f) => f.originFileObj).map((f) => f.originFileObj as File);
+			const existingAttachments = fileList
+				.filter((f) => !f.originFileObj && (f as any).filePath)
+				.map((f) => ({
+					name: f.name,
+					size: f.size || 0,
+					type: f.type || "",
+					filePath: (f as any).filePath,
+					url: (f as any).url,
+				}));
+
+			let uploadedFiles: any[] = [];
+			if (newFiles.length > 0) {
+				try {
+					const uploadResult = await submissionService.uploadSubmissionFiles(assignmentId!, newFiles);
+					uploadedFiles = uploadResult.data || [];
+				} catch (error) {
+					toast.error("Failed to upload files");
+					return;
+				}
+			}
+
+			submissionData.attachments = [...existingAttachments, ...uploadedFiles];
 		}
 		if (formSubmission) submissionData.formSubmission = formSubmission;
 

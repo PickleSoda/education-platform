@@ -1,5 +1,5 @@
 import { Router } from 'express';
-import { assignmentController } from './assignment.controller';
+import { assignmentController, assignmentUploadMiddleware } from './assignment.controller';
 import auth, { requireAnyRole } from '@/shared/middlewares/auth';
 
 const router = Router();
@@ -79,6 +79,15 @@ router.get(
   auth(),
   requireAnyRole(['teacher', 'admin']),
   assignmentController.getStats
+);
+
+// Upload file attachment for assignment template (teacher, admin)
+router.post(
+  '/assignments/:id/upload-file',
+  auth(),
+  requireAnyRole(['teacher', 'admin']),
+  assignmentUploadMiddleware,
+  assignmentController.uploadFile
 );
 
 // ============================================================================

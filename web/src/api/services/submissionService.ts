@@ -6,6 +6,9 @@ import type {
 	SubmissionStats,
 } from "#/entity";
 import apiClient from "../apiClient";
+import axios from "axios";
+import { GLOBAL_CONFIG } from "@/global-config";
+import userStore from "@/store/userStore";
 
 // Query parameters
 export interface ListSubmissionsParams {
@@ -104,6 +107,29 @@ const getSubmissionStats = (assignmentId: string) =>
 		url: `${SubmissionApi.Stats}/${assignmentId}/stats`,
 	});
 
+const uploadSubmissionFiles = async (assignmentId: string, files: File[]) => {
+	const formData = new FormData();
+	files.forEach((file) => {
+		formData.append("files", file);
+	});
+
+	const token = userStore.getState().userToken.accessToken;
+	const response = await axios.post(
+		`${GLOBAL_CONFIG.apiBaseUrl}${SubmissionApi.Draft}/${assignmentId}/upload`,
+		formData,
+		{
+			headers: {
+				"Content-Type": "multipart/form-data",
+				Authorization: `Bearer ${token}`,
+			},
+		}
+	);
+	return response.data;
+};
+
+const getDownloadUrl = (submissionId: string, filePath: string) =>
+	`${GLOBAL_CONFIG.apiBaseUrl}${SubmissionApi.Submissions}/${submissionId}/download/${filePath}`;
+
 export default {
 	// Submission CRUD
 	getSubmissions,
@@ -117,4 +143,7 @@ export default {
 	// Gradebook
 	getStudentGradebook,
 	getSubmissionStats,
+	// File operations
+	uploadSubmissionFiles,
+	getDownloadUrl,
 };

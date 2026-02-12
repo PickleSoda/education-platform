@@ -20,10 +20,10 @@ import {
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import assignmentService, { type CreateAssignmentTemplateReq } from "@/api/services/assignmentService";
 import { toast } from "sonner";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { AssignmentType } from "@/types/entity";
 import { FormBuilder } from "@/components/form-builder";
-import type { Attachment, FormAttachment } from "#/entity";
+import type { Attachment, FormAttachment, FileAttachment } from "#/entity";
 import { Modal } from "antd";
 
 export default function AssignmentTemplatePage() {
@@ -51,6 +51,8 @@ export default function AssignmentTemplatePage() {
 	const [deleteModal, setDeleteModal] = useState(false);
 	const [formBuilderModal, setFormBuilderModal] = useState(false);
 	const [editingForm, setEditingForm] = useState<FormAttachment | null>(null);
+	const [isUploadingFile, setIsUploadingFile] = useState(false);
+	const fileInputRef = useRef<HTMLInputElement>(null);
 
 	// Fetch assignment template data if editing
 	const { data: templateData, isLoading } = useQuery({
@@ -210,6 +212,54 @@ export default function AssignmentTemplatePage() {
 			(att) => !(att.type === "form" && att.id === formId)
 		);
 		setFormData({ ...formData, attachments: updatedAttachments });
+	};
+
+	const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+		const files = e.target.files;
+		if (!files || files.length === 0) return;
+
+		// For create mode, we need to save the template first, so store file as a placeholder
+		// For edit mode, we can upload directly
+		if (isCreateMode) {
+			// Add file as a local FileAttachment placeholder - will be uploaded when template is saved
+			for (const file of Array.from(files)) {
+				const fileUrl = URL.createObjectURL(file);
+				const fileAttachment: FileAttachment = {
+					type: "file",
+					id: `local-${Date.now()}-${file.name}`,
+					name: file.name,
+					url: fileUrl,
+					mimeType: file.type,
+				};
+				setFormData((prev) => ({
+					...prev,
+					attachments: [...(prev.attachments || []), fileAttachment],
+				}));
+			}
+			toast.info("Files added. They will be uploaded when you save the template.");
+		} else {
+			setIsUploadingFile(true);
+			try {
+				for (const file of Array.from(files)) {
+					const result = await assignmentService.uploadAssignmentFile(assignmentId as string, file);
+					const fileAttachment = result.data as FileAttachment;
+					setFormData((prev) => ({
+						...prev,
+						attachments: [...(prev.attachments || []), fileAttachment] as Attachment[],
+					}));
+				}
+				toast.success("File(s) uploaded successfully");
+			} catch (error: any) {
+				toast.error(error?.response?.data?.message || "Failed to upload file");
+			} finally {
+				setIsUploadingFile(false);
+			}
+		}
+
+		// Reset file input
+		if (fileInputRef.current) {
+			fileInputRef.current.value = "";
+		}
 	};
 
 	const criteriaSum = gradingCriteria.reduce((sum, c) => sum + (c.maxPoints || 0), 0);
@@ -398,6 +448,32 @@ export default function AssignmentTemplatePage() {
 								</p>
 							</div>
 							<div className="flex gap-2">
+								<input
+									type="file"
+									ref={fileInputRef}
+									onChange={handleFileUpload}
+									className="hidden"
+									multiple
+									accept=".pdf,.doc,.docx,.ppt,.pptx,.xls,.xlsx,.txt,.csv,.jpg,.jpeg,.png,.gif,.mp4,.zip,.py,.java,.js,.ts,.jsx,.tsx"
+								/>
+								<Button
+									type="button"
+									variant="outline"
+									onClick={() => fileInputRef.current?.click()}
+									disabled={isUploadingFile}
+								>
+									{isUploadingFile ? (
+										<>
+											<Icon icon="solar:loading-bold" size={16} className="mr-2 animate-spin" />
+											Uploading...
+										</>
+									) : (
+										<>
+											<Icon icon="solar:upload-bold-duotone" size={16} className="mr-2" />
+											Upload File
+										</>
+									)}
+								</Button>
 								<Button type="button" variant="outline" onClick={handleAddForm}>
 									<Icon icon="solar:document-add-bold-duotone" size={16} className="mr-2" />
 									Add Quiz/Survey
